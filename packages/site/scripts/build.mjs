@@ -29,15 +29,20 @@ const NAV = [
   { slug: 'index', label: 'Início' },
   { slug: 'guide', label: 'Guia' },
   { slug: 'spec', label: 'Especificação' },
+  { slug: 'interpreter', label: 'Interpretador' },
 ];
 
-const PAGES = [
+// Páginas cujo conteúdo vem de Markdown de verdade — @markup/core faz o
+// parse, @markup/renderer faz o HTML. Ver src/renderPages.tsx.
+const MARKDOWN_PAGES = [
   {
     slug: 'index',
     title: 'MarkUP',
     description: 'Markdown foi desenhado para texto. MarkUP é desenhado para documentos.',
     path: join(root, 'content', 'home.md'),
     toc: false,
+    usesPlayground: true,
+    extraHtml: () => PLAYGROUND_SECTION,
   },
   {
     slug: 'guide',
@@ -55,6 +60,17 @@ const PAGES = [
   },
 ];
 
+// O Interpretador não tem um documento-fonte: é a página inteira dedicada
+// ao playground (textarea grande + preview grande, sem sumário lateral).
+const INTERPRETER_PAGE = {
+  slug: 'interpreter',
+  title: 'Interpretador — MarkUP',
+  description: 'Escreva MarkUP e veja o resultado ao vivo. Sem autocomplete, sem sugestões — só o editor e a preview.',
+  toc: false,
+  wide: true,
+  usesPlayground: true,
+};
+
 async function main() {
   rmSync(publicDir, { recursive: true, force: true });
   mkdirSync(join(publicDir, 'assets'), { recursive: true });
@@ -63,17 +79,24 @@ async function main() {
   await buildPlayground();
 
   const { renderAll } = require(join(buildTmp, 'renderPages.cjs'));
-  const results = renderAll(PAGES.map(({ slug, title, description, path }) => ({ slug, title, description, path })));
+  const results = renderAll(
+    MARKDOWN_PAGES.map(({ slug, title, description, path }) => ({ slug, title, description, path })),
+  );
 
   const documentCss = readFileSync(join(repoRoot, 'packages', 'renderer', 'src', 'styles', 'document.css'), 'utf-8');
   writeFileSync(join(publicDir, 'assets', 'document.css'), documentCss);
   cpSync(join(root, 'styles', 'site.css'), join(publicDir, 'assets', 'site.css'));
 
-  for (const page of PAGES) {
+  for (const page of MARKDOWN_PAGES) {
     const result = results.find((r) => r.slug === page.slug);
     const html = renderPageHtml(page, result);
     writeFileSync(join(publicDir, `${page.slug}.html`), html);
   }
+
+  writeFileSync(
+    join(publicDir, `${INTERPRETER_PAGE.slug}.html`),
+    renderPageHtml(INTERPRETER_PAGE, { contentHtml: INTERPRETER_SECTION, headings: [] }),
+  );
 
   rmSync(buildTmp, { recursive: true, force: true });
   console.log(`site: build complete → ${publicDir}`);
@@ -110,7 +133,7 @@ async function buildPlayground() {
 
 function renderPageHtml(page, result) {
   const toc = page.toc ? buildToc(result.headings) : '';
-  const layoutClass = page.toc ? 'site-layout' : 'site-layout no-toc';
+  const layoutClass = page.toc ? 'site-layout' : `site-layout no-toc${page.wide ? ' wide' : ''}`;
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -148,14 +171,14 @@ function renderPageHtml(page, result) {
   <main class="site-content">
     <div class="mu-document-root">
       ${result.contentHtml}
-      ${page.slug === 'index' ? PLAYGROUND_SECTION : ''}
+      ${page.extraHtml ? page.extraHtml() : ''}
     </div>
   </main>
 </div>
 <footer class="site-footer">
   <p>MarkUP é software livre. <a href="https://github.com/arturjoaodaros-dev/MarkUP">Código-fonte no GitHub</a>.</p>
 </footer>
-${page.slug === 'index' ? '<script src="assets/playground.js"></script>' : ''}
+${page.usesPlayground ? '<script src="assets/playground.js"></script>' : ''}
 <script>
 (function () {
   var toggle = document.getElementById('theme-toggle');
@@ -200,6 +223,12 @@ function escapeHtml(value) {
 const PLAYGROUND_SECTION = `<h2 class="mu-heading" id="experimente">Experimente</h2>
 <p class="mu-paragraph">Edite o texto abaixo e veja o resultado ao vivo — o mesmo parser e o mesmo renderer do resto do MarkUP, rodando no seu navegador.</p>
 <div id="playground-root"></div>`;
+
+const INTERPRETER_SECTION = `<div class="mu-document">
+<h1 class="mu-heading">Interpretador</h1>
+<p class="mu-paragraph">Escreva MarkUP à esquerda, veja o resultado à direita. Sem autocomplete, sem sugestões — só o texto e o preview, salvo automaticamente neste navegador.</p>
+</div>
+<div id="interpreter-root" class="interpreter-root"></div>`;
 
 const FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#2563eb"/><text x="12" y="17" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">M</text></svg>`;
 

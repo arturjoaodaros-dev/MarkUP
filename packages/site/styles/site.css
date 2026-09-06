@@ -116,6 +116,10 @@ a:hover {
   max-width: 820px;
 }
 
+.site-layout.no-toc.wide {
+  max-width: 1080px;
+}
+
 .page-toc {
   position: sticky;
   top: 5em;
@@ -184,6 +188,14 @@ a:hover {
   grid-template-columns: 1fr 1fr;
   gap: 1.5em;
   margin: 1.5em 0 2.5em;
+}
+
+.interpreter-root .playground-grid {
+  margin-top: 1.5em;
+}
+.interpreter-root .playground-input,
+.interpreter-root .playground-output {
+  min-height: 72vh;
 }
 
 .playground-input {
