@@ -22,6 +22,8 @@ serviços externos.
 | [`packages/vscode`](packages/vscode) | Extensão oficial do VS Code: linguagem `.markup`/`.mkup`, highlighting, diagnósticos, autocomplete, hover e preview nativo — tudo em cima de `@markup/core`/`@markup/renderer`, sem duplicar validação. |
 
 A especificação normativa da linguagem está em [`docs/SPEC.md`](docs/SPEC.md).
+Para o guia completo — todas as diretivas, Markdown suportado, diagnósticos,
+comandos da extensão e exemplos — veja [`docs/GUIDE.md`](docs/GUIDE.md).
 
 ## Uso — app web
 
