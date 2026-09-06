@@ -1,0 +1,12 @@
+# Relatório de vendas
+
+As vendas cresceram **18%** no último trimestre.
+
+:::chart type="bar" title="Vendas por trimestre"
+Q1: 120
+Q2: 180
+:::
+
+:::chart type="banana"
+Q1: 1
+:::

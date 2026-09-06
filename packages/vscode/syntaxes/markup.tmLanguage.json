@@ -1,0 +1,33 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "MarkUP",
+  "scopeName": "source.markup",
+  "patterns": [{ "include": "#directiveBlock" }, { "include": "text.html.markdown" }],
+  "repository": {
+    "directiveBlock": {
+      "begin": "^(\\s*)(:{3,})\\s*([A-Za-z][\\w-]*)",
+      "beginCaptures": {
+        "2": { "name": "punctuation.definition.directive.begin.markup" },
+        "3": { "name": "entity.name.tag.directive.markup" }
+      },
+      "end": "^\\s*(:{3,})\\s*$",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.directive.end.markup" }
+      },
+      "name": "meta.directive.markup",
+      "patterns": [
+        { "include": "#directiveAttributes" },
+        { "include": "#directiveBlock" },
+        { "include": "text.html.markdown" }
+      ]
+    },
+    "directiveAttributes": {
+      "match": "([A-Za-z_][\\w-]*)(=)(\"[^\"]*\"|'[^']*'|\\S+)?",
+      "captures": {
+        "1": { "name": "entity.other.attribute-name.markup" },
+        "2": { "name": "punctuation.separator.key-value.markup" },
+        "3": { "name": "string.quoted.markup" }
+      }
+    }
+  }
+}

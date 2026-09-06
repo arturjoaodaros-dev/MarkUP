@@ -1,0 +1,222 @@
+/* Casca da aplicação: toolbar, sidebar, painéis, status bar. Layout de
+   ferramenta de desenvolvimento — grade fixa, densidade alta, sem sombras
+   decorativas. As cores vêm das mesmas variáveis de document.css, para que
+   o shell e o documento renderizado compartilhem o mesmo tema. */
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; margin: 0; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--mu-bg);
+  color: var(--mu-text);
+}
+
+.mu-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--mu-bg);
+  color: var(--mu-text);
+}
+
+.mu-app-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: var(--mu-text-muted);
+}
+
+/* Toolbar */
+.mu-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  padding: 0.5em 0.75em;
+  border-bottom: 1px solid var(--mu-border);
+  background: var(--mu-bg-subtle);
+  flex-shrink: 0;
+}
+
+.mu-toolbar-group { display: flex; gap: 0.4em; }
+.mu-toolbar-end { margin-left: auto; }
+
+.mu-toolbar button,
+.mu-mode-switch button {
+  font: inherit;
+  font-size: 0.85em;
+  padding: 0.4em 0.75em;
+  border: 1px solid var(--mu-border);
+  background: var(--mu-bg);
+  color: var(--mu-text);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.mu-toolbar button:hover, .mu-mode-switch button:hover { border-color: var(--mu-accent); }
+
+.mu-icon-button {
+  padding: 0.4em 0.6em !important;
+  font-size: 1em !important;
+}
+
+.mu-mode-switch {
+  display: flex;
+  border: 1px solid var(--mu-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.mu-mode-switch button {
+  border: none;
+  border-radius: 0;
+  border-right: 1px solid var(--mu-border);
+}
+.mu-mode-switch button:last-child { border-right: none; }
+.mu-mode-switch button[data-active='true'] { background: var(--mu-accent); color: var(--mu-accent-contrast); }
+
+/* Corpo: sidebar + main */
+.mu-body { display: flex; flex: 1; min-height: 0; }
+
+.mu-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--mu-border);
+  background: var(--mu-bg-subtle);
+  overflow-y: auto;
+  padding: 0.75em;
+}
+.mu-sidebar-section { margin-bottom: 1.4em; }
+.mu-sidebar-section h3 {
+  font-size: 0.7em;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mu-text-muted);
+  margin: 0 0 0.5em;
+}
+.mu-sidebar-empty { font-size: 0.85em; color: var(--mu-text-muted); margin: 0; }
+
+.mu-doc-list, .mu-outline-list { list-style: none; margin: 0; padding: 0; }
+.mu-doc-list li { display: flex; align-items: center; }
+.mu-doc-item {
+  flex: 1;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.4em 0.5em;
+  border-radius: 6px;
+  font-size: 0.88em;
+  color: var(--mu-text);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mu-doc-item[data-active='true'] { background: var(--mu-accent); color: var(--mu-accent-contrast); }
+.mu-doc-item:not([data-active='true']):hover { background: var(--mu-border); }
+.mu-doc-remove {
+  background: none;
+  border: none;
+  color: var(--mu-text-muted);
+  cursor: pointer;
+  padding: 0.2em 0.5em;
+  font-size: 1em;
+}
+.mu-doc-remove:hover { color: var(--mu-error); }
+
+.mu-outline-list li {
+  font-size: 0.85em;
+  padding: 0.25em 0.5em;
+  color: var(--mu-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Main / editor / preview */
+.mu-main { flex: 1; display: flex; min-width: 0; }
+.mu-pane { flex: 1; min-width: 0; overflow: auto; }
+.mu-pane-editor { border-right: 1px solid var(--mu-border); }
+.mu-main[data-mode='split'] .mu-pane { width: 50%; }
+
+.mu-editor-surface { height: 100%; }
+.mu-editor-surface .cm-editor { height: 100%; }
+.mu-editor-surface .cm-scroller { font-family: var(--font-mono); font-size: 13.5px; }
+
+.mu-preview { padding: 1.5em 2em; }
+.mu-preview-error {
+  margin: 1em;
+  padding: 1em;
+  border: 1px solid var(--mu-error);
+  background: var(--mu-error-bg);
+  color: var(--mu-error);
+  border-radius: 8px;
+}
+
+/* Status bar */
+.mu-status-bar {
+  display: flex;
+  gap: 1.5em;
+  align-items: center;
+  padding: 0.3em 1em;
+  font-size: 0.78em;
+  color: var(--mu-text-muted);
+  border-top: 1px solid var(--mu-border);
+  background: var(--mu-bg-subtle);
+  flex-shrink: 0;
+}
+.mu-status-problems {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--mu-text-muted);
+  cursor: pointer;
+  font: inherit;
+}
+.mu-status-problems[data-has-problems='true'] { color: var(--mu-warning); }
+
+/* Problems panel */
+.mu-problems-panel {
+  border-top: 1px solid var(--mu-border);
+  background: var(--mu-bg);
+  max-height: 220px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.mu-problems-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5em 1em;
+  font-size: 0.8em;
+  font-weight: 600;
+  border-bottom: 1px solid var(--mu-border);
+}
+.mu-problems-list { list-style: none; margin: 0; padding: 0; }
+.mu-problems-list li {
+  display: flex;
+  gap: 0.6em;
+  align-items: center;
+  padding: 0.4em 1em;
+  font-size: 0.82em;
+  border-bottom: 1px solid var(--mu-border);
+}
+.mu-problems-list li[data-severity='error'] .mu-problem-icon { color: var(--mu-error); }
+.mu-problems-list li[data-severity='warning'] .mu-problem-icon { color: var(--mu-warning); }
+.mu-problem-message { flex: 1; }
+.mu-problem-location { color: var(--mu-text-muted); font-family: var(--font-mono); }
+
+/* Responsivo: abaixo de 900px o split vira abas empilhadas e a sidebar vira gaveta */
+@media (max-width: 900px) {
+  .mu-sidebar {
+    position: fixed;
+    top: 48px;
+    bottom: 0;
+    left: 0;
+    z-index: 10;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  }
+  .mu-main[data-mode='split'] { flex-direction: column; }
+  .mu-main[data-mode='split'] .mu-pane { width: 100%; height: 50%; }
+  .mu-pane-editor { border-right: none; border-bottom: 1px solid var(--mu-border); }
+}
