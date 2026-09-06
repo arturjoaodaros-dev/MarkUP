@@ -18,7 +18,7 @@ import type {
 } from '../ast/nodes';
 import type { Diagnostic } from '../diagnostics';
 import { diagnostic } from '../diagnostics';
-import { parseInline } from './inline';
+import { HARD_BREAK_MARKER, parseInline } from './inline';
 import type { Line } from './scanner';
 import { isBlank, lineStartPoint, pointAt, spanLines } from './scanner';
 import { matchCodeFenceMarker, matchDirectiveClose, matchDirectiveOpen, findDirectiveBody } from './directive';
@@ -27,6 +27,13 @@ import { collectListItemLines, matchListLine } from './rules/list';
 import { isTableDelimiterRow, parseAlignRow, splitRow } from './rules/table';
 
 const HEADING_RE = /^ {0,3}(#{1,6})(?:\s+(.*?))?\s*$/;
+// Combinação de 1-6 "#" seguidos imediatamente de um caractere que não é
+// espaço nem "#" — sintaticamente não é um heading ATX (o CommonMark exige
+// espaço após os "#", justamente para não confundir com "#hashtag" dentro
+// de texto normal), mas é comum o suficiente por engano para merecer um
+// aviso explicando por que a linha não virou heading, em vez de falhar
+// silenciosamente.
+const HEADING_MISSING_SPACE_RE = /^ {0,3}(#{1,6})[^\s#]/;
 const THEMATIC_BREAK_RE = /^ {0,3}([-*_])(?:\s*\1){2,}\s*$/;
 const BLOCKQUOTE_RE = /^ {0,3}>\s?(.*)$/;
 
@@ -200,15 +207,27 @@ export function parseBlocks(lines: Line[], diagnostics: Diagnostic[]): BlockNode
 
     // Paragrafo: consome ate linha em branco ou inicio de outra construcao
     {
+      if (HEADING_MISSING_SPACE_RE.test(line.text)) {
+        const level = HEADING_MISSING_SPACE_RE.exec(line.text)![1].length;
+        diagnostics.push(
+          diagnostic(
+            'warning',
+            'heading-missing-space',
+            `Linha começa com ${level} "#" mas sem espaço depois — não é reconhecida como heading. Use "${'#'.repeat(level)} título" para virar um heading de nível ${level}.`,
+            spanLines(line, line),
+          ),
+        );
+      }
+
       let j = i;
-      const textLines: string[] = [];
+      const rawTextLines: string[] = [];
       for (; j < lines.length; j++) {
         const l = lines[j];
         if (isBlank(l)) break;
         if (j > i && isBlockStart(l)) break;
-        textLines.push(l.text.trim());
+        rawTextLines.push(l.text);
       }
-      const text = textLines.join(' ');
+      const text = joinParagraphLines(rawTextLines);
       const node = {
         type: 'paragraph' as const,
         children: parseInline(text, lineStartPoint(line)),
@@ -220,6 +239,37 @@ export function parseBlocks(lines: Line[], diagnostics: Diagnostic[]): BlockNode
   }
 
   return blocks;
+}
+
+/**
+ * Achata as linhas cruas de um parágrafo em um único texto para o passe
+ * inline. Uma quebra suave (linha normal) vira um espaço; uma quebra rígida
+ * (linha terminada em duas ou mais espaços, ou uma barra invertida solta)
+ * vira o marcador que `parseInline` reconhece e transforma num nó `break`
+ * de verdade — sem isso, todo `\n` dentro de um parágrafo era simplesmente
+ * perdido.
+ */
+function joinParagraphLines(rawLines: string[]): string {
+  const parts: string[] = [];
+  for (let k = 0; k < rawLines.length; k++) {
+    const raw = rawLines[k];
+    const isLast = k === rawLines.length - 1;
+    parts.push(raw.trim());
+    if (!isLast) {
+      parts.push(endsWithHardBreak(raw) ? HARD_BREAK_MARKER : ' ');
+    }
+  }
+  return parts.join('');
+}
+
+function endsWithHardBreak(rawLine: string): boolean {
+  if (/ {2,}$/.test(rawLine)) return true;
+  const withoutTrailingSpaces = rawLine.replace(/[ \t]+$/, '');
+  const backslashes = /\\+$/.exec(withoutTrailingSpaces);
+  // Um número ímpar de barras finais significa a última é "solta" (as
+  // anteriores, se houver, formam pares de escape "\\" já resolvidos no
+  // passe inline) — é isso que sinaliza a quebra rígida.
+  return !!backslashes && backslashes[0].length % 2 === 1;
 }
 
 function makeRow(cells: string[], line: Line): TableRow {

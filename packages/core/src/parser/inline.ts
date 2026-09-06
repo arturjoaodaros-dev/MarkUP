@@ -3,7 +3,8 @@
 //
 // Precedência deliberadamente restrita para evitar a ambiguidade clássica de
 // ênfase do Markdown: sem `_` no meio de palavra, sem aninhamento arbitrário
-// de três níveis. Ordem: escape > código > imagem > link > ênfase > texto.
+// de três níveis. Ordem: quebra rígida > escape > código > imagem > link >
+// ênfase/negrito/rasurado > texto.
 
 import type { InlineNode, Point, Position } from '../ast/nodes';
 
@@ -26,12 +27,24 @@ function posFor(ctx: InlineContext, start: number, end: number): Position {
 
 function advance(base: Point, delta: number): Point {
   // O texto inline nunca cruza linhas neste parser (parágrafos multi-linha
-  // são achatados com espaço antes do passe inline), então avançar a coluna
-  // e o offset é suficiente.
+  // são achatados antes do passe inline), então avançar a coluna e o offset
+  // é suficiente.
   return { line: base.line, column: base.column + delta, offset: base.offset + delta };
 }
 
-const ESCAPABLE = new Set(['\\', '`', '*', '_', '[', ']', '(', ')', '#', '+', '-', '.', '!', ':']);
+// Pontuação ASCII escapável — o mesmo conjunto do CommonMark (spec §2.4),
+// não só os caracteres que o MarkUP usa como sintaxe, para que
+// `\qualquer-pontuação` sempre produza o caractere literal e nunca vire
+// sintaxe por acidente.
+const ESCAPABLE = new Set('!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'.split(''));
+
+// Marcador sintético de quebra de linha rígida. `block.ts` o insere no lugar
+// de duas ou mais espaços (ou uma barra invertida solta) no fim de uma
+// linha, ao achatar as linhas de um parágrafo em um único texto para este
+// passe. É um caractere de controle (NUL) que nunca aparece em texto
+// digitado de verdade, então não há ambiguidade com o espaço comum usado
+// entre linhas de uma quebra suave.
+export const HARD_BREAK_MARKER = String.fromCharCode(0);
 
 function parseRun(ctx: InlineContext, from: number, to: number): InlineNode[] {
   const nodes: InlineNode[] = [];
@@ -46,6 +59,14 @@ function parseRun(ctx: InlineContext, from: number, to: number): InlineNode[] {
 
   while (i < to) {
     const ch = ctx.text[i];
+
+    if (ch === HARD_BREAK_MARKER) {
+      flushText(i);
+      nodes.push({ type: 'break', position: posFor(ctx, i, i + 1) });
+      i += 1;
+      textStart = i;
+      continue;
+    }
 
     if (ch === '\\' && i + 1 < to && ESCAPABLE.has(ctx.text[i + 1])) {
       flushText(i);
@@ -84,6 +105,17 @@ function parseRun(ctx: InlineContext, from: number, to: number): InlineNode[] {
         flushText(i);
         nodes.push(parsed.node);
         i = parsed.end;
+        textStart = i;
+        continue;
+      }
+    }
+
+    if (ch === '~' && ctx.text[i + 1] === '~') {
+      const st = parseWrapped(ctx, i, to, '~~', 'strikethrough');
+      if (st) {
+        flushText(i);
+        nodes.push(st.node);
+        i = st.end;
         textStart = i;
         continue;
       }
@@ -137,6 +169,33 @@ function parseEmphasis(
       return { node, end };
     }
     searchFrom = idx + closer.length;
+  }
+  return null;
+}
+
+/** Sintaxe de dois caracteres, abre/fecha iguais, um único nível (usado por `~~rasurado~~`). */
+function parseWrapped(
+  ctx: InlineContext,
+  start: number,
+  to: number,
+  marker: string,
+  type: 'strikethrough',
+): { node: InlineNode; end: number } | null {
+  const contentStart = start + marker.length;
+  if (contentStart >= to || /\s/.test(ctx.text[contentStart])) return null;
+
+  let searchFrom = contentStart + 1;
+  while (searchFrom <= to - marker.length) {
+    const idx = ctx.text.indexOf(marker, searchFrom);
+    if (idx === -1 || idx >= to) return null;
+    const before = ctx.text[idx - 1];
+    if (!/\s/.test(before)) {
+      const content = ctx.text.slice(contentStart, idx);
+      const children = parseRun({ text: content, basePoint: advance(ctx.basePoint, contentStart) }, 0, content.length);
+      const end = idx + marker.length;
+      return { node: { type, children, position: posFor(ctx, start, end) }, end };
+    }
+    searchFrom = idx + marker.length;
   }
   return null;
 }

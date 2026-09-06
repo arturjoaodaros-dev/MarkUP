@@ -67,4 +67,86 @@ describe('Markdown básico', () => {
     expect(() => parse(':::\n:::')).not.toThrow();
     expect(() => parse('```\nsem fechamento')).not.toThrow();
   });
+
+  it('strikethrough', () => {
+    const { ast } = parse('Isso está ~~errado~~.');
+    const [p] = ast.children;
+    if (p.type !== 'paragraph') throw new Error('esperado paragraph');
+    expect(p.children.map((c) => c.type)).toEqual(['text', 'strikethrough', 'text']);
+    const st = p.children[1];
+    if (st.type !== 'strikethrough') throw new Error('esperado strikethrough');
+    expect(st.children).toMatchObject([{ type: 'text', value: 'errado' }]);
+  });
+
+  it('lista não ordenada aninhada dentro de um item', () => {
+    const { ast } = parse(['- item um', '  - sub um', '  - sub dois', '- item dois'].join('\n'));
+    expect(ast.children).toMatchObject([{ type: 'list', ordered: false }]);
+    const outer = ast.children[0];
+    if (outer.type !== 'list') throw new Error('esperado list');
+    expect(outer.items).toHaveLength(2);
+    // O primeiro item contém um parágrafo ("item um") e uma sub-lista aninhada.
+    expect(outer.items[0].children.map((c) => c.type)).toEqual(['paragraph', 'list']);
+    const nested = outer.items[0].children[1];
+    if (nested.type !== 'list') throw new Error('esperado list aninhada');
+    expect(nested.items).toHaveLength(2);
+    expect(outer.items[1].children).toMatchObject([{ type: 'paragraph' }]);
+  });
+
+  it('lista ordenada aninhada, alinhada à largura do marcador do pai', () => {
+    const { ast } = parse(['1. primeiro', '   1. sub 1.1', '   2. sub 1.2', '2. segundo'].join('\n'));
+    const outer = ast.children[0];
+    if (outer.type !== 'list') throw new Error('esperado list');
+    expect(outer.items[0].children.map((c) => c.type)).toEqual(['paragraph', 'list']);
+    const nested = outer.items[0].children[1];
+    if (nested.type !== 'list') throw new Error('esperado list aninhada');
+    expect(nested).toMatchObject({ ordered: true, start: 1 });
+    expect(nested.items).toHaveLength(2);
+  });
+
+  it('quebra de linha rígida (duas espaços no fim da linha) vira nó break', () => {
+    const { ast } = parse('linha um  \nlinha dois');
+    const [p] = ast.children;
+    if (p.type !== 'paragraph') throw new Error('esperado paragraph');
+    expect(p.children.map((c) => c.type)).toEqual(['text', 'break', 'text']);
+  });
+
+  it('quebra de linha rígida com barra invertida solta no fim da linha', () => {
+    const { ast } = parse('linha um\\\nlinha dois');
+    const [p] = ast.children;
+    if (p.type !== 'paragraph') throw new Error('esperado paragraph');
+    expect(p.children.map((c) => c.type)).toEqual(['text', 'break', 'text']);
+  });
+
+  it('quebra de linha suave (uma linha normal) vira só um espaço, não um break', () => {
+    const { ast } = parse('linha um\nlinha dois');
+    const [p] = ast.children;
+    if (p.type !== 'paragraph') throw new Error('esperado paragraph');
+    expect(p.children.map((c) => c.type)).toEqual(['text']);
+    expect(p.children[0]).toMatchObject({ value: 'linha um linha dois' });
+  });
+
+  it('escapa pontuação ampla do CommonMark, não só a sintaxe do MarkUP', () => {
+    const { ast } = parse('\\~ \\" \\@ \\%');
+    const [p] = ast.children;
+    if (p.type !== 'paragraph') throw new Error('esperado paragraph');
+    const text = p.children.map((c) => (c.type === 'text' ? c.value : '')).join('');
+    expect(text).toBe('~ " @ %');
+  });
+
+  it('"#texto" sem espaço não vira heading (exigência do CommonMark) e emite aviso explicando por quê', () => {
+    const { ast, diagnostics } = parse('#semespaco');
+    expect(ast.children).toMatchObject([{ type: 'paragraph' }]);
+    expect(diagnostics).toMatchObject([{ severity: 'warning', code: 'heading-missing-space' }]);
+  });
+
+  it('"#" seguido de espaço sempre vira heading, mesmo com só um "#"', () => {
+    const { diagnostics } = parse('# título válido');
+    expect(diagnostics).toHaveLength(0);
+  });
+
+  it('heading ATX vazio ("######" sozinho) é válido e não dispara o aviso', () => {
+    const { ast, diagnostics } = parse('######');
+    expect(ast.children).toMatchObject([{ type: 'heading', depth: 6 }]);
+    expect(diagnostics).toHaveLength(0);
+  });
 });

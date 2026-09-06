@@ -9,35 +9,29 @@ export interface Line {
   startOffset: number;
 }
 
-// Normaliza terminadores de linha e expande tabs (largura 4, comportamento
-// mais previsível que 8 para documentos de texto). Divide em `Line[]`
-// preservando o offset absoluto de cada uma, que é a base de toda posição
-// reportada pelo parser.
+// Normaliza terminadores de linha e divide em `Line[]`, preservando o
+// offset absoluto de cada uma — a base de toda posição reportada pelo
+// parser, e o que permite ao editor (`document.offsetAt`/`positionAt`)
+// mapear essas posições de volta para o texto real sem tradução nenhuma.
+//
+// Deliberadamente NÃO expandimos tabs para espaços aqui: fazer isso mudaria
+// o comprimento da linha em relação ao texto original, e qualquer offset
+// calculado a partir da versão expandida deixaria de apontar para o
+// caractere certo na string real (um bug sutil que existia antes desta
+// versão). Um tab dentro de uma linha simplesmente não casa com os `\s`/`
+// '.repeat(n)'` usados para detectar indentação de listas — é uma limitação
+// aceita, documentada no SPEC, não um comportamento incorreto silencioso.
 export function scan(source: string): Line[] {
   const normalized = source.replace(/\r\n?/g, '\n');
   const rawLines = normalized.split('\n');
   const lines: Line[] = [];
   let offset = 0;
   for (let i = 0; i < rawLines.length; i++) {
-    const text = expandTabs(rawLines[i]);
+    const text = rawLines[i];
     lines.push({ text, number: i + 1, startOffset: offset });
-    offset += rawLines[i].length + 1; // +1 pelo '\n' removido no split
+    offset += text.length + 1; // +1 pelo '\n' removido no split
   }
   return lines;
-}
-
-function expandTabs(text: string, tabWidth = 4): string {
-  if (!text.includes('\t')) return text;
-  let result = '';
-  for (const ch of text) {
-    if (ch === '\t') {
-      const spaces = tabWidth - (result.length % tabWidth);
-      result += ' '.repeat(spaces);
-    } else {
-      result += ch;
-    }
-  }
-  return result;
 }
 
 export function pointAt(line: Line, column: number): Point {

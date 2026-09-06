@@ -40,6 +40,11 @@ export interface Emphasis extends NodeBase {
   children: InlineNode[];
 }
 
+export interface Strikethrough extends NodeBase {
+  type: 'strikethrough';
+  children: InlineNode[];
+}
+
 export interface InlineCode extends NodeBase {
   type: 'inlineCode';
   value: string;
@@ -63,7 +68,7 @@ export interface Break extends NodeBase {
   type: 'break';
 }
 
-export type InlineNode = Text | Strong | Emphasis | InlineCode | Link | Image | Break;
+export type InlineNode = Text | Strong | Emphasis | Strikethrough | InlineCode | Link | Image | Break;
 
 // ---------------------------------------------------------------------------
 // Blocos Markdown

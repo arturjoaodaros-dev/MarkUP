@@ -4,28 +4,47 @@ MarkUP é uma linguagem de documentos: um superconjunto de sintaxe inspirada no
 Markdown, acrescido de diretivas para componentes ricos (gráficos, cards,
 alertas, progresso, matemática, código e abas). Este documento é a referência
 normativa da linguagem — o comportamento aqui descrito é o que a suíte de
-testes em `src/markup/__tests__` verifica.
+testes em `packages/core/src/__tests__` verifica.
 
-MarkUP **não é** CommonMark. O parser é próprio (`src/markup/parser`) e faz
-escolhas deliberadas em pontos ambíguos do Markdown clássico, descritas abaixo.
+MarkUP não promete compatibilidade byte-a-byte com o CommonMark em cada caso
+de borda (ver a seção de ênfase), mas segue as mesmas regras estruturais dele
+para todo o Markdown básico — inclusive as que costumam surpreender quem não
+conhece a especificação, como o espaço obrigatório depois do `#` de um
+heading. O objetivo é: **qualquer documento Markdown razoável continua
+funcionando exatamente como esperado**; diretivas MarkUP são um acréscimo,
+nunca uma ruptura.
 
 ## 1. Markdown básico
 
 | Construção | Sintaxe | Nó da AST |
 | --- | --- | --- |
-| Heading | `# ` até `###### ` | `heading` (`depth` 1–6) |
+| Heading | `# ` até `###### ` (espaço obrigatório após o `#`) | `heading` (`depth` 1–6) |
 | Parágrafo | linhas consecutivas sem outra construção | `paragraph` |
 | Negrito | `**texto**` ou `__texto__` | `strong` |
 | Itálico | `*texto*` ou `_texto_` | `emphasis` |
+| Rasurado (strikethrough) | `~~texto~~` | `strikethrough` |
 | Código inline | `` `código` `` | `inlineCode` |
 | Link | `[texto](url "título")` | `link` |
 | Imagem | `![alt](url "título")` | `image` |
 | Lista não ordenada | `- item`, `* item`, `+ item` | `list` (`ordered: false`) |
 | Lista ordenada | `1. item`, `1) item` | `list` (`ordered: true`, `start`) |
+| Lista aninhada | sub-item indentado até a coluna onde o conteúdo do item pai começa | `list` dentro de `listItem.children` |
 | Citação | `> texto` | `blockquote` |
 | Bloco de código | ` ``` ` ou `~~~`, com linguagem opcional | `codeBlock` |
 | Tabela | `\| a \| b \|` com linha delimitadora `\|---\|---\|` | `table` |
 | Régua horizontal | `---`, `***` ou `___` | `thematicBreak` |
+| Quebra de linha suave | uma linha normal seguida de outra, dentro do mesmo parágrafo | vira um espaço (sem nó próprio) |
+| Quebra de linha rígida | linha terminada em dois ou mais espaços, ou uma `\` solta, antes da quebra | `break` |
+
+### Por que `#texto` (sem espaço) não vira heading
+
+O CommonMark exige espaço (ou tab) entre os `#` de abertura e o texto do
+heading — de propósito, para não confundir `#hashtag` dentro de uma frase com
+um heading. O MarkUP segue a mesma regra. Uma linha que começa com 1–6 `#`
+colados no texto seguinte não é um erro silencioso: o parser emite um
+diagnóstico (`heading-missing-space`, aviso) explicando exatamente o que
+falta, para que a interface mostre isso ao usuário em vez de só "não
+renderizar como heading" sem explicação.
 
 ### Ênfase: regras restritas
 
@@ -42,7 +61,15 @@ produzir texto literal no MarkUP em vez de ênfase. Isso é intencional.
 
 ### Escapes
 
-Barra invertida escapa: `` \ ` * _ [ ] ( ) # + - . ! : ``.
+Barra invertida escapa qualquer pontuação ASCII, o mesmo conjunto do
+CommonMark (não só os caracteres que o MarkUP usa como sintaxe):
+
+```text
+! " # $ % & ' ( ) * + , - . / : ; < = > ? @ [ \ ] ^ _ ` { | } ~
+```
+
+Por exemplo, `\~` produz um til literal (não abre um `~~rasurado~~`), e
+`1\.` no início de uma linha não é confundido com uma lista ordenada.
 
 ## 2. Diretivas
 
@@ -190,6 +217,7 @@ mais diagnósticos, nunca uma tela quebrada.
 
 | Código | Severidade | Quando |
 | --- | --- | --- |
+| `heading-missing-space` | warning | Linha começa com `#`–`######` sem espaço depois (não vira heading) |
 | `directive-unknown` | warning | Diretiva sem handler registrado |
 | `directive-unclosed` | warning | Diretiva sem fechamento até o EOF |
 | `code-fence-unclosed` | warning | Cerca de código sem fechamento |
@@ -204,12 +232,26 @@ mais diagnósticos, nunca uma tela quebrada.
 
 ## 4. Limitações conhecidas (v1)
 
-- Não é compatível com CommonMark em casos de borda (ver seção de ênfase).
+- Não é 100% compatível com CommonMark em casos de borda de ênfase (ver seção
+  2 acima) — restrição deliberada para evitar a ambiguidade clássica de
+  `*`/`_` aninhados, não uma lacuna de implementação.
 - Sem suporte a listas de tarefas (`- [ ]`), notas de rodapé ou tabelas com
   células que ocupam múltiplas colunas/linhas.
-- HTML bruto embutido no documento não é interpretado — é escapado como
-  texto, por design (documento exportado é um arquivo compartilhável, e HTML
-  bruto seria uma porta aberta para injeção de script).
+- **HTML bruto embutido no documento não é interpretado — é escapado como
+  texto visível, por design.** Um documento MarkUP pode ser exportado e
+  compartilhado como HTML autocontido; permitir HTML bruto executável seria
+  abrir a porta para injeção de script em qualquer documento compartilhado.
+  Isso vale tanto para HTML inline (`<b>texto</b>` no meio de uma frase)
+  quanto para blocos HTML — em ambos os casos, os caracteres aparecem
+  literalmente no preview, nunca são interpretados como marcação real.
+- Uma linha contendo um caractere de tab (`\t`) real não tem sua indentação
+  reconhecida por listas/citações aninhadas — o scanner não expande tabs em
+  espaços (fazer isso mudaria o comprimento da linha em relação ao texto
+  original, o que quebraria o mapeamento de posições usado pelo indicador de
+  erros e pela extensão do VS Code). Na prática isso raramente aparece,
+  porque o editor do app web e o CodeMirror inserem espaços ao indentar, não
+  tabs — mas um documento colado de outra fonte com tabs reais pode ter
+  listas aninhadas não reconhecidas nessas linhas especificamente.
 - O HTML exportado referencia os arquivos de fonte do KaTeX por caminho
   relativo (`fonts/...`). Sem esses arquivos ao lado do `.html`, fórmulas
   matemáticas continuam legíveis (KaTeX tem fallback para uma fonte serifada

@@ -63,6 +63,7 @@ export const markupStreamParser = {
     }
 
     if (stream.match(/^\*\*[^*]+\*\*/) || stream.match(/^__[^_]+__/)) return 'strong';
+    if (stream.match(/^~~[^~]+~~/)) return 'strikethrough';
     if (stream.match(/^\*[^*]+\*/) || stream.match(/^_[^_]+_/)) return 'em';
     if (stream.match(/^`[^`]*`/)) return 'string';
     if (stream.match(/^!?\[[^\]]*\]\([^)]*\)/)) return 'link';

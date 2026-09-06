@@ -1,0 +1,15 @@
+# Teste do MarkUP
+
+Este documento mistura **Markdown normal** com uma diretiva do MarkUP, para
+provar que um não atropela o outro.
+
+:::card title="olá, mundo"
+funcionando: sim
+:::
+
+Depois da diretiva, o Markdown continua funcionando normalmente: uma lista
+
+- primeiro item
+- segundo item
+
+e um [link](https://example.com).

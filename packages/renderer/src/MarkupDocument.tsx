@@ -139,6 +139,12 @@ function InlineRenderer({ node }: { node: InlineNode }) {
           <InlineList nodes={node.children} />
         </em>
       );
+    case 'strikethrough':
+      return (
+        <del>
+          <InlineList nodes={node.children} />
+        </del>
+      );
     case 'inlineCode':
       return <code className="mu-inline-code">{node.value}</code>;
     case 'link':
