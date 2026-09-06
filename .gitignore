@@ -8,3 +8,5 @@ dist-ssr
 *.vsix
 .vscode-test
 packages/vscode/media
+packages/site/public
+packages/site/.build

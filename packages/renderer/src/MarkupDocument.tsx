@@ -5,6 +5,7 @@
 
 import { createContext, useContext } from 'react';
 import type { BlockNode, Document, InlineNode, Position } from '@markup/core';
+import { inlineText, slugifyHeading } from '@markup/core';
 import { Alert } from './components/Alert';
 import { Card } from './components/Card';
 import { Chart } from './components/Chart';
@@ -20,17 +21,40 @@ import { Tabs } from './components/Tabs';
 // usando os offsets que a AST já carrega — nunca busca de texto.
 const SourceMapContext = createContext(false);
 
+// Desligado por padrão pelo mesmo motivo do sourceMap: só quem precisa de
+// links profundos para cada heading (o site de documentação, por exemplo)
+// liga `anchors`. O `Map` de desambiguação de slugs repetidos é criado uma
+// vez por chamada de `MarkupDocument` — nunca em escopo de módulo — para
+// não vazar estado entre documentos renderizados em paralelo (ex.: várias
+// páginas do site, ou SSR concorrente).
+interface AnchorState {
+  enabled: boolean;
+  seen: Map<string, number>;
+}
+const AnchorContext = createContext<AnchorState>({ enabled: false, seen: new Map() });
+
 function sourceMapAttrs(position: Position, enabled: boolean): Record<string, number> {
   if (!enabled) return {};
   return { 'data-mu-start': position.start.offset, 'data-mu-end': position.end.offset };
 }
 
-export function MarkupDocument({ document, sourceMap = false }: { document: Document; sourceMap?: boolean }) {
+export function MarkupDocument({
+  document,
+  sourceMap = false,
+  anchors = false,
+}: {
+  document: Document;
+  sourceMap?: boolean;
+  anchors?: boolean;
+}) {
+  const anchorState: AnchorState = { enabled: anchors, seen: new Map() };
   return (
     <SourceMapContext.Provider value={sourceMap}>
-      <div className="mu-document">
-        <BlockList nodes={document.children} />
-      </div>
+      <AnchorContext.Provider value={anchorState}>
+        <div className="mu-document">
+          <BlockList nodes={document.children} />
+        </div>
+      </AnchorContext.Provider>
     </SourceMapContext.Provider>
   );
 }
@@ -47,13 +71,15 @@ export function BlockList({ nodes }: { nodes: BlockNode[] }) {
 
 function BlockRenderer({ node }: { node: BlockNode }) {
   const sourceMap = useContext(SourceMapContext);
+  const anchorState = useContext(AnchorContext);
   const pos = sourceMapAttrs(node.position, sourceMap);
 
   switch (node.type) {
     case 'heading': {
       const Tag = `h${node.depth}` as const;
+      const id = anchorState.enabled ? slugifyHeading(inlineText(node.children), anchorState.seen) : undefined;
       return (
-        <Tag className="mu-heading" {...pos}>
+        <Tag className="mu-heading" id={id} {...pos}>
           <InlineList nodes={node.children} />
         </Tag>
       );

@@ -1,0 +1,260 @@
+/* Estilo do site de documentação. Cores e tipografia do conteúdo em si
+   (headings, código, tabelas, alertas...) vêm de @markup/renderer/document.css
+   — este arquivo só cuida da "casca" do site: cabeçalho, sumário lateral,
+   layout, e o playground. Nada aqui redefine uma cor que document.css já
+   define; tudo usa as mesmas variáveis --mu-*, para o site parecer parte do
+   mesmo produto que ele documenta. */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--mu-bg);
+  color: var(--mu-text);
+  font-family: var(--font-sans);
+}
+
+a {
+  color: var(--mu-accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* ---------------------------------------------------------------------
+   Cabeçalho
+   --------------------------------------------------------------------- */
+
+.site-header {
+  border-bottom: 1px solid var(--mu-border);
+  position: sticky;
+  top: 0;
+  background: var(--mu-bg);
+  z-index: 10;
+}
+
+.site-header-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0.85em 1.5em;
+  display: flex;
+  align-items: center;
+  gap: 2em;
+}
+
+.site-logo {
+  font-weight: 700;
+  font-size: 1.05em;
+  color: var(--mu-text);
+  letter-spacing: -0.01em;
+}
+.site-logo:hover {
+  text-decoration: none;
+  color: var(--mu-accent);
+}
+
+.site-nav {
+  display: flex;
+  gap: 1.5em;
+  flex: 1;
+}
+.site-nav a {
+  color: var(--mu-text-muted);
+  font-size: 0.92em;
+}
+.site-nav a:hover,
+.site-nav a[aria-current='page'] {
+  color: var(--mu-text);
+  text-decoration: none;
+}
+
+.site-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+}
+
+.theme-toggle {
+  border: 1px solid var(--mu-border);
+  background: none;
+  color: var(--mu-text-muted);
+  border-radius: 6px;
+  width: 2em;
+  height: 2em;
+  cursor: pointer;
+  font-size: 0.95em;
+  line-height: 1;
+}
+.theme-toggle:hover {
+  border-color: var(--mu-accent);
+  color: var(--mu-accent);
+}
+
+/* ---------------------------------------------------------------------
+   Layout de duas colunas (sumário + conteúdo)
+   --------------------------------------------------------------------- */
+
+.site-layout {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 2.5em 1.5em 5em;
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 3em;
+  align-items: start;
+}
+
+.site-layout.no-toc {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 820px;
+}
+
+.page-toc {
+  position: sticky;
+  top: 5em;
+  font-size: 0.86em;
+}
+.page-toc h2 {
+  font-size: 0.78em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--mu-text-muted);
+  margin: 0 0 0.75em;
+  font-weight: 600;
+}
+.page-toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+.page-toc li[data-depth='3'] {
+  padding-left: 1em;
+}
+.page-toc a {
+  color: var(--mu-text-muted);
+}
+.page-toc a:hover {
+  color: var(--mu-accent);
+  text-decoration: none;
+}
+
+.site-content .mu-document {
+  max-width: 720px;
+}
+.site-content .mu-heading {
+  scroll-margin-top: 4.5em;
+}
+.site-content .mu-heading a.anchor-link {
+  margin-left: 0.4em;
+  opacity: 0;
+  color: var(--mu-text-muted);
+  font-weight: 400;
+  font-size: 0.8em;
+}
+.site-content .mu-heading:hover a.anchor-link {
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------------------
+   Home
+   --------------------------------------------------------------------- */
+
+.hero-tagline {
+  color: var(--mu-text-muted);
+  font-size: 1.05em;
+  margin-top: -0.5em;
+}
+
+/* ---------------------------------------------------------------------
+   Playground
+   --------------------------------------------------------------------- */
+
+.playground-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5em;
+  margin: 1.5em 0 2.5em;
+}
+
+.playground-input {
+  width: 100%;
+  min-height: 220px;
+  resize: vertical;
+  border: 1px solid var(--mu-border);
+  border-radius: 8px;
+  background: var(--mu-bg-subtle);
+  color: var(--mu-text);
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  line-height: 1.6;
+  padding: 1em;
+}
+.playground-input:focus {
+  outline: 2px solid var(--mu-accent);
+  outline-offset: -1px;
+}
+
+.playground-output {
+  border: 1px solid var(--mu-border);
+  border-radius: 8px;
+  padding: 1em 1.2em;
+  overflow: auto;
+}
+.playground-output .mu-document {
+  max-width: none;
+  font-size: 0.92em;
+}
+.playground-hint {
+  color: var(--mu-text-muted);
+  font-size: 0.8em;
+  margin-top: 1em;
+  margin-bottom: 0;
+}
+
+/* ---------------------------------------------------------------------
+   Rodapé
+   --------------------------------------------------------------------- */
+
+.site-footer {
+  border-top: 1px solid var(--mu-border);
+  color: var(--mu-text-muted);
+  font-size: 0.85em;
+  text-align: center;
+  padding: 2em 1.5em;
+}
+.site-footer a {
+  color: var(--mu-text-muted);
+}
+
+/* ---------------------------------------------------------------------
+   Responsivo
+   --------------------------------------------------------------------- */
+
+@media (max-width: 860px) {
+  .site-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .page-toc {
+    position: static;
+    order: 2;
+    border-top: 1px solid var(--mu-border);
+    padding-top: 1.5em;
+    margin-top: 2em;
+  }
+  .playground-grid {
+    grid-template-columns: 1fr;
+  }
+  .site-nav {
+    gap: 1em;
+  }
+}

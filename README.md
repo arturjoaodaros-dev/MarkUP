@@ -20,8 +20,11 @@ serviços externos.
 | [`packages/renderer`](packages/renderer) | `@markup/renderer` — AST → React: um dispatcher central (`MarkupDocument`) e um componente por tipo de nó, mais `exportHtml` (usa os mesmos componentes via `renderToStaticMarkup`, então o HTML exportado nunca diverge do preview). Agnóstico de bundler — roda tanto no Vite quanto no esbuild da extensão. |
 | [`packages/web`](packages/web) | O app: editor (CodeMirror) + preview + sidebar + toolbar + barra de status, com persistência em `localStorage`. |
 | [`packages/vscode`](packages/vscode) | Extensão oficial do VS Code: linguagem `.markup`/`.mkup`, highlighting, diagnósticos, autocomplete, hover e preview nativo — tudo em cima de `@markup/core`/`@markup/renderer`, sem duplicar validação. |
+| [`packages/site`](packages/site) | Site de documentação (`docs/GUIDE.md`/`docs/SPEC.md` renderizados pelo mesmo `@markup/renderer`, com um "Experimente" ao vivo). Estático, sem framework de site. |
 
 A especificação normativa da linguagem está em [`docs/SPEC.md`](docs/SPEC.md).
+Para o guia completo — todas as diretivas, Markdown suportado, diagnósticos,
+comandos da extensão e exemplos — veja [`docs/GUIDE.md`](docs/GUIDE.md).
 
 ## Uso — app web
 
@@ -50,6 +53,17 @@ code --install-extension packages/vscode/markup-lang-0.1.0.vsix
 
 Detalhes em [`packages/vscode/README.md`](packages/vscode/README.md).
 
+## Site de documentação
+
+```bash
+npm run build --workspace=packages/site
+npm run serve --workspace=packages/site
+```
+
+Abre em `http://localhost:4173`. Publicado automaticamente no GitHub Pages a
+cada push em `main` (`.github/workflows/site.yml`). Detalhes em
+[`packages/site/README.md`](packages/site/README.md).
+
 ## Comandos do monorepo
 
 ```bash
@@ -64,12 +78,12 @@ npm run lint     # ESLint em todos os pacotes
 ```text
                  @markup/core  (zero deps, TS puro)
                       │
-        ┌─────────────┼─────────────────┐
-        │             │                 │
-  @markup/renderer  (React)             │
-        │             │                 │
-   packages/web   packages/vscode ──────┘
-   (SPA atual)    (extensão)
+        ┌─────────────┼─────────────────┬─────────────────┐
+        │             │                 │                 │
+  @markup/renderer  (React)             │                 │
+        │             │                 │                 │
+   packages/web   packages/vscode   packages/site ─────────┘
+   (SPA atual)    (extensão)        (docs, estático)
 ```
 
 ## Recursos

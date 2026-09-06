@@ -5,7 +5,14 @@
 export { parse } from './parser';
 export type { ParseResult } from './parser';
 export * from './ast/nodes';
-export { visit, collectHeadings, isBlockContainer, findNodeAtOffset } from './ast/visit';
+export {
+  visit,
+  collectHeadings,
+  isBlockContainer,
+  findNodeAtOffset,
+  inlineText,
+  slugifyHeading,
+} from './ast/visit';
 export type { Diagnostic, DiagnosticSeverity } from './diagnostics';
 export { matchDirectiveOpen, matchDirectiveClose } from './parser/directive';
 export { parseAttributes, attrString, attrNumber } from './parser/attributes';

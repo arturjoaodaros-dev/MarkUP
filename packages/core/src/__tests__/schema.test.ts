@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parse } from '../parser';
-import { findNodeAtOffset } from '../ast/visit';
+import { findNodeAtOffset, slugifyHeading } from '../ast/visit';
 import { getDirectiveNames, getDirectiveSchema, listDirectiveSchemas } from '../directives/registry';
 import { VALID_TYPES as CHART_TYPES } from '../directives/chart';
 import { VALID_LEVELS as ALERT_LEVELS } from '../directives/alert';
@@ -64,5 +64,30 @@ describe('findNodeAtOffset', () => {
     const { ast } = parse('# Título');
     const found = findNodeAtOffset(ast, ast.position.end.offset + 100);
     expect(found).toBeNull();
+  });
+});
+
+describe('slugifyHeading', () => {
+  it('minúsculas, espaços viram hífen, pontuação é removida', () => {
+    expect(slugifyHeading('As sete diretivas')).toBe('as-sete-diretivas');
+    expect(slugifyHeading('`:::chart`')).toBe('chart');
+    expect(slugifyHeading('Guia (completo)!')).toBe('guia-completo');
+  });
+
+  it('preserva acentos (mesmo comportamento do GitHub)', () => {
+    expect(slugifyHeading('Sintaxe geral de diretivas')).toBe('sintaxe-geral-de-diretivas');
+    expect(slugifyHeading('Exportação')).toBe('exportação');
+  });
+
+  it('desambigua headings repetidos com -1, -2, ao reaproveitar o mesmo Map', () => {
+    const seen = new Map<string, number>();
+    expect(slugifyHeading('Exemplo', seen)).toBe('exemplo');
+    expect(slugifyHeading('Exemplo', seen)).toBe('exemplo-1');
+    expect(slugifyHeading('Exemplo', seen)).toBe('exemplo-2');
+  });
+
+  it('sem Map, sempre devolve o slug base (sem desambiguação)', () => {
+    expect(slugifyHeading('Exemplo')).toBe('exemplo');
+    expect(slugifyHeading('Exemplo')).toBe('exemplo');
   });
 });

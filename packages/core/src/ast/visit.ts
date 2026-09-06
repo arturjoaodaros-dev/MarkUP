@@ -60,6 +60,31 @@ export function collectHeadings(doc: Document): Array<{ depth: number; text: str
   return headings;
 }
 
+/** Concatena o texto visível de um conjunto de nós inline, sem marcação — usado para `title`, slugs de âncora etc. */
+export function inlineText(nodes: InlineNode[]): string {
+  return plainText(nodes);
+}
+
+/**
+ * Slug de âncora no mesmo estilo do GitHub: minúsculas, espaços viram `-`,
+ * pontuação fora de `[a-z0-9_-]` é removida. `seen` (opcional, um `Map`
+ * reutilizado entre chamadas) desambigua headings com o mesmo texto
+ * anexando `-1`, `-2` etc., a mesma convenção do GitHub.
+ */
+export function slugifyHeading(text: string, seen?: Map<string, number>): string {
+  const base =
+    text
+      .toLowerCase()
+      .trim()
+      .replace(/[^\p{L}\p{N}_\- ]+/gu, '')
+      .replace(/\s+/g, '-') || 'secao';
+
+  if (!seen) return base;
+  const count = seen.get(base) ?? 0;
+  seen.set(base, count + 1);
+  return count === 0 ? base : `${base}-${count}`;
+}
+
 function plainText(nodes: InlineNode[]): string {
   return nodes
     .map((n) => {
