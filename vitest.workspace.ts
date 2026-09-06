@@ -1,3 +1,3 @@
 import { defineWorkspace } from 'vitest/config';
 
-export default defineWorkspace(['packages/core', 'packages/renderer', 'packages/web', 'packages/vscode']);
+export default defineWorkspace(['packages/core', 'packages/renderer', 'packages/vscode']);

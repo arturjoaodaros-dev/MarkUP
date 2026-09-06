@@ -18,24 +18,12 @@ serviços externos.
 | --- | --- |
 | [`packages/core`](packages/core) | `@markup/core` — scanner, parser de blocos e inline, AST, diagnósticos, registro de diretivas com schema (nomes/atributos/valores válidos). TypeScript puro, zero dependências, sem React/DOM. |
 | [`packages/renderer`](packages/renderer) | `@markup/renderer` — AST → React: um dispatcher central (`MarkupDocument`) e um componente por tipo de nó, mais `exportHtml` (usa os mesmos componentes via `renderToStaticMarkup`, então o HTML exportado nunca diverge do preview). Agnóstico de bundler — roda tanto no Vite quanto no esbuild da extensão. |
-| [`packages/web`](packages/web) | O app: editor (CodeMirror) + preview + sidebar + toolbar + barra de status, com persistência em `localStorage`. |
 | [`packages/vscode`](packages/vscode) | Extensão oficial do VS Code: linguagem `.markup`/`.mkup`, highlighting, diagnósticos, autocomplete, hover e preview nativo — tudo em cima de `@markup/core`/`@markup/renderer`, sem duplicar validação. |
 | [`packages/site`](packages/site) | Site de documentação (`docs/GUIDE.md`/`docs/SPEC.md` renderizados pelo mesmo `@markup/renderer`, com um "Experimente" ao vivo). Estático, sem framework de site. |
 
 A especificação normativa da linguagem está em [`docs/SPEC.md`](docs/SPEC.md).
 Para o guia completo — todas as diretivas, Markdown suportado, diagnósticos,
 comandos da extensão e exemplos — veja [`docs/GUIDE.md`](docs/GUIDE.md).
-
-## Uso — app web
-
-```bash
-npm install
-npm run dev --workspace=packages/web
-```
-
-Abra `http://localhost:5173`. Um documento de exemplo já vem carregado; use a
-seção **Templates** na barra lateral para carregar outros, incluindo um que
-exercita todos os recursos da linguagem.
 
 ## Uso — extensão do VS Code
 
@@ -78,21 +66,20 @@ npm run lint     # ESLint em todos os pacotes
 ```text
                  @markup/core  (zero deps, TS puro)
                       │
-        ┌─────────────┼─────────────────┬─────────────────┐
-        │             │                 │                 │
-  @markup/renderer  (React)             │                 │
-        │             │                 │                 │
-   packages/web   packages/vscode   packages/site ─────────┘
-   (SPA atual)    (extensão)        (docs, estático)
+        ┌─────────────┼─────────────────┐
+        │             │                 │
+  @markup/renderer  (React)             │
+        │             │                 │
+   packages/vscode   packages/site ─────┘
+   (extensão)         (docs, estático — inclui o Interpretador ao vivo)
 ```
 
 ## Recursos
 
-- Três modos de edição no app web: Edit, Preview, Split.
-- Indicador de erros de parsing em tempo real, no app web (barra de status,
-  painel de problemas) e no VS Code (sublinhado + painel Problems).
-- Tema claro/escuro.
-- Exportar/copiar HTML — mesmo `exportHtml` em ambas as plataformas.
+- Indicador de erros de parsing em tempo real no VS Code (sublinhado +
+  painel Problems), e ao vivo no Interpretador do site de documentação.
+- Tema claro/escuro no site de documentação e no VS Code.
+- Exportar/copiar HTML — mesmo `exportHtml` em todas as plataformas.
 - Autocomplete, hover e preview nativo no VS Code, derivados do mesmo schema
   de diretivas do core (nenhuma lista de valores válidos duplicada).
 
