@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
-import type { Document as MarkupAst } from '../../markup/parser';
-import { exportHtml } from '../../renderer/html/exportHtml';
+import type { Document as MarkupAst } from '@markup/core';
+import { exportHtmlBrowser } from '../../lib/exportHtmlBrowser';
 import { useDocumentsStore } from '../state/documentsStore';
 import type { EditorMode } from '../state/uiStore';
 import { useUiStore } from '../state/uiStore';
@@ -44,12 +44,12 @@ export function Toolbar({ ast, title }: { ast: MarkupAst; title: string }) {
   }
 
   async function handleExportHtml() {
-    const html = await exportHtml(ast, { title });
+    const html = await exportHtmlBrowser(ast, { title });
     download(`${title || 'documento'}.html`, html, 'text/html');
   }
 
   async function handleCopyHtml() {
-    const html = await exportHtml(ast, { title });
+    const html = await exportHtmlBrowser(ast, { title });
     await navigator.clipboard.writeText(html);
     setCopyLabel('Copiado!');
     setTimeout(() => setCopyLabel('Copiar HTML'), 1500);

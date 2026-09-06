@@ -4,8 +4,20 @@ import { attrString } from '../parser/attributes';
 import { parseDataBlockPrefix, parseNumericValue } from '../parser/dataBlock';
 import { spanLines } from '../parser/scanner';
 import type { DirectiveHandler } from './registry';
+import type { DirectiveSchema } from './types';
 
-const VALID_TYPES: ChartType[] = ['bar', 'line', 'pie'];
+export const VALID_TYPES: ChartType[] = ['bar', 'line', 'pie'];
+
+export const chartSchema: DirectiveSchema = {
+  name: 'chart',
+  description: 'Gráfico de barras, linha ou pizza a partir de uma série "Rótulo: valor".',
+  hasBody: true,
+  bodyDescription: 'Uma linha por ponto: "Rótulo: valor" (aceita um "%" final, ignorado no cálculo).',
+  attributes: [
+    { name: 'type', description: 'Tipo do gráfico.', valueKind: 'enum', values: VALID_TYPES, default: 'bar' },
+    { name: 'title', description: 'Título opcional exibido acima do gráfico.', valueKind: 'string' },
+  ],
+};
 
 export const buildChart: DirectiveHandler = (attrs, input) => {
   const diagnostics = [];

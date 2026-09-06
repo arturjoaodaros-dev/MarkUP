@@ -1,4 +1,4 @@
-import type { Diagnostic } from '../../markup/parser';
+import type { Diagnostic } from '@markup/core';
 import { useUiStore } from '../state/uiStore';
 import type { CursorInfo } from '../editor/EditorSurface';
 

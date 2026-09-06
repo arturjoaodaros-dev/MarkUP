@@ -1,4 +1,4 @@
-import type { Chart as ChartNode } from '../../markup/parser';
+import type { Chart as ChartNode } from '@markup/core';
 import { computeBarChart, computeLineChart, computePieChart } from '../charts/geometry';
 
 const WIDTH = 480;

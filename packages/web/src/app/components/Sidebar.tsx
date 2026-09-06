@@ -1,5 +1,5 @@
-import type { Document as MarkupAst } from '../../markup/parser';
-import { collectHeadings } from '../../markup/ast/visit';
+import type { Document as MarkupAst } from '@markup/core';
+import { collectHeadings } from '@markup/core';
 import { useDocumentsStore } from '../state/documentsStore';
 import { templates } from '../templates';
 

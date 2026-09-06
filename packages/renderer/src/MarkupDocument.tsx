@@ -3,7 +3,7 @@
 // inalcançável e tipado como `never`), o que garante que nenhum nó novo
 // passe despercebido quando a linguagem crescer.
 
-import type { BlockNode, Document, InlineNode } from '../markup/parser';
+import type { BlockNode, Document, InlineNode } from '@markup/core';
 import { Alert } from './components/Alert';
 import { Card } from './components/Card';
 import { Chart } from './components/Chart';

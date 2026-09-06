@@ -1,4 +1,4 @@
-import type { MathBlock } from '../../markup/parser';
+import type { MathBlock } from '@markup/core';
 import { useExportResolved } from '../ExportContext';
 import { renderMathHtml } from '../lazyLibs';
 import { AsyncHtml } from './AsyncHtml';

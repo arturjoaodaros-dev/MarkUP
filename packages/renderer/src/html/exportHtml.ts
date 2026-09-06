@@ -3,22 +3,31 @@
 // de que os trechos assíncronos (KaTeX, highlight.js) são resolvidos ANTES
 // de renderizar e injetados via `ExportContext`. Isso é o que impede que o
 // HTML exportado divirja do preview ao vivo.
+//
+// Este módulo não sabe nada sobre bundlers: `documentCss`/`katexCss` chegam
+// como texto já resolvido pelo chamador (import `?raw` no app Vite, leitura
+// de arquivo via `node:fs` na extensão do VS Code). Isso é o que permite o
+// mesmo `@markup/renderer` rodar tanto no navegador quanto no host Node de
+// uma extensão, sem depender de sintaxe específica de um bundler.
 
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import type { CodeBlock, Document, MathBlock } from '../../markup/parser';
-import { visit } from '../../markup/ast/visit';
+import type { CodeBlock, Document, MathBlock } from '@markup/core';
+import { visit } from '@markup/core';
 import type { ExportResolved } from '../ExportContext';
 import { ExportContext } from '../ExportContext';
 import { highlightCodeHtml, renderMathHtml } from '../lazyLibs';
 import { MarkupDocument } from '../MarkupDocument';
-import documentCss from '../styles/document.css?raw';
 
 export interface ExportOptions {
   title?: string;
+  /** CSS do documento (ver `styles/document.css`). Obrigatório — o chamador decide como lê-lo. */
+  documentCss: string;
+  /** CSS do KaTeX (`katex/dist/katex.min.css`). Só é necessário quando o documento tem `:::math`. */
+  katexCss?: string;
 }
 
-export async function exportHtml(doc: Document, options: ExportOptions = {}): Promise<string> {
+export async function exportHtml(doc: Document, options: ExportOptions): Promise<string> {
   const mathNodes: MathBlock[] = [];
   const codeNodes: CodeBlock[] = [];
   visit(doc, (n) => {
@@ -37,7 +46,7 @@ export async function exportHtml(doc: Document, options: ExportOptions = {}): Pr
     createElement(ExportContext.Provider, { value: resolved }, createElement(MarkupDocument, { document: doc })),
   );
 
-  const katexCss = mathNodes.length > 0 ? await import('katex/dist/katex.min.css?raw').then((m) => m.default) : '';
+  const katexCss = mathNodes.length > 0 ? (options.katexCss ?? '') : '';
   const title = escapeHtmlText(options.title ?? 'Documento MarkUP');
 
   return [
@@ -49,7 +58,7 @@ export async function exportHtml(doc: Document, options: ExportOptions = {}): Pr
     `<title>${title}</title>`,
     '<style>',
     ':root{color-scheme:light dark;}',
-    documentCss,
+    options.documentCss,
     katexCss,
     '</style>',
     '</head>',

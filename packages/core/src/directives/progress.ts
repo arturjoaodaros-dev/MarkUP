@@ -2,6 +2,18 @@ import type { Progress } from '../ast/nodes';
 import { diagnostic } from '../diagnostics';
 import { attrNumber, attrString } from '../parser/attributes';
 import type { DirectiveHandler } from './registry';
+import type { DirectiveSchema } from './types';
+
+export const progressSchema: DirectiveSchema = {
+  name: 'progress',
+  description: 'Barra de progresso de linha única.',
+  hasBody: false,
+  attributes: [
+    { name: 'value', description: 'Valor atual.', valueKind: 'number', required: true },
+    { name: 'max', description: 'Valor máximo.', valueKind: 'number', default: 100 },
+    { name: 'label', description: 'Rótulo opcional exibido acima da barra.', valueKind: 'string' },
+  ],
+};
 
 // :::progress value="72" label="Python" — forma de linha única, sem corpo.
 export const buildProgress: DirectiveHandler = (attrs, input) => {

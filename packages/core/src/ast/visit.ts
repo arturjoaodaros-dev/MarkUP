@@ -80,6 +80,23 @@ function plainText(nodes: InlineNode[]): string {
     .join('');
 }
 
+/**
+ * Encontra o nó mais interno cujo intervalo de posição contém `offset`.
+ * Como `visit` é pré-ordem (pai antes dos filhos), o último nó que casa é
+ * sempre o mais profundo — não precisa de lógica de "melhor candidato".
+ * Usado por hover e pela sincronização editor↔preview: sempre a posição
+ * real da AST, nunca busca de texto.
+ */
+export function findNodeAtOffset(doc: Document, offset: number): MarkupNode | null {
+  let match: MarkupNode | null = null;
+  visit(doc, (node) => {
+    if (offset >= node.position.start.offset && offset <= node.position.end.offset) {
+      match = node;
+    }
+  });
+  return match;
+}
+
 export function isBlockContainer(
   node: MarkupNode,
 ): node is Extract<MarkupNode, { children: BlockNode[] }> {

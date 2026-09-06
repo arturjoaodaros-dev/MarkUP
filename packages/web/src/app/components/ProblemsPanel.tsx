@@ -1,4 +1,4 @@
-import type { Diagnostic } from '../../markup/parser';
+import type { Diagnostic } from '@markup/core';
 
 export function ProblemsPanel({ diagnostics, onClose }: { diagnostics: Diagnostic[]; onClose: () => void }) {
   return (

@@ -31,6 +31,3 @@ export function parse(source: string): ParseResult {
 
   return { ast, diagnostics };
 }
-
-export type { Diagnostic } from '../diagnostics';
-export * from '../ast/nodes';

@@ -1,4 +1,4 @@
-import type { Table as TableNode } from '../../markup/parser';
+import type { Table as TableNode } from '@markup/core';
 import { InlineList } from '../MarkupDocument';
 
 export function Table({ node }: { node: TableNode }) {

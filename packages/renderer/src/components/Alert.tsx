@@ -1,4 +1,4 @@
-import type { Alert as AlertNode } from '../../markup/parser';
+import type { Alert as AlertNode } from '@markup/core';
 import { BlockList } from '../MarkupDocument';
 
 const ICONS: Record<AlertNode['level'], string> = {

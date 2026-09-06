@@ -8,7 +8,7 @@ import { EditorSurface } from './app/editor/EditorSurface';
 import { Preview } from './app/preview/Preview';
 import { useDocumentsStore } from './app/state/documentsStore';
 import { useUiStore } from './app/state/uiStore';
-import { parse } from './markup/parser';
+import { parse } from '@markup/core';
 
 const PARSE_DEBOUNCE_MS = 120;
 

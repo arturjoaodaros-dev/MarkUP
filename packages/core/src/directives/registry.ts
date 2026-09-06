@@ -11,13 +11,14 @@ import type { Diagnostic } from '../diagnostics';
 import { diagnostic } from '../diagnostics';
 import type { Line } from '../parser/scanner';
 
-import { buildChart } from './chart';
-import { buildCard } from './card';
-import { buildAlert } from './alert';
-import { buildProgress } from './progress';
-import { buildMath } from './math';
-import { buildCode } from './code';
-import { buildTabs } from './tabs';
+import { buildChart, chartSchema } from './chart';
+import { buildCard, cardSchema } from './card';
+import { buildAlert, alertSchema } from './alert';
+import { buildProgress, progressSchema } from './progress';
+import { buildMath, mathSchema } from './math';
+import { buildCode, codeSchema } from './code';
+import { buildTabs, tabsSchema } from './tabs';
+import type { DirectiveSchema } from './types';
 
 export interface DirectiveInput {
   name: string;
@@ -56,6 +57,32 @@ const handlers: Record<string, DirectiveHandler> = {
   code: buildCode,
   tabs: buildTabs,
 };
+
+// Metadados por diretiva, indexados pelos mesmos nomes que `handlers` — a
+// fonte de verdade para qualquer ferramenta externa (a extensão do VS Code,
+// principalmente) que precise saber quais diretivas existem e quais
+// atributos/valores cada uma aceita, sem duplicar essas listas.
+export const directiveSchemas: Record<string, DirectiveSchema> = {
+  chart: chartSchema,
+  card: cardSchema,
+  alert: alertSchema,
+  progress: progressSchema,
+  math: mathSchema,
+  code: codeSchema,
+  tabs: tabsSchema,
+};
+
+export function listDirectiveSchemas(): DirectiveSchema[] {
+  return Object.values(directiveSchemas);
+}
+
+export function getDirectiveSchema(name: string): DirectiveSchema | undefined {
+  return directiveSchemas[name];
+}
+
+export function getDirectiveNames(): string[] {
+  return Object.keys(directiveSchemas);
+}
 
 export function parseDirective(
   input: DirectiveInput,

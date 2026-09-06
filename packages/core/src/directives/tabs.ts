@@ -3,6 +3,15 @@ import { diagnostic } from '../diagnostics';
 import type { Line } from '../parser/scanner';
 import { spanLines } from '../parser/scanner';
 import type { DirectiveHandler } from './registry';
+import type { DirectiveSchema } from './types';
+
+export const tabsSchema: DirectiveSchema = {
+  name: 'tabs',
+  description: 'Conjunto de abas, cada uma introduzida por um heading "### Título" dentro do corpo.',
+  hasBody: true,
+  bodyDescription: 'Uma seção "### Título" por aba, seguida do conteúdo Markdown dessa aba.',
+  attributes: [],
+};
 
 // Cada aba é introduzida por um heading de nível 3 dentro do corpo:
 //

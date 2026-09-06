@@ -10,7 +10,7 @@ import { forceLinting, lintGutter, linter } from '@codemirror/lint';
 import { Compartment, EditorState } from '@codemirror/state';
 import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view';
 import { useEffect, useRef } from 'react';
-import type { Diagnostic } from '../../markup/parser';
+import type { Diagnostic } from '@markup/core';
 import { markupStreamParser } from './markupLanguage';
 
 export interface CursorInfo {

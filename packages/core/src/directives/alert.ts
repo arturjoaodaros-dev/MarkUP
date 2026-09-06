@@ -2,8 +2,20 @@ import type { Alert, AlertLevel } from '../ast/nodes';
 import { diagnostic } from '../diagnostics';
 import { attrString } from '../parser/attributes';
 import type { DirectiveHandler } from './registry';
+import type { DirectiveSchema } from './types';
 
-const VALID_LEVELS: AlertLevel[] = ['info', 'success', 'warning', 'error'];
+export const VALID_LEVELS: AlertLevel[] = ['info', 'success', 'warning', 'error'];
+
+export const alertSchema: DirectiveSchema = {
+  name: 'alert',
+  description: 'Caixa de destaque para avisos, com quatro níveis de severidade.',
+  hasBody: true,
+  bodyDescription: 'Conteúdo em Markdown normal.',
+  attributes: [
+    { name: 'type', description: 'Nível do alerta.', valueKind: 'enum', values: VALID_LEVELS, default: 'info' },
+    { name: 'title', description: 'Título opcional exibido em destaque.', valueKind: 'string' },
+  ],
+};
 
 export const buildAlert: DirectiveHandler = (attrs, input, ctx) => {
   const diagnostics = [];

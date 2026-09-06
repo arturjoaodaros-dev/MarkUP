@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import type { Tabs as TabsNode } from '../../markup/parser';
+import type { Tabs as TabsNode } from '@markup/core';
 import { BlockList } from '../MarkupDocument';
 
 export function Tabs({ node }: { node: TabsNode }) {

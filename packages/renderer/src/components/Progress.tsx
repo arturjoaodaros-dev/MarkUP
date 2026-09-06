@@ -1,4 +1,4 @@
-import type { Progress as ProgressNode } from '../../markup/parser';
+import type { Progress as ProgressNode } from '@markup/core';
 
 export function Progress({ node }: { node: ProgressNode }) {
   const pct = node.max > 0 ? (node.value / node.max) * 100 : 0;

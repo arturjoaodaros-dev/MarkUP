@@ -1,4 +1,4 @@
-import type { CodeBlock as CodeBlockNode } from '../../markup/parser';
+import type { CodeBlock as CodeBlockNode } from '@markup/core';
 import { useExportResolved } from '../ExportContext';
 import { highlightCodeHtml } from '../lazyLibs';
 import { AsyncHtml } from './AsyncHtml';

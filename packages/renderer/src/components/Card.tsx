@@ -1,4 +1,4 @@
-import type { Card as CardNode } from '../../markup/parser';
+import type { Card as CardNode } from '@markup/core';
 import { BlockList } from '../MarkupDocument';
 
 export function Card({ node }: { node: CardNode }) {

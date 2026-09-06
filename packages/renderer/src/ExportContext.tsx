@@ -9,7 +9,7 @@
 // `null` e o comportamento assíncrono normal se aplica.
 
 import { createContext, useContext } from 'react';
-import type { CodeBlock, MathBlock } from '../markup/parser';
+import type { CodeBlock, MathBlock } from '@markup/core';
 
 export interface ExportResolved {
   math: Map<MathBlock, string>;
