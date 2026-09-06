@@ -2,7 +2,7 @@ import { useId, useState } from 'react';
 import type { Tabs as TabsNode } from '@markup/core';
 import { BlockList } from '../MarkupDocument';
 
-export function Tabs({ node }: { node: TabsNode }) {
+export function Tabs({ node, sourceMapAttrs }: { node: TabsNode; sourceMapAttrs?: Record<string, number> }) {
   const [active, setActive] = useState(0);
   const baseId = useId();
 
@@ -11,7 +11,7 @@ export function Tabs({ node }: { node: TabsNode }) {
   }
 
   return (
-    <div className="mu-tabs">
+    <div className="mu-tabs" {...sourceMapAttrs}>
       <div className="mu-tabs-list" role="tablist">
         {node.tabs.map((tab, i) => (
           <button

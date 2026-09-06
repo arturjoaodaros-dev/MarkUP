@@ -1,9 +1,9 @@
 import type { Progress as ProgressNode } from '@markup/core';
 
-export function Progress({ node }: { node: ProgressNode }) {
+export function Progress({ node, sourceMapAttrs }: { node: ProgressNode; sourceMapAttrs?: Record<string, number> }) {
   const pct = node.max > 0 ? (node.value / node.max) * 100 : 0;
   return (
-    <div className="mu-progress">
+    <div className="mu-progress" {...sourceMapAttrs}>
       {node.label && (
         <div className="mu-progress-label">
           <span>{node.label}</span>

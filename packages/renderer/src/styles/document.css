@@ -226,3 +226,11 @@ h5.mu-heading, h6.mu-heading { font-size: 1em; color: var(--mu-text-muted); }
   font-size: 0.9em;
   margin: 1em 0;
 }
+
+/* Usado apenas pelo preview da extensão do VS Code, ao sincronizar a
+   posição do cursor do editor com o bloco correspondente no preview. */
+.mu-sync-highlight {
+  outline: 2px solid var(--mu-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}

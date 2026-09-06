@@ -1,9 +1,9 @@
 import type { Card as CardNode } from '@markup/core';
 import { BlockList } from '../MarkupDocument';
 
-export function Card({ node }: { node: CardNode }) {
+export function Card({ node, sourceMapAttrs }: { node: CardNode; sourceMapAttrs?: Record<string, number> }) {
   return (
-    <div className="mu-card">
+    <div className="mu-card" {...sourceMapAttrs}>
       {node.title && <h4 className="mu-card-title">{node.title}</h4>}
       {node.metrics.length > 0 && (
         <dl className="mu-card-metrics">

@@ -8,9 +8,9 @@ const ICONS: Record<AlertNode['level'], string> = {
   error: '✕',
 };
 
-export function Alert({ node }: { node: AlertNode }) {
+export function Alert({ node, sourceMapAttrs }: { node: AlertNode; sourceMapAttrs?: Record<string, number> }) {
   return (
-    <div className="mu-alert" data-level={node.level} role="alert">
+    <div className="mu-alert" data-level={node.level} role="alert" {...sourceMapAttrs}>
       <span className="mu-alert-icon" aria-hidden="true">
         {ICONS[node.level]}
       </span>

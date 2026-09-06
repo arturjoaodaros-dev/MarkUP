@@ -1,0 +1,95 @@
+{
+  "name": "markup-lang",
+  "displayName": "MarkUP",
+  "description": "Language support and live preview for MarkUP (.markup/.mkup) documents.",
+  "version": "0.1.0",
+  "publisher": "markup-lang",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Programming Languages"],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "markup",
+        "aliases": ["MarkUP", "markup"],
+        "extensions": [".markup", ".mkup"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "markup",
+        "scopeName": "source.markup",
+        "path": "./syntaxes/markup.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "markup",
+        "path": "./snippets/markup.code-snippets"
+      }
+    ],
+    "commands": [
+      {
+        "command": "markup.openPreview",
+        "title": "MarkUP: Open Preview",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "markup.exportHtml",
+        "title": "MarkUP: Export to HTML..."
+      },
+      {
+        "command": "markup.copyHtml",
+        "title": "MarkUP: Copy as HTML"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "markup.openPreview",
+          "when": "editorLangId == markup",
+          "group": "navigation"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "markup.openPreview",
+        "key": "ctrl+shift+v",
+        "mac": "cmd+shift+v",
+        "when": "editorLangId == markup"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "vscode:prepublish": "node esbuild.mjs --production",
+    "package": "vsce package --no-dependencies",
+    "test": "vitest run",
+    "test:e2e": "node ./test/runTest.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@markup/core": "*",
+    "@markup/renderer": "*",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/test-electron": "^2.4.0",
+    "@vscode/vsce": "^2.32.0",
+    "esbuild": "^0.23.0",
+    "glob": "^10.4.0",
+    "mocha": "^10.4.0",
+    "typescript": "^5.5.3",
+    "vitest": "^2.0.2"
+  }
+}

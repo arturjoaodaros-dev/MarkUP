@@ -5,9 +5,9 @@ const WIDTH = 480;
 const HEIGHT = 240;
 const PALETTE = ['var(--mu-chart-1)', 'var(--mu-chart-2)', 'var(--mu-chart-3)', 'var(--mu-chart-4)', 'var(--mu-chart-5)'];
 
-export function Chart({ node }: { node: ChartNode }) {
+export function Chart({ node, sourceMapAttrs }: { node: ChartNode; sourceMapAttrs?: Record<string, number> }) {
   return (
-    <figure className="mu-chart" data-chart-type={node.chartType}>
+    <figure className="mu-chart" data-chart-type={node.chartType} {...sourceMapAttrs}>
       {node.title && <figcaption className="mu-chart-title">{node.title}</figcaption>}
       {node.series.length === 0 ? (
         <p className="mu-empty">Nenhum dado para exibir.</p>

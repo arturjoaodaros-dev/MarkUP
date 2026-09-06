@@ -1,0 +1,53 @@
+{
+  "chart": {
+    "prefix": "chart",
+    "description": "Gráfico de barras, linha ou pizza",
+    "body": [
+      ":::chart type=\"${1|bar,line,pie|}\" title=\"${2:Título}\"",
+      "${3:Q1}: ${4:120}",
+      "${5:Q2}: ${6:180}",
+      ":::"
+    ]
+  },
+  "card": {
+    "prefix": "card",
+    "description": "Cartão com grade de métricas",
+    "body": [":::card title=\"${1:Título}\"", "${2:Métrica}: ${3:valor}", ":::"]
+  },
+  "alert": {
+    "prefix": "alert",
+    "description": "Caixa de destaque (info/success/warning/error)",
+    "body": [":::alert type=\"${1|info,success,warning,error|}\"", "${2:Mensagem.}", ":::"]
+  },
+  "progress": {
+    "prefix": "progress",
+    "description": "Barra de progresso",
+    "body": [":::progress value=\"${1:72}\" label=\"${2:Rótulo}\"", ":::"]
+  },
+  "math": {
+    "prefix": "math",
+    "description": "Expressão matemática em LaTeX",
+    "body": [":::math", "${1:E = mc^2}", ":::"]
+  },
+  "code": {
+    "prefix": "code",
+    "description": "Bloco de código com linguagem",
+    "body": [":::code language=\"${1:python}\"", "${2:print(\"hello\")}", ":::"]
+  },
+  "tabs": {
+    "prefix": "tabs",
+    "description": "Conjunto de abas",
+    "body": [
+      "::::tabs",
+      "### ${1:Python}",
+      "```${2:python}",
+      "${3:print(\"hello\")}",
+      "```",
+      "### ${4:JavaScript}",
+      "```${5:javascript}",
+      "${6:console.log(\"hello\")}",
+      "```",
+      "::::"
+    ]
+  }
+}

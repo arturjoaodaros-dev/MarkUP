@@ -1,9 +1,9 @@
 import type { Table as TableNode } from '@markup/core';
 import { InlineList } from '../MarkupDocument';
 
-export function Table({ node }: { node: TableNode }) {
+export function Table({ node, sourceMapAttrs }: { node: TableNode; sourceMapAttrs?: Record<string, number> }) {
   return (
-    <div className="mu-table-wrap">
+    <div className="mu-table-wrap" {...sourceMapAttrs}>
       <table className="mu-table">
         <thead>
           <tr>
