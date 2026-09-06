@@ -13,3 +13,9 @@ Depois da diretiva, o Markdown continua funcionando normalmente: uma lista
 - segundo item
 
 e um [link](https://example.com).
+
+:::chart type="bar" title="Grafico das melhores IAs no terminalbench 4.0"
+claude mythos 5.1: 91.2
+gpt 6 astra: 99.8
+gemini 3.8 flash: 89.3
+:::
