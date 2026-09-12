@@ -7,6 +7,8 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
+    "desktop:dev": "npm run tauri --workspace @markup/desktop -- dev",
+    "desktop:installer": "npm run build:installer --workspace @markup/desktop",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "npm run typecheck --workspaces --if-present",

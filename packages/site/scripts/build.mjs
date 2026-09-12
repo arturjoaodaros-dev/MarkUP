@@ -12,7 +12,7 @@
 // host estático (GitHub Pages incluso — ver .github/workflows/site.yml).
 
 import { build } from 'esbuild';
-import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
@@ -24,12 +24,14 @@ const root = join(here, '..');
 const repoRoot = join(root, '..', '..');
 const publicDir = join(root, 'public');
 const buildTmp = join(root, '.build');
+const downloadsDir = join(root, 'downloads');
 
 const NAV = [
   { slug: 'index', label: 'Início' },
   { slug: 'guide', label: 'Guia' },
   { slug: 'spec', label: 'Especificação' },
   { slug: 'interpreter', label: 'Interpretador' },
+  { slug: 'install', label: 'Instalação' },
 ];
 
 // Páginas cujo conteúdo vem de Markdown de verdade — @markup/core faz o
@@ -71,6 +73,18 @@ const INTERPRETER_PAGE = {
   usesPlayground: true,
 };
 
+// Idem — a página de Instalação não vem de Markdown porque precisa de
+// botões de download reais com o tamanho do arquivo, e HTML bruto dentro de
+// um documento MarkUP é deliberadamente escapado (ver docs/SPEC.md), não
+// interpretado. Os binários em si vivem em packages/site/downloads/ (fonte,
+// versionado) e são copiados pro build em `copyDownloads()`.
+const INSTALL_PAGE = {
+  slug: 'install',
+  title: 'Instalação — MarkUP',
+  description: 'Baixe a extensão do VS Code e o aplicativo desktop do MarkUP.',
+  toc: false,
+};
+
 async function main() {
   rmSync(publicDir, { recursive: true, force: true });
   mkdirSync(join(publicDir, 'assets'), { recursive: true });
@@ -86,6 +100,8 @@ async function main() {
   const documentCss = readFileSync(join(repoRoot, 'packages', 'renderer', 'src', 'styles', 'document.css'), 'utf-8');
   writeFileSync(join(publicDir, 'assets', 'document.css'), documentCss);
   cpSync(join(root, 'styles', 'site.css'), join(publicDir, 'assets', 'site.css'));
+  cpSync(downloadsDir, join(publicDir, 'downloads'), { recursive: true });
+  cpSync(join(root, 'images'), join(publicDir, 'assets', 'images'), { recursive: true });
 
   for (const page of MARKDOWN_PAGES) {
     const result = results.find((r) => r.slug === page.slug);
@@ -96,6 +112,11 @@ async function main() {
   writeFileSync(
     join(publicDir, `${INTERPRETER_PAGE.slug}.html`),
     renderPageHtml(INTERPRETER_PAGE, { contentHtml: INTERPRETER_SECTION, headings: [] }),
+  );
+
+  writeFileSync(
+    join(publicDir, `${INSTALL_PAGE.slug}.html`),
+    renderPageHtml(INSTALL_PAGE, { contentHtml: buildInstallSection(), headings: [] }),
   );
 
   rmSync(buildTmp, { recursive: true, force: true });
@@ -218,6 +239,61 @@ function buildToc(headings) {
 
 function escapeHtml(value) {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function formatBytes(bytes) {
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+// Nomes de arquivo em packages/site/downloads/ — atualize aqui quando gerar
+// uma versão nova do instalador ou do .vsix (a versão e o tamanho exibidos
+// na página vêm do próprio arquivo, não são digitados à mão).
+const VSCODE_FILENAME = 'markup-lang-0.1.1.vsix';
+const DESKTOP_FILENAME = 'MarkUP_0.1.0_x64-setup.exe';
+
+function buildInstallSection() {
+  const vscodeSize = formatBytes(statSync(join(downloadsDir, VSCODE_FILENAME)).size);
+  const desktopSize = formatBytes(statSync(join(downloadsDir, DESKTOP_FILENAME)).size);
+  const vscodeVersion = VSCODE_FILENAME.match(/(\d+\.\d+\.\d+)/)?.[1] ?? '';
+  const desktopVersion = DESKTOP_FILENAME.match(/(\d+\.\d+\.\d+)/)?.[1] ?? '';
+
+  return `<h1 class="mu-heading">Instalação</h1>
+<p class="mu-paragraph">Duas formas de usar o MarkUP: a extensão do VS Code, direto no editor que você já usa, ou o aplicativo desktop dedicado, com workspace, explorador de arquivos e preview ao vivo.</p>
+
+<div class="install-grid">
+  <div class="install-card">
+    <span class="install-card-icon install-card-icon-chip"><img src="assets/images/extension-logo.png" alt="" /></span>
+    <h2>Extensão do VS Code</h2>
+    <p>Realce de sintaxe, autocomplete de diretivas, diagnósticos em tempo real e preview nativo dentro do VS Code.</p>
+    <a class="install-button" href="downloads/${VSCODE_FILENAME}" download>
+      <span class="install-button-title">Baixar .vsix</span>
+      <span class="install-button-meta">v${vscodeVersion} · ${vscodeSize}</span>
+    </a>
+    <ol class="install-steps">
+      <li>Baixe o arquivo <code>.vsix</code> acima.</li>
+      <li>No VS Code, abra a paleta de comandos (<code>Ctrl+Shift+P</code>) e rode <strong>Extensions: Install from VSIX...</strong></li>
+      <li>Selecione o arquivo baixado.</li>
+    </ol>
+    <p class="install-alt">Ou pelo terminal: <code>code --install-extension ${VSCODE_FILENAME}</code></p>
+  </div>
+
+  <div class="install-card">
+    <img class="install-card-icon" src="assets/images/desktop-logo.png" alt="" width="40" height="40" />
+    <h2>Aplicativo Desktop</h2>
+    <p>Editor dedicado com explorador de arquivos, abas, preview ao vivo, detecção automática de mudanças no disco e configurações completas de tema e editor.</p>
+    <a class="install-button" href="downloads/${DESKTOP_FILENAME}" download>
+      <span class="install-button-title">Baixar instalador</span>
+      <span class="install-button-meta">v${desktopVersion} · ${desktopSize} · Windows 64-bit</span>
+    </a>
+    <ol class="install-steps">
+      <li>Baixe o instalador acima e execute-o.</li>
+      <li>O Windows SmartScreen pode avisar sobre "editor desconhecido" — o instalador ainda não é assinado digitalmente. Clique em <strong>Mais informações</strong> → <strong>Executar assim mesmo</strong>.</li>
+      <li>Siga o assistente; o MarkUP abre automaticamente ao final da instalação.</li>
+    </ol>
+    <p class="install-alt">Disponível para Windows por enquanto — macOS e Linux ainda não têm build publicado.</p>
+  </div>
+</div>
+`;
 }
 
 const PLAYGROUND_SECTION = `<h2 class="mu-heading" id="experimente">Experimente</h2>

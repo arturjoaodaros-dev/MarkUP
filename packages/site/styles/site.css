@@ -234,6 +234,102 @@ a:hover {
 }
 
 /* ---------------------------------------------------------------------
+   Instalação
+   --------------------------------------------------------------------- */
+
+.install-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5em;
+  margin: 2em 0;
+}
+
+.install-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--mu-border);
+  border-radius: 8px;
+  background: var(--mu-bg-subtle);
+  padding: 1.5em;
+}
+.install-card-icon {
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  margin-bottom: 0.8em;
+}
+.install-card-icon-chip {
+  background: #ffffff;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.install-card-icon-chip img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.install-card h2 {
+  margin: 0 0 0.4em;
+  font-size: 1.1em;
+}
+.install-card > p {
+  flex: 1;
+  color: var(--mu-text-muted);
+  font-size: 0.92em;
+  margin: 0 0 1.2em;
+}
+
+.install-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2em;
+  background: var(--mu-accent);
+  color: var(--mu-accent-contrast);
+  border-radius: 6px;
+  padding: 0.75em 1em;
+  text-align: center;
+  font-weight: 600;
+}
+.install-button:hover {
+  text-decoration: none;
+  opacity: 0.92;
+}
+.install-button-meta {
+  font-size: 0.78em;
+  font-weight: 400;
+  opacity: 0.85;
+}
+
+.install-steps {
+  margin: 1.2em 0 0;
+  padding-left: 1.3em;
+  font-size: 0.9em;
+  line-height: 1.6;
+}
+.install-steps code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--mu-bg);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+}
+
+.install-alt {
+  margin: 1em 0 0;
+  color: var(--mu-text-muted);
+  font-size: 0.82em;
+}
+.install-alt code {
+  font-family: var(--font-mono);
+  font-size: 0.95em;
+}
+
+/* ---------------------------------------------------------------------
    Rodapé
    --------------------------------------------------------------------- */
 
@@ -266,7 +362,18 @@ a:hover {
   .playground-grid {
     grid-template-columns: 1fr;
   }
+  .install-grid {
+    grid-template-columns: 1fr;
+  }
   .site-nav {
     gap: 1em;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .site-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .site-nav a {
+    white-space: nowrap;
   }
 }

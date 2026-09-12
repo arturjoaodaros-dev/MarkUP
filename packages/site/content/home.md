@@ -30,7 +30,8 @@ Esta operação pode apagar dados.
 
 - **[Guia completo](guide.html)** — toda a linguagem, explicada com exemplos: Markdown suportado, as sete diretivas, diagnósticos, exportação, a extensão do VS Code.
 - **[Especificação](spec.html)** — a referência normativa, testada linha a linha pela suíte de testes do parser.
-- **Editor** — `npm run dev --workspace=packages/web`, ou instale a [extensão do VS Code](https://github.com/arturjoaodaros-dev/MarkUP/tree/main/packages/vscode).
+- **[Interpretador](interpreter.html)** — escreva MarkUP e veja o resultado ao vivo, direto no navegador.
+- **[Instalação](install.html)** — baixe a extensão do VS Code ou o aplicativo desktop.
 
 ## Por que outra linguagem de documentos
 
