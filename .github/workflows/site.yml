@@ -8,6 +8,7 @@ on:
       - 'packages/core/**'
       - 'packages/renderer/**'
       - 'packages/site/**'
+      - 'packages/vscode/**'
       - '.github/workflows/site.yml'
   workflow_dispatch: {}
 
@@ -29,6 +30,12 @@ jobs:
         with:
           node-version: 24
       - run: npm ci
+      - name: Build VS Code extension
+        run: npm run build --workspace=packages/vscode
+      - name: Package VS Code extension
+        run: npm run package --workspace=packages/vscode
+      - name: Copy VSIX to site downloads
+        run: cp packages/vscode/markup-lang-0.1.1.vsix packages/site/downloads/
       - run: npm run build --workspace=packages/site
       - uses: actions/upload-pages-artifact@v3
         with:
