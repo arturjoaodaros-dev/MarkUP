@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/build.mjs",
+    "build": "node scripts/prepare-vsix.mjs && node scripts/build.mjs",
     "serve": "node scripts/serve.mjs",
     "typecheck": "tsc --noEmit"
   },
