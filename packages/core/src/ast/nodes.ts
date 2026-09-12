@@ -68,7 +68,27 @@ export interface Break extends NodeBase {
   type: 'break';
 }
 
-export type InlineNode = Text | Strong | Emphasis | Strikethrough | InlineCode | Link | Image | Break;
+// Link para outro documento MarkUP dentro do workspace — `[[Alvo]]` ou
+// `[[Alvo|texto exibido]]`. Distinto de `Link`: `target` é um nome de
+// documento, não uma URL, e sua resolução (existe? qual caminho real?)
+// é responsabilidade de quem conhece o workspace — nunca do core, que
+// permanece sem `fs` e sem noção de arquivos.
+export interface WikiLink extends NodeBase {
+  type: 'wikilink';
+  target: string;
+  alias?: string;
+}
+
+export type InlineNode =
+  | Text
+  | Strong
+  | Emphasis
+  | Strikethrough
+  | InlineCode
+  | Link
+  | Image
+  | Break
+  | WikiLink;
 
 // ---------------------------------------------------------------------------
 // Blocos Markdown

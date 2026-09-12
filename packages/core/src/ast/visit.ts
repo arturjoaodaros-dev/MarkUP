@@ -98,6 +98,8 @@ function plainText(nodes: InlineNode[]): string {
           return plainText(n.children);
         case 'image':
           return n.alt;
+        case 'wikilink':
+          return n.alias ?? n.target;
         default:
           return '';
       }

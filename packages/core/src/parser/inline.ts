@@ -99,6 +99,17 @@ function parseRun(ctx: InlineContext, from: number, to: number): InlineNode[] {
       }
     }
 
+    if (ch === '[' && ctx.text[i + 1] === '[') {
+      const parsed = parseWikiLink(ctx, i, to);
+      if (parsed) {
+        flushText(i);
+        nodes.push(parsed.node);
+        i = parsed.end;
+        textStart = i;
+        continue;
+      }
+    }
+
     if (ch === '[') {
       const parsed = parseLinkOrImage(ctx, i, to, false);
       if (parsed) {
@@ -236,6 +247,32 @@ function parseLinkOrImage(
   );
   return {
     node: { type: 'link', url, title, children, position: posFor(ctx, start, end) },
+    end,
+  };
+}
+
+/**
+ * `[[Alvo]]` ou `[[Alvo|texto exibido]]` — link para outro documento do
+ * workspace. Se `]]` não for encontrado antes de `to`, não casa (a chamadora
+ * deixa o `[` cair no caminho de texto/link normal, então `[[sem fechar`
+ * vira texto literal em vez de engolir o resto do bloco).
+ */
+function parseWikiLink(ctx: InlineContext, start: number, to: number): { node: InlineNode; end: number } | null {
+  const contentStart = start + 2;
+  const close = ctx.text.indexOf(']]', contentStart);
+  if (close === -1 || close > to - 2) return null;
+
+  const inside = ctx.text.slice(contentStart, close);
+  if (inside.length === 0) return null;
+
+  const pipeIdx = inside.indexOf('|');
+  const target = (pipeIdx === -1 ? inside : inside.slice(0, pipeIdx)).trim();
+  const alias = pipeIdx === -1 ? undefined : inside.slice(pipeIdx + 1).trim();
+  if (target.length === 0) return null;
+
+  const end = close + 2;
+  return {
+    node: { type: 'wikilink', target, alias, position: posFor(ctx, start, end) },
     end,
   };
 }

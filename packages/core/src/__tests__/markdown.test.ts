@@ -30,6 +30,46 @@ describe('Markdown básico', () => {
     expect(image).toMatchObject({ url: 'img.png', alt: 'alt' });
   });
 
+  it('wikilink simples', () => {
+    const { ast, diagnostics } = parse('Veja [[Guia de Instalação]] para mais.');
+    expect(diagnostics).toHaveLength(0);
+    const [p] = ast.children;
+    if (p.type !== 'paragraph') throw new Error('esperado paragraph');
+    const link = p.children.find((c) => c.type === 'wikilink');
+    expect(link).toMatchObject({ target: 'Guia de Instalação', alias: undefined });
+  });
+
+  it('wikilink com alias', () => {
+    const { ast } = parse('[[Guia de Instalação|clique aqui]]');
+    const [p] = ast.children;
+    if (p.type !== 'paragraph') throw new Error('esperado paragraph');
+    expect(p.children[0]).toMatchObject({ type: 'wikilink', target: 'Guia de Instalação', alias: 'clique aqui' });
+  });
+
+  it('wikilink não fechado vira texto literal', () => {
+    const { ast } = parse('[[sem fechar');
+    const [p] = ast.children;
+    if (p.type !== 'paragraph') throw new Error('esperado paragraph');
+    expect(p.children).toMatchObject([{ type: 'text', value: '[[sem fechar' }]);
+  });
+
+  it('wikilink não interfere com link markdown comum', () => {
+    const { ast } = parse('[MarkUP](https://example.com) e [[Outra Página]]');
+    const [p] = ast.children;
+    if (p.type !== 'paragraph') throw new Error('esperado paragraph');
+    expect(p.children.map((c) => c.type)).toContain('link');
+    expect(p.children.map((c) => c.type)).toContain('wikilink');
+  });
+
+  it('posição do wikilink cobre os colchetes inteiros', () => {
+    const { ast } = parse('[[Alvo]]');
+    const [p] = ast.children;
+    if (p.type !== 'paragraph') throw new Error('esperado paragraph');
+    const [link] = p.children;
+    expect(link.position.start.offset).toBe(0);
+    expect(link.position.end.offset).toBe('[[Alvo]]'.length);
+  });
+
   it('lista não ordenada e ordenada', () => {
     const { ast } = parse('- um\n- dois\n\n1. primeiro\n2. segundo');
     expect(ast.children).toMatchObject([

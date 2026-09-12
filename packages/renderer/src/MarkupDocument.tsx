@@ -33,27 +33,54 @@ interface AnchorState {
 }
 const AnchorContext = createContext<AnchorState>({ enabled: false, seen: new Map() });
 
+// Resolução de `[[wikilink]]` contra o workspace — só quem hospeda o
+// renderer sabe se o documento-alvo existe e qual seu caminho real
+// (`@markup/core` não tem `fs`, e o site/VS Code preview não têm workspace).
+// Sem essa prop, um wikilink renderiza como texto sem destino — nunca quebra.
+export interface WikiLinkResolution {
+  exists: boolean;
+  href?: string;
+}
+export type ResolveWikiLink = (target: string) => WikiLinkResolution;
+const WikiLinkContext = createContext<ResolveWikiLink | undefined>(undefined);
+
 function sourceMapAttrs(position: Position, enabled: boolean): Record<string, number> {
   if (!enabled) return {};
   return { 'data-mu-start': position.start.offset, 'data-mu-end': position.end.offset };
+}
+
+// Esquemas permitidos em `href`/`src` vindos de conteúdo do documento.
+// `javascript:`/`data:`/etc. nunca chegam ao DOM — viram '#' em vez disso.
+// URLs relativas (sem esquema) passam direto.
+const SAFE_URL_SCHEMES = new Set(['http', 'https', 'mailto']);
+
+function safeUrl(url: string): string {
+  const trimmed = url.trim();
+  const match = /^([a-zA-Z][a-zA-Z0-9+.-]*):/.exec(trimmed);
+  if (!match) return trimmed;
+  return SAFE_URL_SCHEMES.has(match[1].toLowerCase()) ? trimmed : '#';
 }
 
 export function MarkupDocument({
   document,
   sourceMap = false,
   anchors = false,
+  resolveWikiLink,
 }: {
   document: Document;
   sourceMap?: boolean;
   anchors?: boolean;
+  resolveWikiLink?: ResolveWikiLink;
 }) {
   const anchorState: AnchorState = { enabled: anchors, seen: new Map() };
   return (
     <SourceMapContext.Provider value={sourceMap}>
       <AnchorContext.Provider value={anchorState}>
-        <div className="mu-document">
-          <BlockList nodes={document.children} />
-        </div>
+        <WikiLinkContext.Provider value={resolveWikiLink}>
+          <div className="mu-document">
+            <BlockList nodes={document.children} />
+          </div>
+        </WikiLinkContext.Provider>
       </AnchorContext.Provider>
     </SourceMapContext.Provider>
   );
@@ -150,6 +177,8 @@ export function InlineList({ nodes }: { nodes: InlineNode[] }) {
 }
 
 function InlineRenderer({ node }: { node: InlineNode }) {
+  const resolveWikiLink = useContext(WikiLinkContext);
+
   switch (node.type) {
     case 'text':
       return <>{node.value}</>;
@@ -175,14 +204,37 @@ function InlineRenderer({ node }: { node: InlineNode }) {
       return <code className="mu-inline-code">{node.value}</code>;
     case 'link':
       return (
-        <a href={node.url} title={node.title} target="_blank" rel="noopener noreferrer">
+        <a href={safeUrl(node.url)} title={node.title} target="_blank" rel="noopener noreferrer">
           <InlineList nodes={node.children} />
         </a>
       );
     case 'image':
-      return <img src={node.url} alt={node.alt} title={node.title} className="mu-image" />;
+      return <img src={safeUrl(node.url)} alt={node.alt} title={node.title} className="mu-image" />;
     case 'break':
       return <br />;
+    case 'wikilink': {
+      const label = node.alias ?? node.target;
+      if (!resolveWikiLink) {
+        return (
+          <span className="mu-wikilink mu-wikilink-unresolved" title={node.target}>
+            {label}
+          </span>
+        );
+      }
+      const resolution = resolveWikiLink(node.target);
+      if (resolution.exists) {
+        return (
+          <a className="mu-wikilink" href={safeUrl(resolution.href ?? '#')}>
+            {label}
+          </a>
+        );
+      }
+      return (
+        <a className="mu-wikilink mu-wikilink-missing" href="#" title={`Documento não encontrado: ${node.target}`}>
+          {label}
+        </a>
+      );
+    }
     default: {
       const _exhaustive: never = node;
       return _exhaustive;

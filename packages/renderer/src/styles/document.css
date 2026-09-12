@@ -107,6 +107,22 @@ h5.mu-heading, h6.mu-heading { font-size: 1em; color: var(--mu-text-muted); }
 
 .mu-image { max-width: 100%; border-radius: 6px; }
 
+.mu-wikilink {
+  color: var(--mu-accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--mu-accent);
+}
+.mu-wikilink:hover { text-decoration: none; background: var(--mu-bg-subtle); }
+.mu-wikilink-missing {
+  color: var(--mu-text-muted);
+  border-bottom-style: dashed;
+}
+.mu-wikilink-unresolved {
+  color: var(--mu-text-muted);
+  border-bottom: 1px dashed var(--mu-border);
+  cursor: default;
+}
+
 .mu-table-wrap { overflow-x: auto; margin: 1em 0; }
 .mu-table { border-collapse: collapse; width: 100%; font-size: 0.95em; }
 .mu-table th, .mu-table td { border: 1px solid var(--mu-border); padding: 0.5em 0.75em; text-align: left; }

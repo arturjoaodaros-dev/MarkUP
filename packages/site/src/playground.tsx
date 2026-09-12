@@ -40,7 +40,6 @@ Esta operação pode apagar dados.
 :::
 
 - Escreva à vontade aqui.
-- Sem autocomplete, sem sugestões — só o texto e o resultado.
 `;
 
 const STORAGE_KEY = 'markup-site-interpreter';
