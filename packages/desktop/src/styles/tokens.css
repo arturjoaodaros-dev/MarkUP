@@ -1,0 +1,66 @@
+/* Tokens do design system do chrome do MarkUP — separado de
+   @markup/renderer/document.css de propósito (esse estiliza o CONTEÚDO
+   renderizado do documento; este arquivo estiliza a casca do app: sidebar,
+   abas, status bar, diálogos, configurações).
+
+   Identidade: preto/quase preto como base, azul-marinho profundo como
+   camada secundária (superfícies elevadas — diálogos, paleta de comandos,
+   configurações), azul discreto e controlado como cor de interação — nunca
+   neon, nunca dominando a tela inteira. --canvas-bg é igual a --mu-bg de
+   document.css nos dois temas (mesmo valor, não coincidência) — editor e
+   preview compartilham o mesmo fundo pra não criar uma "costura de card" na
+   fronteira mais visível do app; deliberadamente não mexemos em
+   document.css em si, que é compartilhado com o site de docs e a extensão
+   VS Code e representa o conteúdo do documento, não a identidade do chrome
+   do app desktop. */
+
+:root {
+  --canvas-bg: #ffffff;
+  --chrome-bg: #f4f6f9;
+  --elevated-bg: #ffffff;
+  --hover-bg: #eaeef4;
+  --selected-bg: #e4edfb;
+  --border: #dde2e9;
+  --text: #14181f;
+  --text-secondary: #5b636e;
+  --text-tertiary: #8a919c;
+  --accent: #2864b0;
+  --accent-contrast: #ffffff;
+  --success: #1a7f37;
+  --warning: #9a6700;
+  --error: #cf222e;
+
+  --font-ui: 'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Cascadia Code', 'JetBrains Mono', Consolas, ui-monospace, monospace;
+
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-editor: 14px;
+  --text-lg: 15px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+
+  --radius: 4px;
+}
+
+:root[data-theme='dark'] {
+  --canvas-bg: #0d1117;
+  --chrome-bg: #0a0d12;
+  --elevated-bg: #141b2b;
+  --hover-bg: #1b2537;
+  --selected-bg: #17233a;
+  --border: #232b3d;
+  --text: #e6edf3;
+  --text-secondary: #9aa4b2;
+  --text-tertiary: #5b6572;
+  --accent: #4c8ee0;
+  --accent-contrast: #ffffff;
+  --success: #3fb950;
+  --warning: #d29922;
+  --error: #f85149;
+}
