@@ -1,0 +1,19 @@
+{
+  "name": "@markup-lang/language-service",
+  "version": "0.1.0",
+  "description": "Editor-agnostic MarkUP language features: completion, hover, outline, folding, highlighting, navigation and quick fixes.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": { "source": "./src/index.ts", "types": "./dist/index.d.ts", "default": "./dist/index.js" }
+  },
+  "files": ["dist", "src"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@markup-lang/core": "0.1.0"
+  }
+}

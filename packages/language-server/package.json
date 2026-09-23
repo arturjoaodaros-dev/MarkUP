@@ -1,0 +1,27 @@
+{
+  "name": "@markup-lang/language-server",
+  "version": "0.1.0",
+  "description": "Language Server Protocol implementation for MarkUP (VS Code, Neovim, Helix, Zed…).",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "markup-language-server": "dist/server.cjs"
+  },
+  "exports": {
+    ".": { "source": "./src/server.ts", "default": "./dist/server.cjs" }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@markup-lang/core": "0.1.0",
+    "@markup-lang/language-service": "0.1.0",
+    "vscode-languageserver": "^10.1.1",
+    "vscode-languageserver-textdocument": "^1.0.14"
+  },
+  "devDependencies": {
+    "vscode-jsonrpc": "^9.0.2"
+  }
+}

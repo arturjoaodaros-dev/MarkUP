@@ -1,7 +1,7 @@
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { dirname, extname, isAbsolute, join, relative, resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
-import type { Diagnostic, MarkupPlugin } from '@markup-lang/core';
+import { existsSync, readdirSync, statSync } from 'node:fs';
+import { dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path';
+import type { Diagnostic } from '@markup-lang/core';
+import { ConfigError, loadConfig as loadSharedConfig, type MarkupConfig } from '@markup-lang/core/node';
 
 export interface Io {
   stdout: (text: string) => void;
@@ -83,60 +83,16 @@ export function display(path: string, cwd: string): string {
 // ---------------------------------------------------------------------------
 // Config and plugins
 
-export interface Config {
-  plugins: MarkupPlugin[];
-  theme: 'light' | 'dark' | 'auto';
-  out: string | null;
-}
+export type Config = MarkupConfig;
 
-interface RawConfig {
-  plugins?: unknown;
-  theme?: unknown;
-  out?: unknown;
-}
-
-/**
- * Reads `markup.config.json` (from --config or the working directory) and loads
- * plugins given there or with --plugin. A plugin module exports a MarkupPlugin as
- * its default export (or an array of them).
- */
+/** The shared loader, with its errors turned into usage errors. */
 export async function loadConfig(cwd: string, configPath: string | undefined, pluginPaths: readonly string[]): Promise<Config> {
-  let raw: RawConfig = {};
-  let configDir = cwd;
-  const path = configPath ? resolve(cwd, configPath) : join(cwd, 'markup.config.json');
-  if (configPath || existsSync(path)) {
-    if (!existsSync(path)) throw new UsageError(`Config file not found: ${configPath}`);
-    try {
-      raw = JSON.parse(readFileSync(path, 'utf8')) as RawConfig;
-    } catch (error) {
-      throw new UsageError(`Invalid config ${display(path, cwd)}: ${error instanceof Error ? error.message : String(error)}`);
-    }
-    configDir = dirname(path);
+  try {
+    return await loadSharedConfig(cwd, configPath, pluginPaths);
+  } catch (error) {
+    if (error instanceof ConfigError) throw new UsageError(error.message.replaceAll(cwd + sep, '').replace(/\\/g, '/'));
+    throw error;
   }
-  const theme = raw.theme === 'light' || raw.theme === 'dark' ? raw.theme : 'auto';
-  const out = typeof raw.out === 'string' ? resolve(configDir, raw.out) : null;
-  const specifiers = [
-    ...(Array.isArray(raw.plugins) ? raw.plugins.filter((p): p is string => typeof p === 'string').map((p) => resolve(configDir, p)) : []),
-    ...pluginPaths.map((p) => resolve(cwd, p)),
-  ];
-  const plugins: MarkupPlugin[] = [];
-  for (const specifier of specifiers) {
-    let module: { default?: unknown; plugin?: unknown };
-    try {
-      module = (await import(pathToFileURL(specifier).href)) as { default?: unknown; plugin?: unknown };
-    } catch (error) {
-      throw new UsageError(`Cannot load plugin ${display(specifier, cwd)}: ${error instanceof Error ? error.message : String(error)}`);
-    }
-    const exported = module.default ?? module.plugin;
-    const list = Array.isArray(exported) ? exported : [exported];
-    for (const plugin of list) {
-      if (!plugin || typeof plugin !== 'object' || typeof (plugin as MarkupPlugin).name !== 'string') {
-        throw new UsageError(`${display(specifier, cwd)} does not export a MarkUP plugin (an object with a \`name\`).`);
-      }
-      plugins.push(plugin as MarkupPlugin);
-    }
-  }
-  return { plugins, theme, out };
 }
 
 // ---------------------------------------------------------------------------

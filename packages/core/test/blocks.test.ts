@@ -335,3 +335,13 @@ describe('line endings and special characters', () => {
     expect(tree('a\0b')).toBe(`p("a${String.fromCharCode(0xfffd)}b")`);
   });
 });
+
+describe('definitions followed by footnotes', () => {
+  it('lets a footnote definition follow link reference definitions directly', () => {
+    expect(tree('[r]: /u\n[^n]: Note.\n\ntext[^n]')).toBe('def[r -> /u] fn[n](p("Note.")) p("text", fnref[n])');
+  });
+
+  it('still does not let a footnote definition interrupt real text', () => {
+    expect(tree('[r]: /u\ntext\n[^n]: no')).toBe('def[r -> /u] p("text\\n", fnref[n], ": no")');
+  });
+});

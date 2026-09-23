@@ -501,7 +501,9 @@ class BlockParser {
         break;
       }
       case '[': {
-        if (this.text[p + 1] === '^' && !paragraph) {
+        // Footnote definitions cannot interrupt a paragraph — unless the "paragraph"
+        // so far is only link reference definitions.
+        if (this.text[p + 1] === '^' && (!paragraph || this.onlyDefinitions(paragraph))) {
           const match = /^\[\^([^\]\s]{1,100})\]:/.exec(this.text.slice(p));
           if (match && this.checkDepth(container, 1)) {
             const start = lineStart + p;
@@ -1214,6 +1216,13 @@ class BlockParser {
     };
     this.jobs.push({ kind: 'content', node, source: new SegmentText(lines), tableCell: false });
     this.pushChild(block.parent, node);
+  }
+
+  private onlyDefinitions(paragraph: OpenParagraph): boolean {
+    this.extractDefinitions(paragraph);
+    if (paragraph.lines.length > 0) return false;
+    this.discardLeaf(paragraph);
+    return true;
   }
 
   /** Pulls link reference definitions off the start of a paragraph. */
