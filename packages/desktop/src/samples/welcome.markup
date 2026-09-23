@@ -1,0 +1,33 @@
+---
+title: Welcome to MarkUP
+---
+
+# Welcome to MarkUP
+
+This is a sample workspace. Everything here is stored in your browser, so feel free to edit,
+rename and delete — **Reset samples** in the command palette brings the originals back.
+
+::toc[In this file]{depth=2}
+
+## Find your way around
+
+| Action | Shortcut |
+|:--|:--|
+| Command palette | :kbd[Ctrl+Shift+P] |
+| Quick open a file | :kbd[Ctrl+P] |
+| Go to heading or component | :kbd[Ctrl+Shift+O] |
+| Search in all files | :kbd[Ctrl+Shift+F] |
+| Toggle editor / split / preview | :kbd[Ctrl+\\] |
+| Save | :kbd[Ctrl+S] |
+| Settings | :kbd[Ctrl+,] |
+
+:::tip[Try it]
+Type `:::` on an empty line to get a list of components, then press :kbd[Enter].
+Inside `{…}` you get attribute suggestions, and inside a `chart` you get data keys.
+:::
+
+## What to open next
+
+- [The showcase](showcase.markup) — every component on one page.
+- [Getting started](guides/getting-started.markup) — the syntax in five minutes.
+- [A broken document](drafts/broken.markup) — see how errors are reported and fixed.

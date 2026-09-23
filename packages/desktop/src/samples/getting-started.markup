@@ -1,0 +1,49 @@
+# Getting started
+
+MarkUP is Markdown with components. If you know Markdown, you already know most of it.
+
+## Text
+
+Paragraphs are separated by blank lines. Use **bold**, *italic*, `code`,
+~~strikethrough~~ and [links](https://example.com). Footnotes work too.[^1]
+
+## Components
+
+Components are written with colons. A block component has an opening fence with a
+name and a closing fence:
+
+:::note
+This is a note. The body is regular MarkUP.
+:::
+
+A label in brackets gives it a title, and attributes go in braces:
+
+:::card[Deploy]{icon=🚀}
+Push to `main` and the site rebuilds.
+:::
+
+Nest components by using more colons on the outside:
+
+::::tabs
+:::tab[First]
+One
+:::
+:::tab[Second]
+Two
+:::
+::::
+
+Inline components sit inside text: press :kbd[Ctrl+S] to save, :badge[new]{variant=success}.
+
+## Data
+
+Some components take data instead of text:
+
+:::chart{type=pie}
+data:
+  Reading: 45
+  Writing: 35
+  Reviewing: 20
+:::
+
+[^1]: Like this one.

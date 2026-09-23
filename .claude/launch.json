@@ -1,6 +1,11 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "scratch", "runtimeExecutable": "node", "runtimeArgs": ["C:/Users/artur/AppData/Local/Temp/claude/C--Users-artur-Projects-MarkUP/13f88048-6b0c-400f-9c90-38992331e56e/scratchpad/serve.cjs"], "port": 4173 }
+    {
+      "name": "desktop",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "-w", "@markup-lang/desktop"],
+      "port": 1420
+    }
   ]
 }

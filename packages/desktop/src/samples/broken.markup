@@ -1,0 +1,28 @@
+# A document with problems
+
+Each problem below is underlined in the editor. Hover it to read the message, and
+press :kbd[Ctrl+.] on it to apply a quick fix.
+
+:::nott
+An unknown component — the fix suggests `note`.
+:::
+
+:::card Title without brackets
+The title belongs in a label: `:::card[Title]`.
+:::
+
+:badge[unstable]{variant=sucess}
+
+::progress[Upload]{value=140}
+
+:::chart
+type: bar
+data:
+  Monday: 12
+  Tuesday: lots
+:::
+
+See [the setup section](#setup-section) and a footnote[^missing].
+
+:::warning
+This callout is never closed.
