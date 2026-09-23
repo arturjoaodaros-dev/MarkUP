@@ -75,9 +75,11 @@ export function ProblemsView() {
                 ) : (
                   <Info size={14} className="sev-info" />
                 )}
-                <span className="problem-message">{d.message}</span>
-                <span className="problem-meta">
-                  {d.code} · {d.range.start.line}:{d.range.start.column}
+                <span className="problem-text">
+                  <span className="problem-message">{d.message}</span>
+                  <span className="problem-meta">
+                    {d.code} · Ln {d.range.start.line}, Col {d.range.start.column}
+                  </span>
                 </span>
               </button>
             ))}

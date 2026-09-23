@@ -1,6 +1,6 @@
 /* CodeMirror, themed with the app tokens. Syntax classes come from the language service. */
 
-.cm-editor {
+.editor-host .cm-editor {
   flex: 1;
   height: 100%;
   background: var(--surface);
@@ -8,68 +8,68 @@
   font-size: var(--editor-font-size, 14px);
   user-select: text;
 }
-.cm-editor.cm-focused {
+.editor-host .cm-editor.cm-focused {
   outline: none;
 }
-.cm-scroller {
+.editor-host .cm-editor .cm-scroller {
   font-family: var(--font-mono);
   line-height: 1.7;
   font-variant-ligatures: none;
 }
-.cm-content {
+.editor-host .cm-editor .cm-content {
   padding: 18px 0 40vh;
   caret-color: var(--accent);
 }
-.cm-line {
+.editor-host .cm-editor .cm-line {
   padding: 0 28px 0 16px;
 }
-.cm-gutters {
+.editor-host .cm-editor .cm-gutters {
   background: var(--surface);
   color: var(--text-faint);
   border: 0;
   padding-left: 8px;
 }
-.cm-lineNumbers .cm-gutterElement {
+.editor-host .cm-editor .cm-lineNumbers .cm-gutterElement {
   min-width: 32px;
   padding: 0 6px 0 4px;
   font-size: 0.86em;
 }
-.cm-activeLineGutter {
+.editor-host .cm-editor .cm-activeLineGutter {
   background: transparent;
   color: var(--text);
 }
-.cm-activeLine {
+.editor-host .cm-editor .cm-activeLine {
   background: var(--accent-softer);
 }
-.cm-cursor,
-.cm-dropCursor {
+.editor-host .cm-editor .cm-cursor,
+.editor-host .cm-editor .cm-dropCursor {
   border-left: 2px solid var(--accent);
 }
-.cm-focused .cm-selectionBackground,
-.cm-selectionBackground,
-.cm-content ::selection {
+.editor-host .cm-editor .cm-focused .cm-selectionBackground,
+.editor-host .cm-editor .cm-selectionBackground,
+.editor-host .cm-editor .cm-content ::selection {
   background: var(--selection) !important;
 }
-.cm-selectionMatch {
+.editor-host .cm-editor .cm-selectionMatch {
   background: var(--accent-softer);
   outline: 1px solid var(--accent-soft);
 }
-.cm-matchingBracket {
+.editor-host .cm-editor .cm-matchingBracket {
   background: var(--accent-soft);
   outline: none;
   color: inherit !important;
 }
-.cm-foldGutter .cm-gutterElement {
+.editor-host .cm-editor .cm-foldGutter .cm-gutterElement {
   width: 14px;
   color: var(--text-faint);
   opacity: 0;
   transition: opacity 0.15s;
   cursor: pointer;
 }
-.cm-gutters:hover .cm-foldGutter .cm-gutterElement {
+.editor-host .cm-editor .cm-gutters:hover .cm-foldGutter .cm-gutterElement {
   opacity: 1;
 }
-.cm-foldPlaceholder {
+.editor-host .cm-editor .cm-foldPlaceholder {
   background: var(--active);
   border: 0;
   color: var(--text-muted);
@@ -78,14 +78,14 @@
 }
 
 /* Search panel */
-.cm-panels {
+.editor-host .cm-editor .cm-panels {
   background: var(--panel);
   color: var(--text);
 }
-.cm-panels-top {
+.editor-host .cm-editor .cm-panels-top {
   border-bottom: 1px solid var(--border);
 }
-.cm-panel.cm-search {
+.editor-host .cm-editor .cm-panel.cm-search {
   padding: 8px 12px;
   font-family: var(--font-ui);
   font-size: 12px;
@@ -94,13 +94,13 @@
   align-items: center;
   gap: 6px;
 }
-.cm-panel.cm-search br {
+.editor-host .cm-editor .cm-panel.cm-search br {
   display: none;
 }
-.cm-panel.cm-search input[type='checkbox'] {
+.editor-host .cm-editor .cm-panel.cm-search input[type='checkbox'] {
   accent-color: var(--accent);
 }
-.cm-panel.cm-search .cm-textfield {
+.editor-host .cm-editor .cm-panel.cm-search .cm-textfield {
   height: 26px;
   padding: 0 8px;
   border: 1px solid var(--border-strong);
@@ -110,10 +110,10 @@
   font: 12px var(--font-ui);
   outline: none;
 }
-.cm-panel.cm-search .cm-textfield:focus {
+.editor-host .cm-editor .cm-panel.cm-search .cm-textfield:focus {
   border-color: var(--accent);
 }
-.cm-panel.cm-search .cm-button {
+.editor-host .cm-editor .cm-panel.cm-search .cm-button {
   height: 26px;
   padding: 0 10px;
   border: 1px solid var(--border-strong);
@@ -124,31 +124,31 @@
   font: 12px var(--font-ui);
   cursor: pointer;
 }
-.cm-panel.cm-search .cm-button:hover {
+.editor-host .cm-editor .cm-panel.cm-search .cm-button:hover {
   background: var(--hover);
 }
-.cm-panel.cm-search label {
+.editor-host .cm-editor .cm-panel.cm-search label {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   color: var(--text-muted);
 }
-.cm-panel.cm-search [name='close'] {
+.editor-host .cm-editor .cm-panel.cm-search [name='close'] {
   margin-left: auto;
   color: var(--text-muted);
   font-size: 16px;
   cursor: pointer;
 }
-.cm-searchMatch {
+.editor-host .cm-editor .cm-searchMatch {
   background: rgba(251, 191, 36, 0.22);
   outline: 1px solid rgba(251, 191, 36, 0.45);
 }
-.cm-searchMatch-selected {
+.editor-host .cm-editor .cm-searchMatch-selected {
   background: rgba(251, 191, 36, 0.45);
 }
 
 /* Tooltips, completion, lint */
-.cm-tooltip {
+.editor-host .cm-editor .cm-tooltip {
   border: 0;
   border-radius: var(--radius);
   background: var(--elevated);
@@ -158,12 +158,12 @@
   font-size: 12.5px;
   overflow: hidden;
 }
-.cm-tooltip-autocomplete > ul {
+.editor-host .cm-editor .cm-tooltip-autocomplete > ul {
   font-family: var(--font-ui);
   max-height: 280px;
   padding: 4px;
 }
-.cm-tooltip-autocomplete > ul > li {
+.editor-host .cm-editor .cm-tooltip-autocomplete > ul > li {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -171,47 +171,47 @@
   border-radius: 4px;
   line-height: 1.4;
 }
-.cm-tooltip-autocomplete > ul > li[aria-selected] {
+.editor-host .cm-editor .cm-tooltip-autocomplete > ul > li[aria-selected] {
   background: var(--accent-soft);
   color: var(--text);
 }
-.cm-completionLabel {
+.editor-host .cm-editor .cm-completionLabel {
   font-family: var(--font-mono);
   font-size: 12.5px;
 }
-.cm-completionMatchedText {
+.editor-host .cm-editor .cm-completionMatchedText {
   color: var(--accent);
   text-decoration: none;
   font-weight: 650;
 }
-.cm-completionDetail {
+.editor-host .cm-editor .cm-completionDetail {
   margin-left: auto;
   padding-left: 16px;
   color: var(--text-faint);
   font-style: normal;
   font-size: 11.5px;
 }
-.cm-completionIcon {
+.editor-host .cm-editor .cm-completionIcon {
   width: 16px;
   opacity: 0.8;
   color: var(--text-faint);
 }
-.cm-completionIcon-class::after {
+.editor-host .cm-editor .cm-completionIcon-class::after {
   content: '◇';
   color: var(--accent);
 }
-.cm-completionIcon-property::after {
+.editor-host .cm-editor .cm-completionIcon-property::after {
   content: '•';
 }
-.cm-completionIcon-enum::after {
+.editor-host .cm-editor .cm-completionIcon-enum::after {
   content: '=';
 }
-.cm-tooltip.cm-completionInfo {
+.editor-host .cm-editor .cm-tooltip.cm-completionInfo {
   max-width: 420px;
   padding: 0;
   margin-left: 4px;
 }
-.cm-mu-doc.markup-body {
+.editor-host .cm-editor .cm-mu-doc.markup-body {
   --mu-bg: var(--elevated);
   --mu-fg: var(--text);
   --mu-muted: var(--text-muted);
@@ -228,50 +228,50 @@
   line-height: 1.55;
   user-select: text;
 }
-.cm-mu-doc.markup-body h1,
-.cm-mu-doc.markup-body h2,
-.cm-mu-doc.markup-body h3 {
+.editor-host .cm-editor .cm-mu-doc.markup-body h1,
+.editor-host .cm-editor .cm-mu-doc.markup-body h2,
+.editor-host .cm-editor .cm-mu-doc.markup-body h3 {
   font-size: 13px;
   margin: 0 0 6px;
   border: 0;
 }
-.cm-mu-doc.markup-body pre {
+.editor-host .cm-editor .cm-mu-doc.markup-body pre {
   font-size: 11.5px;
   padding: 8px 10px;
 }
-.cm-mu-doc.markup-body table {
+.editor-host .cm-editor .cm-mu-doc.markup-body table {
   font-size: 11.5px;
 }
-.cm-mu-doc.markup-body :where(th, td) {
+.editor-host .cm-editor .cm-mu-doc.markup-body :where(th, td) {
   padding: 3px 8px;
 }
-.cm-mu-doc.markup-body p:last-child {
+.editor-host .cm-editor .cm-mu-doc.markup-body p:last-child {
   margin-bottom: 0;
 }
-.cm-tooltip-lint {
+.editor-host .cm-editor .cm-tooltip-lint {
   padding: 0;
 }
-.cm-diagnostic {
+.editor-host .cm-editor .cm-diagnostic {
   padding: 8px 12px;
   border-left-width: 3px;
   font-family: var(--font-ui);
 }
-.cm-diagnostic-error {
+.editor-host .cm-editor .cm-diagnostic-error {
   border-left-color: var(--error);
 }
-.cm-diagnostic-warning {
+.editor-host .cm-editor .cm-diagnostic-warning {
   border-left-color: var(--warning);
 }
-.cm-diagnostic-hint,
-.cm-diagnostic-info {
+.editor-host .cm-editor .cm-diagnostic-hint,
+.editor-host .cm-editor .cm-diagnostic-info {
   border-left-color: var(--info);
 }
-.cm-diagnosticSource {
+.editor-host .cm-editor .cm-diagnosticSource {
   color: var(--text-faint);
   font-size: 11px;
   margin-top: 4px;
 }
-.cm-diagnosticAction {
+.editor-host .cm-editor .cm-diagnosticAction {
   margin: 6px 6px 0 0;
   padding: 3px 10px;
   border: 0;
@@ -281,160 +281,160 @@
   font: 500 11.5px var(--font-ui);
   cursor: pointer;
 }
-.cm-lintRange-error {
+.editor-host .cm-editor .cm-lintRange-error {
   background-image: none;
   text-decoration: underline wavy var(--error);
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
-.cm-lintRange-warning {
+.editor-host .cm-editor .cm-lintRange-warning {
   background-image: none;
   text-decoration: underline wavy var(--warning);
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
-.cm-lintRange-hint,
-.cm-lintRange-info {
+.editor-host .cm-editor .cm-lintRange-hint,
+.editor-host .cm-editor .cm-lintRange-info {
   background-image: none;
   text-decoration: underline dotted var(--text-faint);
   text-underline-offset: 3px;
 }
-.cm-gutter-lint {
+.editor-host .cm-editor .cm-gutter-lint {
   width: 12px;
 }
-.cm-gutter-lint .cm-gutterElement {
+.editor-host .cm-editor .cm-gutter-lint .cm-gutterElement {
   padding: 0;
 }
-.cm-lint-marker {
+.editor-host .cm-editor .cm-lint-marker {
   width: 7px;
   height: 7px;
   margin: 0 auto;
   border-radius: 50%;
   content: none;
 }
-.cm-lint-marker-error {
+.editor-host .cm-editor .cm-lint-marker-error {
   background: var(--error);
 }
-.cm-lint-marker-warning {
+.editor-host .cm-editor .cm-lint-marker-warning {
   background: var(--warning);
 }
-.cm-lint-marker-hint,
-.cm-lint-marker-info {
+.editor-host .cm-editor .cm-lint-marker-hint,
+.editor-host .cm-editor .cm-lint-marker-info {
   background: var(--info);
 }
 
 /* --------------------------------------------------------- MarkUP syntax */
 
-.cm-mu-heading {
+.editor-host .cm-editor .cm-mu-heading {
   color: var(--text);
   font-weight: 700;
 }
-.cm-mu-heading-line.cm-mu-h1 .cm-mu-heading,
-.cm-mu-heading-line.cm-mu-h2 .cm-mu-heading {
+.editor-host .cm-editor .cm-mu-heading-line.cm-mu-h1 .cm-mu-heading,
+.editor-host .cm-editor .cm-mu-heading-line.cm-mu-h2 .cm-mu-heading {
   color: var(--accent);
 }
-.cm-mu-headingMarker,
-.cm-mu-marker,
-.cm-mu-punctuation,
-.cm-mu-tableDelimiter {
+.editor-host .cm-editor .cm-mu-headingMarker,
+.editor-host .cm-editor .cm-mu-marker,
+.editor-host .cm-editor .cm-mu-punctuation,
+.editor-host .cm-editor .cm-mu-tableDelimiter {
   color: var(--text-faint);
   font-weight: 400;
 }
-.cm-mu-emphasis {
+.editor-host .cm-editor .cm-mu-emphasis {
   font-style: italic;
 }
-.cm-mu-strong {
+.editor-host .cm-editor .cm-mu-strong {
   font-weight: 700;
 }
-.cm-mu-strikethrough {
+.editor-host .cm-editor .cm-mu-strikethrough {
   text-decoration: line-through;
   color: var(--text-muted);
 }
-.cm-mu-code {
+.editor-host .cm-editor .cm-mu-code {
   color: #f0a3c0;
   background: var(--hover);
   border-radius: 3px;
 }
-[data-theme='light'] .cm-mu-code {
+[data-theme='light'] .editor-host .cm-editor .cm-mu-code {
   color: #b4236a;
 }
-.cm-mu-code-line {
+.editor-host .cm-editor .cm-mu-code-line {
   background: color-mix(in srgb, var(--hover) 55%, transparent);
 }
-.cm-mu-codeFence,
-.cm-mu-codeInfo {
+.editor-host .cm-editor .cm-mu-codeFence,
+.editor-host .cm-editor .cm-mu-codeInfo {
   color: var(--text-faint);
 }
-.cm-mu-codeBlock {
+.editor-host .cm-editor .cm-mu-codeBlock {
   color: var(--text-muted);
 }
-.cm-mu-link,
-.cm-mu-image {
+.editor-host .cm-editor .cm-mu-link,
+.editor-host .cm-editor .cm-mu-image {
   color: var(--info);
 }
-.cm-mu-url {
+.editor-host .cm-editor .cm-mu-url {
   color: var(--text-faint);
   text-decoration: underline;
   text-decoration-color: var(--border-strong);
 }
-.cm-mu-hr {
+.editor-host .cm-editor .cm-mu-hr {
   color: var(--text-faint);
 }
-.cm-mu-comment {
+.editor-host .cm-editor .cm-mu-comment {
   color: var(--text-faint);
   font-style: italic;
 }
-.cm-mu-footnote {
+.editor-host .cm-editor .cm-mu-footnote {
   color: var(--info);
 }
-.cm-mu-directiveFence {
+.editor-host .cm-editor .cm-mu-directiveFence {
   color: var(--accent);
   font-weight: 700;
 }
-.cm-mu-directiveName {
+.editor-host .cm-editor .cm-mu-directiveName {
   color: var(--accent);
   font-weight: 650;
 }
-.cm-mu-directiveUnknown {
+.editor-host .cm-editor .cm-mu-directiveUnknown {
   color: var(--warning);
   font-weight: 650;
 }
-.cm-mu-directiveLabel {
+.editor-host .cm-editor .cm-mu-directiveLabel {
   color: var(--text);
   font-weight: 600;
 }
-.cm-mu-attributeKey,
-.cm-mu-dataKey {
+.editor-host .cm-editor .cm-mu-attributeKey,
+.editor-host .cm-editor .cm-mu-dataKey {
   color: #7dd3fc;
 }
-[data-theme='light'] .cm-mu-attributeKey,
-[data-theme='light'] .cm-mu-dataKey {
+[data-theme='light'] .editor-host .cm-editor .cm-mu-attributeKey,
+[data-theme='light'] .editor-host .cm-editor .cm-mu-dataKey {
   color: #0369a1;
 }
-.cm-mu-attributeValue,
-.cm-mu-dataString {
+.editor-host .cm-editor .cm-mu-attributeValue,
+.editor-host .cm-editor .cm-mu-dataString {
   color: #a7e3a4;
 }
-[data-theme='light'] .cm-mu-attributeValue,
-[data-theme='light'] .cm-mu-dataString {
+[data-theme='light'] .editor-host .cm-editor .cm-mu-attributeValue,
+[data-theme='light'] .editor-host .cm-editor .cm-mu-dataString {
   color: #15803d;
 }
-.cm-mu-attributeId,
-.cm-mu-attributeClass {
+.editor-host .cm-editor .cm-mu-attributeId,
+.editor-host .cm-editor .cm-mu-attributeClass {
   color: #fcd34d;
 }
-[data-theme='light'] .cm-mu-attributeId,
-[data-theme='light'] .cm-mu-attributeClass {
+[data-theme='light'] .editor-host .cm-editor .cm-mu-attributeId,
+[data-theme='light'] .editor-host .cm-editor .cm-mu-attributeClass {
   color: #a16207;
 }
-.cm-mu-dataNumber,
-.cm-mu-dataLiteral {
+.editor-host .cm-editor .cm-mu-dataNumber,
+.editor-host .cm-editor .cm-mu-dataLiteral {
   color: #fdba74;
 }
-[data-theme='light'] .cm-mu-dataNumber,
-[data-theme='light'] .cm-mu-dataLiteral {
+[data-theme='light'] .editor-host .cm-editor .cm-mu-dataNumber,
+[data-theme='light'] .editor-host .cm-editor .cm-mu-dataLiteral {
   color: #c2410c;
 }
-.cm-mu-frontmatter-line {
+.editor-host .cm-editor .cm-mu-frontmatter-line {
   background: var(--accent-softer);
 }

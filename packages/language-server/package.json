@@ -20,13 +20,11 @@
     "build": "node build.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
-  "dependencies": {
+  "devDependencies": {
     "@markup-lang/core": "0.1.0",
     "@markup-lang/language-service": "0.1.0",
+    "vscode-jsonrpc": "^9.0.2",
     "vscode-languageserver": "^10.1.1",
     "vscode-languageserver-textdocument": "^1.0.14"
-  },
-  "devDependencies": {
-    "vscode-jsonrpc": "^9.0.2"
   }
 }
