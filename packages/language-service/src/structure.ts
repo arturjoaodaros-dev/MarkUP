@@ -98,14 +98,13 @@ export function getSymbols(analysis: Analysis): DocumentSymbol[] {
 
 /** A heading's range covers its whole section (until the next heading of the same or higher level). */
 function extendHeadingRanges(symbols: DocumentSymbol[], end: number): void {
+  // Symbols are in document order, so the next heading sibling is simply the next one.
   const headings = symbols.filter((s) => s.kind === 'heading');
-  for (let i = 0; i < symbols.length; i++) {
-    const s = symbols[i]!;
-    if (s.kind !== 'heading') continue;
-    const next = headings.find((h) => h.from > s.from);
+  headings.forEach((s, i) => {
+    const next = headings[i + 1];
     s.to = Math.max(s.to, next ? next.from - 1 : end);
     extendHeadingRanges(s.children, s.to);
-  }
+  });
 }
 
 export interface FoldingRange {
@@ -152,9 +151,18 @@ export function getFoldingRanges(analysis: Analysis): FoldingRange[] {
     }
   }
   const lastLine = analysis.lineIndex.lineCount;
+  // A section ends before the next heading of the same or a higher level: computed
+  // right to left with a monotonic stack, so thousands of headings stay linear.
+  const nextLine: number[] = new Array<number>(headings.length);
+  const stack: number[] = [];
+  for (let i = headings.length - 1; i >= 0; i--) {
+    while (stack.length && headings[stack[stack.length - 1]!]!.depth > headings[i]!.depth)
+      stack.pop();
+    nextLine[i] = stack.length ? headings[stack[stack.length - 1]!]!.line : -1;
+    stack.push(i);
+  }
   headings.forEach((h, i) => {
-    const next = headings.slice(i + 1).find((n) => n.depth <= h.depth);
-    let end = next ? next.line - 1 : lastLine;
+    let end = nextLine[i]! === -1 ? lastLine : nextLine[i]! - 1;
     while (end > h.line && analysis.lineIndex.lineText(end).trim() === '') end--;
     if (end > h.line) ranges.push({ startLine: h.line, endLine: end, kind: 'region' });
   });

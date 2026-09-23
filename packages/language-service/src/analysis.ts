@@ -24,6 +24,8 @@ export class Analysis {
   readonly registry: DirectiveRegistry;
   private anchorsCache: AnchorIndex | null = null;
   private nodesCache: { node: Node; ancestors: readonly Node[] }[] | null = null;
+  private definitionsCache: Map<string, Definition> | null = null;
+  private footnotesCache: Map<string, FootnoteDefinition> | null = null;
 
   constructor(text: string, registry: DirectiveRegistry) {
     this.text = text;
@@ -83,18 +85,24 @@ export class Analysis {
   }
 
   definitions(): Map<string, Definition> {
-    const map = new Map<string, Definition>();
-    for (const { node } of this.nodes())
-      if (node.type === 'definition' && !map.has(node.identifier)) map.set(node.identifier, node);
-    return map;
+    if (!this.definitionsCache) {
+      const map = new Map<string, Definition>();
+      for (const { node } of this.nodes())
+        if (node.type === 'definition' && !map.has(node.identifier)) map.set(node.identifier, node);
+      this.definitionsCache = map;
+    }
+    return this.definitionsCache;
   }
 
   footnotes(): Map<string, FootnoteDefinition> {
-    const map = new Map<string, FootnoteDefinition>();
-    for (const { node } of this.nodes())
-      if (node.type === 'footnoteDefinition' && !map.has(node.identifier))
-        map.set(node.identifier, node);
-    return map;
+    if (!this.footnotesCache) {
+      const map = new Map<string, FootnoteDefinition>();
+      for (const { node } of this.nodes())
+        if (node.type === 'footnoteDefinition' && !map.has(node.identifier))
+          map.set(node.identifier, node);
+      this.footnotesCache = map;
+    }
+    return this.footnotesCache;
   }
 
   lineAt(offset: number): { text: string; start: number; line: number } {

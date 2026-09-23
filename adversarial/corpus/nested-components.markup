@@ -1,0 +1,44 @@
+::::::columns
+:::::column
+::::card[Outer card]
+:::tabs
+::tab[Not a container]
+:::tab[First]
+:::details[Deep]
+:::note
+Deepest note with :badge[:kbd[Ctrl+:abbr[K]{title=Key}]]{variant=info}
+:::
+:::
+:::
+:::
+::::
+:::::
+:::::column
+> :::warning
+> Inside a quote.
+> - list in warning
+>   :::tip
+>   tip in list in warning in quote
+>   :::
+> :::
+:::::
+::::::
+
+:::note
+:::note
+:::note
+Same colons, closed in order.
+:::
+:::
+:::
+
+::::outer
+:::inner
+Skipped close.
+::::
+
+:::note
+- item
+  :::
+fence at the wrong level
+:::

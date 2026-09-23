@@ -65,16 +65,21 @@ const LANGUAGES = [
   'text',
 ];
 
+const CONTEXT_WINDOW = 1000;
+
 export function getCompletions(analysis: Analysis, offset: number): CompletionResult | null {
   const line = analysis.lineAt(offset);
   const before = line.text.slice(0, offset - line.start);
+  // Inline contexts are local: looking at a bounded window keeps unanchored
+  // patterns linear on pathological, very long lines.
+  const near = before.length > CONTEXT_WINDOW ? before.slice(-CONTEXT_WINDOW) : before;
   return (
     dataCompletions(analysis, offset, before) ??
     blockDirectiveCompletions(analysis, offset, before) ??
-    attributeCompletions(analysis, offset, before) ??
-    inlineDirectiveCompletions(analysis, offset, before) ??
-    anchorCompletions(analysis, offset, before) ??
-    footnoteCompletions(analysis, offset, before) ??
+    attributeCompletions(analysis, offset, near) ??
+    inlineDirectiveCompletions(analysis, offset, near) ??
+    anchorCompletions(analysis, offset, near) ??
+    footnoteCompletions(analysis, offset, near) ??
     languageCompletions(offset, before)
   );
 }
@@ -88,10 +93,12 @@ function blockDirectiveCompletions(
   offset: number,
   before: string,
 ): CompletionResult | null {
-  const m = /^((?:[ \t]*(?:>|[-*+]|\d{1,9}[.)])?[ \t]*)*?)(:{2,})([A-Za-z][\w-]*)?$/.exec(before);
+  // Every repetition must consume a container marker, so the whitespace runs are
+  // unambiguous and matching is linear (a nested `[ \t]*` here was exponential).
+  const m = /^(?:[ \t]*(?:>|[-*+]|\d{1,9}[.)]))*[ \t]*(:{2,})([A-Za-z][\w-]*)?$/.exec(before);
   if (!m) return null;
-  const colons = m[2]!;
-  const typed = m[3] ?? '';
+  const colons = m[1]!;
+  const typed = m[2] ?? '';
   const form: DirectiveForm = colons.length >= 3 ? 'container' : 'leaf';
   const from = offset - colons.length - typed.length;
   const indent = /^[ \t]*/.exec(before)![0];

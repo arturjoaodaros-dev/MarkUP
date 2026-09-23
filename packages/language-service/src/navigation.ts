@@ -1,4 +1,4 @@
-import { normalizeLabel, type Diagnostic, type TextEdit } from '@markup-lang/core';
+import { normalizeLabel, type Diagnostic, type Node, type TextEdit } from '@markup-lang/core';
 import type { Analysis } from './analysis.ts';
 
 export interface Location {
@@ -6,34 +6,40 @@ export interface Location {
   to: number;
 }
 
+/** Where a link, image or footnote reference points inside the document, if anywhere. */
+function resolve(analysis: Analysis, node: Node): Location | null {
+  if (node.type === 'link' || node.type === 'image') {
+    if (node.url.startsWith('#')) {
+      let id = node.url.slice(1);
+      try {
+        id = decodeURIComponent(id);
+      } catch {
+        // Keep the raw fragment.
+      }
+      const anchor = analysis.anchors.byId.get(id);
+      if (anchor) return { from: anchor.range.start.offset, to: anchor.range.end.offset };
+    }
+    if (node.type === 'link' && node.kind === 'reference') {
+      const source = analysis.text.slice(node.position.start.offset, node.position.end.offset);
+      const label =
+        /\]\[([^\]]+)\]$/.exec(source)?.[1] ?? /^\[(.*?)\](?:\[\])?$/s.exec(source)?.[1];
+      const def = label ? analysis.definitions().get(normalizeLabel(label)) : undefined;
+      if (def) return { from: def.position.start.offset, to: def.position.end.offset };
+    }
+  }
+  if (node.type === 'footnoteReference') {
+    const def = analysis.footnotes().get(node.identifier);
+    if (def) return { from: def.position.start.offset, to: def.position.end.offset };
+  }
+  return null;
+}
+
 /** Go to definition: `#anchor` links, reference links and footnotes. */
 export function getDefinition(analysis: Analysis, offset: number): Location | null {
   const path = analysis.pathAt(offset);
   for (let i = path.length - 1; i >= 0; i--) {
-    const node = path[i]!;
-    if (node.type === 'link' || node.type === 'image') {
-      if (node.url.startsWith('#')) {
-        let id = node.url.slice(1);
-        try {
-          id = decodeURIComponent(id);
-        } catch {
-          // Keep the raw fragment.
-        }
-        const anchor = analysis.anchors.byId.get(id);
-        if (anchor) return { from: anchor.range.start.offset, to: anchor.range.end.offset };
-      }
-      if (node.type === 'link' && node.kind === 'reference') {
-        const source = analysis.text.slice(node.position.start.offset, node.position.end.offset);
-        const label =
-          /\]\[([^\]]+)\]$/.exec(source)?.[1] ?? /^\[(.*?)\](?:\[\])?$/s.exec(source)?.[1];
-        const def = label ? analysis.definitions().get(normalizeLabel(label)) : undefined;
-        if (def) return { from: def.position.start.offset, to: def.position.end.offset };
-      }
-    }
-    if (node.type === 'footnoteReference') {
-      const def = analysis.footnotes().get(node.identifier);
-      if (def) return { from: def.position.start.offset, to: def.position.end.offset };
-    }
+    const location = resolve(analysis, path[i]!);
+    if (location) return location;
   }
   return null;
 }
@@ -44,9 +50,10 @@ export function getReferences(analysis: Analysis, offset: number): Location[] {
   const out: Location[] = [];
   for (const { node } of analysis.nodes()) {
     if (node.type !== 'link' && node.type !== 'footnoteReference') continue;
-    const def = getDefinition(analysis, node.position.start.offset + 1);
-    if (def && def.from <= target.from && target.from <= def.to)
+    const location = resolve(analysis, node);
+    if (location && location.from <= target.from && target.from <= location.to) {
       out.push({ from: node.position.start.offset, to: node.position.end.offset });
+    }
   }
   return out;
 }
@@ -94,8 +101,9 @@ export function getCodeActions(analysis: Analysis, from: number, to: number): Co
   for (const diagnostic of analysis.diagnostics) {
     const { start, end } = diagnostic.range;
     if (end.offset < from || start.offset > to) continue;
-    for (const fix of diagnostic.fixes ?? [])
+    for (const fix of diagnostic.fixes ?? []) {
       actions.push({ title: fix.title, edits: fix.edits, preferred: !!fix.preferred, diagnostic });
+    }
   }
   return actions;
 }

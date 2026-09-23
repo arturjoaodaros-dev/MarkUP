@@ -491,7 +491,7 @@ The reference HTML renderer maps nodes as follows (attributes from `{…}` add `
 | code | `<pre><code class="language-x">`; with a `title` attribute, wrapped in `<figure>` with a caption |
 | table | `<table>` in a scroll wrapper, `<thead>`/`<tbody>`, alignment as `text-align` |
 | emphasis / strong / strikethrough / code span | `<em>` / `<strong>` / `<del>` / `<code>` |
-| link / image | `<a href title>` / `<img src alt title width height loading="lazy">` |
+| link / image | `<a href title>` / `<img src alt title width height loading="lazy">` (dimensions only when numeric, optionally `px` or `%`) |
 | hard break | `<br>` |
 | footnotes | numbered `<sup>` links in reference order; a closing section with back-links |
 | comments, definitions | nothing |

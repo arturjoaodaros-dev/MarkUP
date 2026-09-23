@@ -1,0 +1,90 @@
+---
+title: [unclosed
+title: again
+tags:
+	- tab
+---
+
+# Many errors {#dup}
+
+## Again {#dup}
+
+:::nott
+Unknown component.
+:::
+
+:::card Title without brackets
+x
+:::
+
+:::card{icon=x}[Label after attributes]
+x
+:::
+
+::: note
+Spaced name.
+:::
+
+:::{.no-name}
+Missing name.
+
+:::tab[Orphan tab]
+Tab outside tabs.
+:::
+
+::::tabs
+Loose text in tabs.
+:::tab
+Missing label.
+:::
+::::
+
+:::columns[Label on columns]
+:::
+
+::toc{depth=9 from=nine}
+
+::progress[Upload]{value=150 variant=purple}
+
+:badge[text]{variant=sucess varient=info}
+
+:abbr[HTML]
+
+:kbd[unclosed label
+
+:badge[x]{a="unterminated}
+
+:::chart
+type: bars
+data:
+  Monday: 12
+  Monday: 13
+  Tuesday: lots
+colour: red
+:::
+
+:::chart
+labels: [a, b
+:::
+
+:::chart
+:::
+
+[bad](javascript:alert(1)) and ![img](data:text/html,x) and [missing](#nowhere).
+
+Footnote[^missing].
+
+[^unused]: Never referenced.
+
+[ref]: /one
+[ref]: /two
+
+| a | b |
+|---|---|
+| 1 | 2 | 3 |
+
+```unclosed
+code
+
+::::
+stray fence after unclosed code

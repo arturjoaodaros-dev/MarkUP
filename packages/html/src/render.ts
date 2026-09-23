@@ -271,8 +271,8 @@ class HtmlRenderer implements HtmlContext {
           title: node.title,
           id: a?.id ?? null,
           class: a?.classes.join(' ') || null,
-          width: stringValue(a?.values.width),
-          height: stringValue(a?.values.height),
+          width: dimension(a?.values.width),
+          height: dimension(a?.values.height),
           loading: 'lazy',
         })}>`;
       }
@@ -416,8 +416,11 @@ function formOf(node: Directive): 'container' | 'leaf' | 'inline' {
       : 'inline';
 }
 
-function stringValue(value: string | true | undefined): string | null {
-  return typeof value === 'string' ? value : null;
+/** Image dimensions: a number, optionally in px or %; anything else is dropped. */
+function dimension(value: string | true | undefined): string | null {
+  return typeof value === 'string' && /^\d{1,5}(\.\d{1,3})?(px|%)?$/.test(value.trim())
+    ? value.trim()
+    : null;
 }
 
 /** Extra heading attributes become `data-*` attributes. */

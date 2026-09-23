@@ -1,0 +1,35 @@
+# Olá, mundo — ✓ 日本語 · עברית · العربية
+
+Combining: e͂ å̂ ̀leading combining. Zero-width: a​b‌c‍d. RTL override: ‮abc‬ done.
+
+Emoji: 🙂 👨‍👩‍👧‍👦 🏳️‍🌈 🇧🇷 — flags and sequences.
+
+**ênfase** *ïtalic* ~~riscado~~ `código`
+
+:::card[Título com acentos]{icon=🚀}
+Conteúdo em português.
+:::
+
+:::caixa[Nome não-ASCII funciona?]
+Componente desconhecido com nome ASCII.
+:::
+
+:::cafè
+Nome com acento não é um nome de diretiva.
+:::
+
+:badge[✓ ok]{variant=success} :kbd[⌘+⇧+P]
+
+- [x] tarefa concluída
+- [ ] tarefa pendente
+
+| Língua | Saudação |
+|---|---|
+| 中文 | 你好 |
+| हिन्दी | नमस्ते |
+
+# Título repetido
+# Título repetido
+# 🙂
+
+[Link para o título](#título-repetido-1)

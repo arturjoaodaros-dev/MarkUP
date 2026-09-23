@@ -1,0 +1,58 @@
+---
+title: "</title><script>alert(1)</script>"
+lang: 'en" onload="alert(1)'
+description: "\"><img src=x onerror=alert(1)>"
+---
+
+# Heading {#x" onclick="alert(1) .a"b data-x="><script>}
+
+:::card[<img src=x onerror=alert(1)>]{href="javascript:alert(1)" icon="\"><script>alert(1)</script>"}
+Body
+:::
+
+:::card[ok]{href=" java	script:alert(1)"}
+x
+:::
+
+:badge[x]{variant="\" onmouseover=\"alert(1)"}
+:abbr[x]{title="\"><script>alert(1)</script>"}
+:kbd[<script>alert(1)</script>]
+::progress[<b>x</b>]{value=5 variant="\"><svg onload=alert(1)>"}
+
+::::columns{gap="\"><script>" align="' onfocus='alert(1)"}
+:::column{span="1\" style=\"x"}
+x
+:::
+::::
+
+:::chart
+title: "<script>alert(1)</script>"
+unit: "\"><svg/onload=alert(1)>"
+labels: ["<img src=x onerror=alert(1)>", b]
+series:
+  - name: "</title><script>"
+    color: "red;}</style><script>alert(1)</script>"
+    values: [1, 2]
+:::
+
+```js" onmouseover="alert(1) {title="</figcaption><script>alert(1)</script>"}
+code
+```
+
+![x" onerror="alert(1)](javascript:alert(1)){width="1\" onload=\"alert(1)"}
+![ok](x.png){width="100\" onload=\"x"}
+
+[a](javascript:alert(1)) [b](JAVASCRIPT:alert(1)) [c](  javascript:alert(1)) [d](vbscript:x) [e](data:text/html,<script>)
+[f](&#106;avascript:alert(1)) [g](java&#x09;script:alert(1)) [h](<javascript:alert(1)>)
+
+<https://example.com/"onmouseover="alert(1)> https://x.com/"onclick="y
+
+[^1]: <script>
+
+x[^1]
+
+::toc[<script>alert(1)</script>]
+
+| <script> | `</td><script>` |
+|---|---|
+| a | b |

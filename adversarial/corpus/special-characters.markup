@@ -1,0 +1,27 @@
+# Punctuation !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
+
+\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\]\^\_\`\{\|\}\~
+
+<script>alert(1)</script> <img src=x onerror=alert(1)> <!-- ok -->
+
+&amp; &lt; &#0; &#xD800; &#x110000; &nosuchentity; &constructor; &
+
+***bold italic*** **_mixed_** *__mixed__* ~~~not~~~ ~~yes~~ ~one~
+
+`` code with ` inside `` ``` ```
+
+[link](<with spaces> "title \"quoted\"") [empty]() [nested [brackets]](x)
+
+:::card{title="quote \" and backslash \\" icon='single \' quote'}
+Attributes with escapes.
+:::
+
+| pipe \| escaped | `code \| too` |
+|---|---|
+| a | b |
+
+:badge[\]]{variant=info} :kbd[Ctrl+\] :kbd[Ctrl++]
+
+Trailing spaces make a break  
+and a backslash too\
+done.

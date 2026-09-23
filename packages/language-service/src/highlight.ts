@@ -102,7 +102,9 @@ export function getHighlights(analysis: Analysis): Highlight[] {
           add(s, e, 'url');
           break;
         }
-        const close = text.lastIndexOf('](', e);
+        // Search only inside the node: an unbounded lastIndexOf is quadratic over many links.
+        const within = text.slice(s, e).lastIndexOf('](');
+        const close = within === -1 ? -1 : s + within;
         if (close > s && close < e) {
           add(s, close + 1, node.type === 'image' ? 'image' : 'link');
           add(close + 1, e, 'url');

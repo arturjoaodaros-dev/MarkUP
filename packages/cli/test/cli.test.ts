@@ -214,6 +214,24 @@ describe('markup components', () => {
   });
 });
 
+describe('awkward files', () => {
+  it('builds files with spaces, Unicode, BOMs, CRLF and no content', async () => {
+    write('docs/ação 1.markup', '# Ação\r\n\r\n[next](a%23b.markup)\r\n');
+    write('docs/a#b.markup', `${String.fromCharCode(0xfeff)}# Hash in name`);
+    write('docs/empty.mkup', '');
+    write('docs/nested/deep/x.md', '> '.repeat(40) + 'deep');
+    const result = await run(['build', 'docs', '--out', 'site']);
+    expect(result.code).toBe(0);
+    expect(readFileSync(join(dir, 'site/ação 1.html'), 'utf8')).toContain('<h1 id="ação">Ação');
+    expect(readFileSync(join(dir, 'site/a#b.html'), 'utf8')).toContain(
+      '<title>Hash in name</title>',
+    );
+    expect(existsSync(join(dir, 'site/empty.html'))).toBe(true);
+    expect(existsSync(join(dir, 'site/nested/deep/x.html'))).toBe(true);
+    expect((await run(['check', 'docs'])).out).toContain('4 files');
+  });
+});
+
 describe('rewriteUrl', () => {
   it.each([
     ['page.markup', 'page.html'],

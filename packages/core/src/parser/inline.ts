@@ -227,8 +227,8 @@ class InlineParser {
     this.pos++;
     // Trailing spaces: two or more make a hard break; any are dropped.
     const last = this.tail;
-    if (last && last.node.type === 'text' && / +$/.test(last.node.value)) {
-      const spaces = / +$/.exec(last.node.value)![0].length;
+    const spaces = last && last.node.type === 'text' ? trailingSpaces(last.node.value) : 0;
+    if (last && last.node.type === 'text' && spaces > 0) {
       last.node.value = last.node.value.slice(0, -spaces);
       const breakStart = last.e - spaces;
       last.e = breakStart;
@@ -703,25 +703,28 @@ class InlineParser {
     const www = head.startsWith('www.');
     if (!www && !head.startsWith('http://') && !head.startsWith('https://')) return false;
     let end = start;
-    while (end < this.end && !/[\s<]/.test(this.text[end]!)) end++;
-    // Trailing punctuation is not part of the link.
+    let opens = 0;
+    let closes = 0;
+    while (end < this.end && !/[\s<]/.test(this.text[end]!)) {
+      if (this.text[end] === '(') opens++;
+      else if (this.text[end] === ')') closes++;
+      end++;
+    }
+    // Trailing punctuation is not part of the link. Counts are kept up to date
+    // while trimming, so this stays linear however many `)` or `;` there are.
     while (end > start) {
       const c = this.text[end - 1]!;
       if ('?!.,:*_~\'"'.includes(c)) {
         end--;
         continue;
       }
-      if (c === ')') {
-        const candidate = this.text.slice(start, end);
-        const opens = (candidate.match(/\(/g) ?? []).length;
-        const closes = (candidate.match(/\)/g) ?? []).length;
-        if (closes > opens) {
-          end--;
-          continue;
-        }
+      if (c === ')' && closes > opens) {
+        closes--;
+        end--;
+        continue;
       }
       if (c === ';') {
-        const entity = /&[A-Za-z0-9]+;$/.exec(this.text.slice(start, end));
+        const entity = /&[A-Za-z0-9]+;$/.exec(this.text.slice(Math.max(start, end - 40), end));
         if (entity) {
           end -= entity[0].length;
           continue;
@@ -974,6 +977,13 @@ function inlineDepth(node: Inline): number {
   }
   depthCache.set(node, depth);
   return depth;
+}
+
+/** Number of trailing U+0020 characters (a manual loop: `/ +$/` is quadratic on long runs). */
+function trailingSpaces(value: string): number {
+  let n = 0;
+  while (n < value.length && value.charCodeAt(value.length - 1 - n) === 0x20) n++;
+  return n;
 }
 
 /** Plain text of inline nodes (used for image alt text). */

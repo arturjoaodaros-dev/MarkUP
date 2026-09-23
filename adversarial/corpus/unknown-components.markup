@@ -1,0 +1,23 @@
+:::mystery[Label]{#id .cls key=value flag}
+**Content is kept.**
+:::
+
+::widget{a=1}
+
+Inline :thing[text]{x=y} and :other{only=attrs}.
+
+:::MixedCase
+Names are case-sensitive.
+:::
+
+:::constructor
+Prototype names are ordinary names.
+:::
+
+:::__proto__
+Also not special.
+:::
+
+::toString
+
+:hasOwnProperty[x]{__proto__=y constructor=z}

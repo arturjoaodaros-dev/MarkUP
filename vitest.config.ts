@@ -24,6 +24,7 @@ export default defineConfig({
             'packages/*/test/**/*.test.ts',
             'examples/**/*.test.ts',
             'scripts/**/*.test.ts',
+            'adversarial/**/*.test.ts',
           ],
           exclude: ['packages/desktop/**', '**/node_modules/**'],
           testTimeout: 30_000,
