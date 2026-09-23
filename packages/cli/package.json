@@ -1,0 +1,24 @@
+{
+  "name": "@markup-lang/cli",
+  "version": "0.1.0",
+  "description": "The markup command: render, build, check and preview MarkUP documents.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "markup": "dist/markup.js"
+  },
+  "exports": {
+    ".": { "source": "./src/main.ts", "default": "./dist/markup.js" }
+  },
+  "files": ["dist"],
+  "engines": { "node": ">=22.12" },
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@markup-lang/core": "0.1.0",
+    "@markup-lang/html": "0.1.0",
+    "@markup-lang/text": "0.1.0"
+  }
+}

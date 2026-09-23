@@ -28,7 +28,7 @@ function callout(type: CalloutType): DirectiveSpec {
     name: type,
     forms: ['container'],
     category: 'callout',
-    description: `${title} callout. ${CALLOUT_DESCRIPTIONS[type]}`,
+    description: `${title} callout — ${CALLOUT_DESCRIPTIONS[type][0]!.toLowerCase()}${CALLOUT_DESCRIPTIONS[type].slice(1)}`,
     label: { use: 'optional', description: `Custom title. Defaults to “${title}”.` },
     attributes: {
       collapsible: s.boolean({ optional: true, description: 'Render the callout collapsed behind its title.' }),

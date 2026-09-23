@@ -37,6 +37,8 @@ export interface HtmlOptions {
   headingAnchors?: boolean;
   /** Syntax highlighter for fenced code; return HTML, or null to fall back to escaped text. */
   highlight?: (code: string, lang: string | null) => string | null;
+  /** Rewrites link and image URLs (after the safety check), e.g. `page.markup` → `page.html`. */
+  rewriteUrl?: (url: string, kind: 'link' | 'image') => string;
 }
 
 export interface HtmlContext {
@@ -362,7 +364,9 @@ class HtmlRenderer implements HtmlContext {
   }
 
   safeUrl(url: string, kind: 'link' | 'image' = 'link'): string | null {
-    return isSafeUrl(url, kind) ? url : null;
+    if (!isSafeUrl(url, kind)) return null;
+    const rewritten = this.options.rewriteUrl?.(url, kind) ?? url;
+    return isSafeUrl(rewritten, kind) ? rewritten : null;
   }
 
   private lineAttr(node: Node): string {
