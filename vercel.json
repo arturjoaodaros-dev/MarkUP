@@ -5,7 +5,7 @@
   "outputDirectory": "site",
   "redirects": [
     {
-      "source": "/downloads/:file(MarkUP-.+|SHA256SUMS\.txt)",
+      "source": "/downloads/:file(MarkUP-.+|SHA256SUMS[.]txt)",
       "destination": "https://github.com/arturjoaodaros-dev/MarkUP/releases/latest/download/:file",
       "permanent": false
     }
