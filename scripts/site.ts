@@ -3,8 +3,11 @@
  *
  * - docs/**     → site/**           (docs/index.markup is the home page)
  * - examples/** → site/examples/**
- * - downloads   → site/downloads/   the desktop installers and the VS Code extension,
- *                                   copied from their build outputs under stable names
+ * - downloads   → site/downloads/   the VS Code extension and, when built locally, the
+ *                                   desktop installers, under stable names
+ *
+ * In production (Vercel, see vercel.json) the desktop installers and their checksums
+ * redirect to the latest GitHub release, built on Windows by the Desktop release workflow.
  *
  * Relative links are resolved against the source file: links to other pages point
  * to their HTML, links to anything else in the repository point to GitHub.
@@ -141,6 +144,7 @@ export function build(out: string, requireDownloads = false): number {
 
   mkdirSync(join(out, 'downloads'));
   const sums: string[] = [];
+  let copied = 0;
   for (const [name, from] of DOWNLOADS) {
     let data: Buffer;
     try {
@@ -151,12 +155,13 @@ export function build(out: string, requireDownloads = false): number {
       continue;
     }
     writeFileSync(join(out, 'downloads', name), data);
-    sums.push(`${createHash('sha256').update(data).digest('hex')}  ${name}`);
+    copied++;
+    // Checksums cover the desktop downloads, like the release's SHA256SUMS.txt.
+    if (name.startsWith('MarkUP-'))
+      sums.push(`${createHash('sha256').update(data).digest('hex')}  ${name}`);
   }
-  writeFileSync(join(out, 'downloads/SHA256SUMS.txt'), sums.length ? `${sums.join('\n')}\n` : '');
-  console.log(
-    `Site → ${relative(root, out) || out} (${sums.length}/${DOWNLOADS.length} downloads)`,
-  );
+  if (sums.length) writeFileSync(join(out, 'downloads/SHA256SUMS.txt'), `${sums.join('\n')}\n`);
+  console.log(`Site → ${relative(root, out) || out} (${copied}/${DOWNLOADS.length} downloads)`);
   return problems ? 1 : 0;
 }
 

@@ -32,7 +32,11 @@ describe('documentation website', () => {
 
   it('has a home page and no broken relative links', () => {
     expect(existsSync(join(out, 'index.html'))).toBe(true);
-    const downloads = new Set(DOWNLOADS.map(([name]) => `downloads/${name}`));
+    // Served from the build or redirected to the latest release (vercel.json).
+    const downloads = new Set([
+      ...DOWNLOADS.map(([name]) => `downloads/${name}`),
+      'downloads/SHA256SUMS.txt',
+    ]);
     const pages = readdirSync(out, { recursive: true, encoding: 'utf8' })
       .map((f) => f.replaceAll('\\', '/'))
       .filter((f) => f.endsWith('.html'));

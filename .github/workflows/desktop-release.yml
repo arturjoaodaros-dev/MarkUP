@@ -1,0 +1,67 @@
+name: Desktop release
+
+# Builds the Windows installers and publishes them as the latest GitHub release,
+# under stable names. The website links to releases/latest/download/<name>
+# (see vercel.json). A release is made once per version in tauri.conf.json;
+# run the workflow by hand to rebuild the current one.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: desktop-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version
+        id: version
+        run: |
+          version=$(node -p "require('./packages/desktop/src-tauri/tauri.conf.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if gh release view "desktop-v$version" > /dev/null 2>&1 && [ "${{ github.event_name }}" != workflow_dispatch ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.version.outputs.skip != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - if: steps.version.outputs.skip != 'true'
+        uses: dtolnay/rust-toolchain@stable
+      - if: steps.version.outputs.skip != 'true'
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: packages/desktop/src-tauri
+      - if: steps.version.outputs.skip != 'true'
+        run: npm ci && npm run build && npm run app:build -w @markup-lang/desktop
+      - if: steps.version.outputs.skip != 'true'
+        name: Publish
+        run: |
+          v=${{ steps.version.outputs.version }}
+          r=packages/desktop/src-tauri/target/release
+          mkdir assets
+          cp "$r/bundle/nsis/MarkUP_${v}_x64-setup.exe" assets/MarkUP-Setup-x64.exe
+          cp "$r/bundle/msi/MarkUP_${v}_x64_en-US.msi" assets/MarkUP-x64.msi
+          cp "$r/markup-desktop.exe" assets/MarkUP-Portable-x64.exe
+          (cd assets && sha256sum MarkUP-* > SHA256SUMS.txt)
+          if gh release view "desktop-v$v" > /dev/null 2>&1; then
+            gh release upload "desktop-v$v" assets/* --clobber
+          else
+            gh release create "desktop-v$v" assets/* --target "$GITHUB_SHA" --latest \
+              --title "MarkUP Desktop $v" \
+              --notes "Windows installers for MarkUP Desktop $v. Download page: https://markup.rweb.site/download.html"
+          fi
