@@ -4,6 +4,8 @@ A focused editor for MarkUP documents: a file explorer, tabs, an editor that und
 
 ## Run it
 
+**Installed**: Windows installers and a portable build are on the [download page](download.md).
+
 **In a browser** (no native toolchain needed; files live in the browser's storage, with sample documents):
 
 ```sh

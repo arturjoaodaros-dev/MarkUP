@@ -4,6 +4,8 @@
 
 <p align="center">Markdown with components — a real parser, a VS Code extension, a desktop editor and a CLI, all built on one language core.</p>
 
+<p align="center"><a href="https://arturjoaodaros-dev.github.io/MarkUP/">Website</a> · <a href="https://arturjoaodaros-dev.github.io/MarkUP/download.html">Download for Windows</a></p>
+
 ---
 
 ```markup
@@ -64,6 +66,7 @@ node packages/cli/dist/markup.js preview examples/showcase.markup --open
 
 To have a `markup` command on your PATH, run `npm link -w @markup-lang/cli`.
 
+- **Downloads:** Windows installers for MarkUP Desktop and the VS Code extension are on the [website](https://arturjoaodaros-dev.github.io/MarkUP/download.html).
 - **VS Code:** `npm run package -w markup-lang` builds `packages/vscode/dist/markup.vsix`; install it with *Extensions → … → Install from VSIX*. See [docs/vscode.md](docs/vscode.md).
 - **Desktop:** `npm run dev -w @markup-lang/desktop` runs the editor in a browser; `npm run app:build -w @markup-lang/desktop` builds the native app. See [docs/desktop.md](docs/desktop.md).
 

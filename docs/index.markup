@@ -1,0 +1,83 @@
+---
+title: MarkUP — Markdown with components
+description: A Markdown-compatible language with components, a real parser, a desktop editor, a VS Code extension and a CLI.
+---
+
+# MarkUP
+
+**Markdown with components.** Everything you know from Markdown still works; components add structure where plain Markdown runs out. One language core powers a desktop editor, a VS Code extension and a command-line tool.
+
+**[Download for Windows](download.md)** · [Get started](getting-started.md) · [See every component](components.md)
+
+::::columns{align=center}
+:::column
+````markup
+:::tip[New in this release]
+Components add structure where
+plain Markdown runs out.
+:::
+
+:::chart{title="Coverage"}
+type: bar
+data:
+  Parser: 98
+  Renderer: 91
+  Editor: 87
+:::
+
+Press :kbd[Ctrl+P] to open a file.
+````
+:::
+:::column
+:::tip[New in this release]
+Components add structure where plain Markdown runs out.
+:::
+
+:::chart{title="Coverage"}
+type: bar
+data:
+  Parser: 98
+  Renderer: 91
+  Editor: 87
+:::
+
+Press :kbd[Ctrl+P] to open a file.
+:::
+::::
+
+## The tools
+
+:::::columns
+::::column
+:::card[MarkUP Desktop]{href="download.md" icon="🖥️"}
+A focused editor: file explorer, tabs, live preview, search, outline and problems — with completion and quick fixes that understand the language. [Download](download.md) · [Tour](desktop.md)
+:::
+::::
+::::column
+:::card[VS Code extension]{href="vscode.md" icon="🧩"}
+Highlighting, completion, hover, diagnostics with quick fixes, outline and a live preview beside the editor. [Download](download.md#vs-code-extension)
+:::
+::::
+::::column
+:::card[Command line]{href="cli.md" icon="⌨️"}
+`markup build` turns documents into standalone pages, `check` finds problems, `preview` serves one with live reload.
+:::
+::::
+:::::
+
+## Documentation
+
+| | |
+|---|---|
+| [Getting started](getting-started.md) | Install, first document, the syntax in ten minutes |
+| [Specification](spec.md) | The language, precisely — enough to write another parser |
+| [Components](components.md) | Every built-in component |
+| [Diagnostics](errors.md) | Every error and warning code |
+| [CLI](cli.md) | `markup render`, `build`, `check`, `preview`, `components` |
+| [VS Code](vscode.md) | The extension and its settings |
+| [Desktop](desktop.md) | MarkUP Desktop |
+| [Extending MarkUP](extending.md) | Writing components and plugins |
+| [Architecture](architecture.md) | How the pieces fit, and why |
+| [Development](development.md) | Working on the repository |
+
+Examples: [a showcase of every feature](../examples/showcase.markup) and [a basic document](../examples/basic.markup).

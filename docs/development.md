@@ -34,6 +34,7 @@ Sources use `.ts` extensions in relative imports and only erasable TypeScript sy
 | Desktop native | `npm run app:dev -w @markup-lang/desktop` |
 | VS Code extension | `npm run package -w markup-lang`, or *Run Extension* in VS Code |
 | Regenerate reference docs | `npm run docs:generate` |
+| Documentation website | `npm run site` → `site/` (see `scripts/site.ts`) |
 | Format | `npm run format` |
 
 ## Tests
@@ -73,3 +74,4 @@ When you fix a bug, add the input that triggered it to the tests of the relevant
 - CLI: `npm publish -w @markup-lang/cli` (the bundle has no runtime dependencies).
 - VS Code: `npm run package -w markup-lang`, then `vsce publish` from `packages/vscode`.
 - Desktop: `npm run app:build -w @markup-lang/desktop` on each target platform.
+- Website and downloads: bump the versions named in `docs/download.md`, then push to `main`. The *Site* workflow builds the Windows installers and the VSIX, and publishes the site with them to GitHub Pages. Locally, `npm run site -- --require-downloads` does the same after the two builds.
