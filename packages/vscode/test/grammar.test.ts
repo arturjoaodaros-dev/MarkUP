@@ -13,10 +13,18 @@ let grammar: IGrammar;
 beforeAll(async () => {
   const require = createRequire(import.meta.url);
   const wasm = readFileSync(require.resolve('vscode-oniguruma/release/onig.wasm'));
-  await oniguruma.loadWASM(wasm.buffer.slice(wasm.byteOffset, wasm.byteOffset + wasm.byteLength) as ArrayBuffer);
+  await oniguruma.loadWASM(
+    wasm.buffer.slice(wasm.byteOffset, wasm.byteOffset + wasm.byteLength) as ArrayBuffer,
+  );
   const registry = new Registry({
-    onigLib: Promise.resolve({ createOnigScanner: (p) => new oniguruma.OnigScanner(p), createOnigString: (s) => new oniguruma.OnigString(s) }),
-    loadGrammar: async (scope) => (scope === 'text.markup' ? parseRawGrammar(JSON.stringify(source), 'markup.tmLanguage.json') : null),
+    onigLib: Promise.resolve({
+      createOnigScanner: (p) => new oniguruma.OnigScanner(p),
+      createOnigString: (s) => new oniguruma.OnigString(s),
+    }),
+    loadGrammar: async (scope) =>
+      scope === 'text.markup'
+        ? parseRawGrammar(JSON.stringify(source), 'markup.tmLanguage.json')
+        : null,
   });
   grammar = (await registry.loadGrammar('text.markup'))!;
 });
@@ -46,9 +54,13 @@ describe('TextMate grammar', () => {
   });
 
   it('colours inline directives and leaf directives', () => {
-    expect(scopesOf('Press :kbd[Ctrl+S] now', 'kbd')).toContain('entity.name.tag.directive.inline.markup');
+    expect(scopesOf('Press :kbd[Ctrl+S] now', 'kbd')).toContain(
+      'entity.name.tag.directive.inline.markup',
+    );
     expect(scopesOf('::toc{depth=2}', 'toc')).toContain('entity.name.tag.directive.markup');
-    expect(scopesOf('at 10:30 today', '30')).not.toContain('entity.name.tag.directive.inline.markup');
+    expect(scopesOf('at 10:30 today', '30')).not.toContain(
+      'entity.name.tag.directive.inline.markup',
+    );
   });
 
   it('colours Markdown constructs', () => {

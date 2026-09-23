@@ -61,11 +61,17 @@ describe('performance', () => {
     ['50k opening brackets', '['.repeat(50_000)],
     ['unclosed links', '[a](b '.repeat(10_000)],
     ['50k backticks runs', '`a``b```c'.repeat(5_000)],
-    ['many unmatched code spans', Array.from({ length: 3_000 }, (_, i) => '`'.repeat((i % 50) + 1) + 'x').join(' ')],
+    [
+      'many unmatched code spans',
+      Array.from({ length: 3_000 }, (_, i) => '`'.repeat((i % 50) + 1) + 'x').join(' '),
+    ],
     ['deep emphasis nesting', '*'.repeat(5_000) + 'x' + '*'.repeat(5_000)],
     ['directive label nesting', ':badge['.repeat(2_000) + 'x' + ']'.repeat(2_000)],
     ['10k nested blockquotes', '>'.repeat(10_000) + ' deep'],
-    ['deeply nested lists', Array.from({ length: 2_000 }, (_, i) => `${' '.repeat(i * 2)}- item`).join('\n')],
+    [
+      'deeply nested lists',
+      Array.from({ length: 2_000 }, (_, i) => `${' '.repeat(i * 2)}- item`).join('\n'),
+    ],
     ['2k nested directives', ':::note\n'.repeat(2_000) + 'x\n' + ':::\n'.repeat(2_000)],
     ['2k unclosed directives', ':::note\n'.repeat(2_000)],
     ['many stray fences', ':::\n'.repeat(20_000)],
@@ -73,8 +79,18 @@ describe('performance', () => {
     ['long single line', 'word '.repeat(200_000)],
     ['many entities', '&amp;&#65;&bogus;'.repeat(20_000)],
     ['many attribute blocks', ':badge[x]{a=1 b="2" .c #d}'.repeat(5_000)],
-    ['deep MarkUP Data', ':::chart\n' + Array.from({ length: 1_000 }, (_, i) => `${' '.repeat(i)}k${i}:`).join('\n') + '\n:::'],
-    ['many footnotes', Array.from({ length: 5_000 }, (_, i) => `x[^${i}]`).join(' ') + '\n\n' + Array.from({ length: 5_000 }, (_, i) => `[^${i}]: n`).join('\n')],
+    [
+      'deep MarkUP Data',
+      ':::chart\n' +
+        Array.from({ length: 1_000 }, (_, i) => `${' '.repeat(i)}k${i}:`).join('\n') +
+        '\n:::',
+    ],
+    [
+      'many footnotes',
+      Array.from({ length: 5_000 }, (_, i) => `x[^${i}]`).join(' ') +
+        '\n\n' +
+        Array.from({ length: 5_000 }, (_, i) => `[^${i}]: n`).join('\n'),
+    ],
     ['many links to anchors', '# Title\n\n' + '[a](#missing) '.repeat(5_000)],
   ];
 

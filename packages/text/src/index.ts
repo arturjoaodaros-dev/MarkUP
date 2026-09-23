@@ -32,9 +32,16 @@ const CALLOUTS = new Set(['note', 'tip', 'important', 'warning', 'caution']);
 
 const BUILTIN: Record<string, TextComponent> = {
   chart(node, ctx) {
-    const data = node.type === 'containerDirective' && node.body.kind === 'data' ? toPlainData(node.body.value) : null;
+    const data =
+      node.type === 'containerDirective' && node.body.kind === 'data'
+        ? toPlainData(node.body.value)
+        : null;
     const lines: string[] = [];
-    const title = ctx.label(node) || (data && typeof data === 'object' && !Array.isArray(data) && typeof data.title === 'string' ? data.title : '');
+    const title =
+      ctx.label(node) ||
+      (data && typeof data === 'object' && !Array.isArray(data) && typeof data.title === 'string'
+        ? data.title
+        : '');
     if (title) lines.push(title);
     if (data && typeof data === 'object' && !Array.isArray(data)) {
       const single = data.data;
@@ -44,7 +51,9 @@ const BUILTIN: Record<string, TextComponent> = {
         for (const s of data.series) {
           if (s && typeof s === 'object' && !Array.isArray(s)) {
             const values = Array.isArray(s.values) ? s.values : [];
-            lines.push(`${String(s.name)}: ${data.labels.map((l, i) => `${String(l)} ${String(values[i] ?? '')}`).join(', ')}`);
+            lines.push(
+              `${String(s.name)}: ${data.labels.map((l, i) => `${String(l)} ${String(values[i] ?? '')}`).join(', ')}`,
+            );
           }
         }
       }
@@ -67,7 +76,8 @@ export function renderText(document: Document, options: TextOptions = {}): strin
   const plugins = options.plugins ?? [];
   const registry = createRegistry(plugins);
   const components: Record<string, TextComponent> = { ...BUILTIN };
-  for (const plugin of plugins) Object.assign(components, (plugin.renderers?.text ?? {}) as Record<string, TextComponent>);
+  for (const plugin of plugins)
+    Object.assign(components, (plugin.renderers?.text ?? {}) as Record<string, TextComponent>);
   Object.assign(components, options.components ?? {});
 
   const ctx: TextContext = {
@@ -79,7 +89,10 @@ export function renderText(document: Document, options: TextOptions = {}): strin
         .join('\n\n'),
     inlines: (nodes) => nodes.map(inline).join(''),
     label: (node) => (node.label ? ctx.inlines(node.label) : ''),
-    body: (node) => (node.type === 'containerDirective' && node.body.kind === 'flow' ? ctx.blocks(node.body.children) : ''),
+    body: (node) =>
+      node.type === 'containerDirective' && node.body.kind === 'flow'
+        ? ctx.blocks(node.body.children)
+        : '',
   };
 
   function directive(node: Directive): string {
@@ -115,7 +128,9 @@ export function renderText(document: Document, options: TextOptions = {}): strin
       case 'code':
         return node.value;
       case 'table':
-        return node.children.map((row) => row.children.map((cell) => ctx.inlines(cell.children)).join('\t')).join('\n');
+        return node.children
+          .map((row) => row.children.map((cell) => ctx.inlines(cell.children)).join('\t'))
+          .join('\n');
       case 'footnoteDefinition':
         return `[${node.label}] ${ctx.blocks(node.children)}`;
       case 'containerDirective':
@@ -147,7 +162,10 @@ export function renderText(document: Document, options: TextOptions = {}): strin
   return ctx.blocks(document.children);
 }
 
-const segmenter = typeof Intl !== 'undefined' && 'Segmenter' in Intl ? new Intl.Segmenter(undefined, { granularity: 'word' }) : null;
+const segmenter =
+  typeof Intl !== 'undefined' && 'Segmenter' in Intl
+    ? new Intl.Segmenter(undefined, { granularity: 'word' })
+    : null;
 
 /** Counts words; uses Intl.Segmenter when available so CJK text is counted sensibly. */
 export function countWords(text: string): number {

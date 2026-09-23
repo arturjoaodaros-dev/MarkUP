@@ -17,9 +17,20 @@ export interface PreviewOptions {
 }
 
 const MIME: Record<string, string> = {
-  '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.svg': 'image/svg+xml',
-  '.webp': 'image/webp', '.avif': 'image/avif', '.ico': 'image/x-icon', '.css': 'text/css', '.txt': 'text/plain; charset=utf-8',
-  '.pdf': 'application/pdf', '.mp4': 'video/mp4', '.webm': 'video/webm', '.woff2': 'font/woff2',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.webp': 'image/webp',
+  '.avif': 'image/avif',
+  '.ico': 'image/x-icon',
+  '.css': 'text/css',
+  '.txt': 'text/plain; charset=utf-8',
+  '.pdf': 'application/pdf',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.woff2': 'font/woff2',
 };
 
 const CLIENT = `<script>
@@ -32,15 +43,25 @@ const CLIENT = `<script>
 })();
 </script>`;
 
-export function renderPreviewPage(source: string, options: Pick<PreviewOptions, 'theme' | 'plugins'> & { title: string }): string {
+export function renderPreviewPage(
+  source: string,
+  options: Pick<PreviewOptions, 'theme' | 'plugins'> & { title: string },
+): string {
   const { document, diagnostics } = parse(source, { plugins: options.plugins });
-  let html = renderDocument(document, { plugins: options.plugins, theme: options.theme, title: options.title });
+  let html = renderDocument(document, {
+    plugins: options.plugins,
+    theme: options.theme,
+    title: options.title,
+  });
   const problems = diagnostics.filter((d) => d.severity === 'error' || d.severity === 'warning');
   let overlay = '';
   if (problems.length > 0) {
     const items = problems
       .slice(0, 50)
-      .map((d) => `<li><b style="color:${d.severity === 'error' ? '#dc2626' : '#b45309'}">${d.range.start.line}:${d.range.start.column}</b> ${escapeHtml(d.message)} <span style="opacity:.6">${d.code}</span></li>`)
+      .map(
+        (d) =>
+          `<li><b style="color:${d.severity === 'error' ? '#dc2626' : '#b45309'}">${d.range.start.line}:${d.range.start.column}</b> ${escapeHtml(d.message)} <span style="opacity:.6">${d.code}</span></li>`,
+      )
       .join('');
     overlay = `<details style="position:fixed;left:16px;bottom:16px;max-width:min(680px,calc(100vw - 32px));max-height:40vh;overflow:auto;background:#1d2027;color:#e6e8ec;border-radius:10px;padding:10px 14px;font:13px/1.5 ui-sans-serif,system-ui,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.25);z-index:9"><summary style="cursor:pointer">${problems.length} problem${problems.length === 1 ? '' : 's'} in this document</summary><ul style="margin:8px 0 0;padding-left:18px">${items}</ul></details>`;
   }
@@ -57,7 +78,11 @@ export async function startPreview(options: PreviewOptions): Promise<Server> {
   const server = createServer(async (req, res) => {
     const url = new URL(req.url ?? '/', 'http://localhost');
     if (url.pathname === '/__markup/events') {
-      res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache', connection: 'keep-alive' });
+      res.writeHead(200, {
+        'content-type': 'text/event-stream',
+        'cache-control': 'no-cache',
+        connection: 'keep-alive',
+      });
       res.write(': connected\n\n');
       clients.add(res);
       req.on('close', () => clients.delete(res));
@@ -66,7 +91,10 @@ export async function startPreview(options: PreviewOptions): Promise<Server> {
     if (url.pathname === '/' || url.pathname === '/index.html') {
       try {
         const source = await readFile(file, 'utf8');
-        res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
+        res.writeHead(200, {
+          'content-type': 'text/html; charset=utf-8',
+          'cache-control': 'no-store',
+        });
         res.end(renderPreviewPage(source, { ...options, title: basename(file) }));
       } catch (error) {
         res.writeHead(500, { 'content-type': 'text/plain; charset=utf-8' });
@@ -89,7 +117,9 @@ export async function startPreview(options: PreviewOptions): Promise<Server> {
     }
     try {
       const data = await readFile(target);
-      res.writeHead(200, { 'content-type': MIME[extname(target).toLowerCase()] ?? 'application/octet-stream' });
+      res.writeHead(200, {
+        'content-type': MIME[extname(target).toLowerCase()] ?? 'application/octet-stream',
+      });
       res.end(data);
     } catch {
       res.writeHead(404, { 'content-type': 'text/plain' }).end('Not found');
@@ -99,14 +129,21 @@ export async function startPreview(options: PreviewOptions): Promise<Server> {
   const port = await listen(server, options.port);
   let timer: NodeJS.Timeout | undefined;
   const watcher = watch(root, (_event, name) => {
-    if (name && basename(String(name)) !== basename(file) && !MIME[extname(String(name)).toLowerCase()]) return;
+    if (
+      name &&
+      basename(String(name)) !== basename(file) &&
+      !MIME[extname(String(name)).toLowerCase()]
+    )
+      return;
     clearTimeout(timer);
     timer = setTimeout(() => {
       for (const client of clients) client.write('data: reload\n\n');
       try {
         const { diagnostics } = parse(readFileSync(file, 'utf8'), { plugins: options.plugins });
         const errors = diagnostics.filter((d) => d.severity === 'error').length;
-        io.stdout(`${c.gray(new Date().toLocaleTimeString())} ${errors ? c.red(`reloaded with ${errors} error${errors === 1 ? '' : 's'}`) : c.green('reloaded')}\n`);
+        io.stdout(
+          `${c.gray(new Date().toLocaleTimeString())} ${errors ? c.red(`reloaded with ${errors} error${errors === 1 ? '' : 's'}`) : c.green('reloaded')}\n`,
+        );
       } catch {
         // The file may be mid-save; the next event will report.
       }
@@ -115,7 +152,9 @@ export async function startPreview(options: PreviewOptions): Promise<Server> {
   server.on('close', () => watcher.close());
 
   const address = `http://localhost:${port}`;
-  io.stdout(`${c.green('●')} Previewing ${c.bold(display(file, io.cwd))} at ${c.cyan(address)} ${c.gray('(Ctrl+C to stop)')}\n`);
+  io.stdout(
+    `${c.green('●')} Previewing ${c.bold(display(file, io.cwd))} at ${c.cyan(address)} ${c.gray('(Ctrl+C to stop)')}\n`,
+  );
   if (options.open) openBrowser(address);
   return server;
 }
@@ -138,6 +177,10 @@ function listen(server: Server, port: number, attempts = 10): Promise<number> {
 
 function openBrowser(url: string): void {
   const [command, args] =
-    process.platform === 'win32' ? ['cmd', ['/c', 'start', '""', url]] : process.platform === 'darwin' ? ['open', [url]] : ['xdg-open', [url]];
+    process.platform === 'win32'
+      ? ['cmd', ['/c', 'start', '""', url]]
+      : process.platform === 'darwin'
+        ? ['open', [url]]
+        : ['xdg-open', [url]];
   spawn(command, args, { stdio: 'ignore', detached: true }).unref();
 }

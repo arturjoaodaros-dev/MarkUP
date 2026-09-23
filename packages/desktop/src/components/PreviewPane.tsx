@@ -32,7 +32,9 @@ export function PreviewPane() {
   const active = useAppState((s) => s.active);
   const content = useAppState((s) => (s.active ? s.docs[s.active]?.content : undefined));
   // Always explicit: the preview must follow the app theme, not the operating system.
-  const theme = useAppState((s) => (s.settings.previewTheme === 'app' ? resolvedTheme(s.settings) : s.settings.previewTheme));
+  const theme = useAppState((s) =>
+    s.settings.previewTheme === 'app' ? resolvedTheme(s.settings) : s.settings.previewTheme,
+  );
 
   // Shadow root, styles and event handling — once.
   useEffect(() => {
@@ -58,7 +60,9 @@ export function PreviewPane() {
       if (!anchor || !href) return;
       event.preventDefault();
       if (href.startsWith('#')) {
-        root.getElementById(decodeURIComponent(href.slice(1)))?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        root
+          .getElementById(decodeURIComponent(href.slice(1)))
+          ?.scrollIntoView({ block: 'start', behavior: 'smooth' });
       } else if (ABSOLUTE.test(href)) {
         void wb.fs.openExternal(href);
       } else if (wb.state.active) {
@@ -96,8 +100,11 @@ export function PreviewPane() {
       const html = renderHtml(analysis.document, {
         sourcePositions: true,
         rewriteUrl: (url, kind) => {
-          if (kind !== 'image' || ABSOLUTE.test(url) || url.startsWith('#') || url.startsWith('//')) return url;
-          return wb.fs.fileUrl(normalize(join(dirname(active), decodeURI(url.split(/[?#]/)[0]!)))) ?? url;
+          if (kind !== 'image' || ABSOLUTE.test(url) || url.startsWith('#') || url.startsWith('//'))
+            return url;
+          return (
+            wb.fs.fileUrl(normalize(join(dirname(active), decodeURI(url.split(/[?#]/)[0]!)))) ?? url
+          );
         },
       });
       const next = document.createElement('main');
@@ -106,8 +113,18 @@ export function PreviewPane() {
       next.innerHTML = html;
       morphdom(body, next, {
         onBeforeElUpdated(from, to) {
-          if (from instanceof HTMLDetailsElement && to instanceof HTMLDetailsElement && !to.hasAttribute('open')) to.open = from.open;
-          if (from instanceof HTMLInputElement && to instanceof HTMLInputElement && from.type === 'radio') to.checked = from.checked;
+          if (
+            from instanceof HTMLDetailsElement &&
+            to instanceof HTMLDetailsElement &&
+            !to.hasAttribute('open')
+          )
+            to.open = from.open;
+          if (
+            from instanceof HTMLInputElement &&
+            to instanceof HTMLInputElement &&
+            from.type === 'radio'
+          )
+            to.checked = from.checked;
           return !from.isEqualNode(to);
         },
       });

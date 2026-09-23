@@ -48,10 +48,20 @@ window.addEventListener('message', (event: MessageEvent<Message>) => {
       morphdom(main, next, {
         onBeforeElUpdated(from, to) {
           // Keep interactive state that the author did not change.
-          if (from instanceof HTMLDetailsElement && to instanceof HTMLDetailsElement && from.open !== to.open && !to.hasAttribute('open')) {
+          if (
+            from instanceof HTMLDetailsElement &&
+            to instanceof HTMLDetailsElement &&
+            from.open !== to.open &&
+            !to.hasAttribute('open')
+          ) {
             to.open = from.open;
           }
-          if (from instanceof HTMLInputElement && to instanceof HTMLInputElement && from.type === 'radio') to.checked = from.checked;
+          if (
+            from instanceof HTMLInputElement &&
+            to instanceof HTMLInputElement &&
+            from.type === 'radio'
+          )
+            to.checked = from.checked;
           return !from.isEqualNode(to);
         },
       });

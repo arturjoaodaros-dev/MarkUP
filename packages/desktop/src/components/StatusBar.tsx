@@ -14,7 +14,10 @@ export function StatusBar() {
   const cursor = useAppState((s) => s.cursor);
   const problems = useAppState((s) => s.problems);
 
-  const totals = Object.values(problems).reduce((t, p) => ({ errors: t.errors + p.errors, warnings: t.warnings + p.warnings }), { errors: 0, warnings: 0 });
+  const totals = Object.values(problems).reduce(
+    (t, p) => ({ errors: t.errors + p.errors, warnings: t.warnings + p.warnings }),
+    { errors: 0, warnings: 0 },
+  );
   // Words of the rendered text (so markup syntax is not counted).
   const words = useMemo(() => {
     if (!active || content === undefined) return 0;
@@ -39,14 +42,25 @@ export function StatusBar() {
       </div>
       <div className="status-right">
         {workspace && (
-          <button type="button" className="status-item status-button" title="Problems" onClick={() => wb.showSidebar('problems')}>
+          <button
+            type="button"
+            className="status-item status-button"
+            title="Problems"
+            onClick={() => wb.showSidebar('problems')}
+          >
             <CircleX size={13} className={totals.errors ? 'sev-error' : ''} /> {totals.errors}
-            <TriangleAlert size={13} className={totals.warnings ? 'sev-warning' : ''} /> {totals.warnings}
+            <TriangleAlert size={13} className={totals.warnings ? 'sev-warning' : ''} />{' '}
+            {totals.warnings}
           </button>
         )}
         {active && (
           <>
-            <button type="button" className="status-item status-button" title="Go to line" onClick={() => wb.openPalette('line')}>
+            <button
+              type="button"
+              className="status-item status-button"
+              title="Go to line"
+              onClick={() => wb.openPalette('line')}
+            >
               Ln {cursor.line}, Col {cursor.column}
               {cursor.selected > 0 ? ` (${cursor.selected} selected)` : ''}
             </button>

@@ -21,11 +21,13 @@ export function App({ wb }: { wb: Workbench }) {
   // Global keyboard shortcuts (capture phase, so they work inside the editor too).
   useEffect(() => {
     const table = new Map<string, () => void>();
-    for (const command of commands) for (const shortcut of command.shortcuts ?? []) table.set(shortcut, () => void command.run());
+    for (const command of commands)
+      for (const shortcut of command.shortcuts ?? []) table.set(shortcut, () => void command.run());
     const onKey = (event: KeyboardEvent) => {
       const shortcut = eventToShortcut(event);
       // Let CodeMirror handle find when the editor has focus.
-      if (shortcut === 'mod+f' && (event.target as HTMLElement | null)?.closest('.cm-editor')) return;
+      if (shortcut === 'mod+f' && (event.target as HTMLElement | null)?.closest('.cm-editor'))
+        return;
       const action = table.get(shortcut);
       if (!action) return;
       event.preventDefault();
@@ -59,7 +61,9 @@ export function App({ wb }: { wb: Workbench }) {
       void import('@tauri-apps/api/window').then(async ({ getCurrentWindow }) => {
         const win = getCurrentWindow();
         unlisten = await win.onCloseRequested(async (event) => {
-          const dirty = Object.values(wb.state.docs).filter(isDirty).map((d) => d.path);
+          const dirty = Object.values(wb.state.docs)
+            .filter(isDirty)
+            .map((d) => d.path);
           if (dirty.length && !(await wb.confirmDiscard(dirty))) event.preventDefault();
         });
       });
@@ -99,9 +103,14 @@ function Shell() {
 
   useEffect(() => {
     const file = active ? active.slice(active.lastIndexOf('/') + 1) : null;
-    const title = [file ? `${dirty ? '● ' : ''}${file}` : null, workspace?.name, 'MarkUP'].filter(Boolean).join(' — ');
+    const title = [file ? `${dirty ? '● ' : ''}${file}` : null, workspace?.name, 'MarkUP']
+      .filter(Boolean)
+      .join(' — ');
     document.title = title;
-    if (isTauri) void import('@tauri-apps/api/window').then(({ getCurrentWindow }) => getCurrentWindow().setTitle(title)).catch(() => {});
+    if (isTauri)
+      void import('@tauri-apps/api/window')
+        .then(({ getCurrentWindow }) => getCurrentWindow().setTitle(title))
+        .catch(() => {});
   }, [active, dirty, workspace]);
 
   return (

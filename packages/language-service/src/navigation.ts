@@ -24,7 +24,8 @@ export function getDefinition(analysis: Analysis, offset: number): Location | nu
       }
       if (node.type === 'link' && node.kind === 'reference') {
         const source = analysis.text.slice(node.position.start.offset, node.position.end.offset);
-        const label = /\]\[([^\]]+)\]$/.exec(source)?.[1] ?? /^\[(.*?)\](?:\[\])?$/s.exec(source)?.[1];
+        const label =
+          /\]\[([^\]]+)\]$/.exec(source)?.[1] ?? /^\[(.*?)\](?:\[\])?$/s.exec(source)?.[1];
         const def = label ? analysis.definitions().get(normalizeLabel(label)) : undefined;
         if (def) return { from: def.position.start.offset, to: def.position.end.offset };
       }
@@ -44,7 +45,8 @@ export function getReferences(analysis: Analysis, offset: number): Location[] {
   for (const { node } of analysis.nodes()) {
     if (node.type !== 'link' && node.type !== 'footnoteReference') continue;
     const def = getDefinition(analysis, node.position.start.offset + 1);
-    if (def && def.from <= target.from && target.from <= def.to) out.push({ from: node.position.start.offset, to: node.position.end.offset });
+    if (def && def.from <= target.from && target.from <= def.to)
+      out.push({ from: node.position.start.offset, to: node.position.end.offset });
   }
   return out;
 }
@@ -61,11 +63,19 @@ export function getDocumentLinks(analysis: Analysis): DocumentLink[] {
   for (const { node } of analysis.nodes()) {
     // Reference links are covered by their definition.
     if (node.type === 'link' && node.kind === 'reference') continue;
-    if ((node.type === 'link' || node.type === 'image' || node.type === 'definition') && node.url && !node.url.startsWith('#')) {
+    if (
+      (node.type === 'link' || node.type === 'image' || node.type === 'definition') &&
+      node.url &&
+      !node.url.startsWith('#')
+    ) {
       const source = analysis.text.slice(node.position.start.offset, node.position.end.offset);
       const at = source.lastIndexOf(node.url);
       const from = at === -1 ? node.position.start.offset : node.position.start.offset + at;
-      links.push({ from, to: at === -1 ? node.position.end.offset : from + node.url.length, target: node.url });
+      links.push({
+        from,
+        to: at === -1 ? node.position.end.offset : from + node.url.length,
+        target: node.url,
+      });
     }
   }
   return links;
@@ -84,7 +94,8 @@ export function getCodeActions(analysis: Analysis, from: number, to: number): Co
   for (const diagnostic of analysis.diagnostics) {
     const { start, end } = diagnostic.range;
     if (end.offset < from || start.offset > to) continue;
-    for (const fix of diagnostic.fixes ?? []) actions.push({ title: fix.title, edits: fix.edits, preferred: !!fix.preferred, diagnostic });
+    for (const fix of diagnostic.fixes ?? [])
+      actions.push({ title: fix.title, edits: fix.edits, preferred: !!fix.preferred, diagnostic });
   }
   return actions;
 }

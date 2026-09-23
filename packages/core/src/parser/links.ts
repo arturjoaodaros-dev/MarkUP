@@ -53,7 +53,10 @@ export function scanLinkLabel(text: string, pos: number): { end: number; label: 
 }
 
 /** `<dest>` or a raw destination with balanced parentheses. Returns the unescaped URL. */
-export function scanLinkDestination(text: string, pos: number): { end: number; url: string } | null {
+export function scanLinkDestination(
+  text: string,
+  pos: number,
+): { end: number; url: string } | null {
   if (text[pos] === '<') {
     let i = pos + 1;
     while (i < text.length) {
@@ -161,7 +164,13 @@ export function parseDefinition(text: string, start: number): ParsedDefinition |
   }
   if (!isLineEnd(text, end)) return null;
   const lineEnd = text.indexOf('\n', end);
-  return { start, end: lineEnd === -1 ? text.length : lineEnd + 1, label: label.label, url: dest.url, title };
+  return {
+    start,
+    end: lineEnd === -1 ? text.length : lineEnd + 1,
+    label: label.label,
+    url: dest.url,
+    title,
+  };
 }
 
 function isLineEnd(text: string, pos: number): boolean {

@@ -19,7 +19,12 @@ describe('slugify', () => {
 describe('Slugger', () => {
   it('deduplicates with numeric suffixes', () => {
     const s = new Slugger();
-    expect([s.slug('A'), s.slug('A'), s.slug('A'), s.slug('A-1')]).toEqual(['a', 'a-1', 'a-2', 'a-1-1']);
+    expect([s.slug('A'), s.slug('A'), s.slug('A'), s.slug('A-1')]).toEqual([
+      'a',
+      'a-1',
+      'a-2',
+      'a-1-1',
+    ]);
   });
 
   it('never reuses reserved ids', () => {
@@ -36,7 +41,9 @@ describe('Slugger', () => {
 
 describe('collectAnchors', () => {
   it('collects heading slugs and explicit ids in document order', () => {
-    const { document } = parse('# Intro\n\n## Setup {#install}\n\n:::note{#tip-1}\nx\n:::\n\n# Intro');
+    const { document } = parse(
+      '# Intro\n\n## Setup {#install}\n\n:::note{#tip-1}\nx\n:::\n\n# Intro',
+    );
     const { anchors, headingIds } = collectAnchors(document);
     expect(anchors.map((a) => [a.id, a.explicit])).toEqual([
       ['intro', false],

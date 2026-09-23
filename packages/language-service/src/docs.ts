@@ -1,4 +1,10 @@
-import { describeType, isRequired, labelSpec, type DirectiveSpec, type Schema } from '@markup-lang/core';
+import {
+  describeType,
+  isRequired,
+  labelSpec,
+  type DirectiveSpec,
+  type Schema,
+} from '@markup-lang/core';
 
 const FORM_SYNTAX = { container: ':::', leaf: '::', inline: ':' } as const;
 
@@ -7,7 +13,8 @@ export function directiveDocs(spec: DirectiveSpec): string {
   const forms = spec.forms.map((f) => `\`${FORM_SYNTAX[f]}${spec.name}\``).join(' · ');
   let md = `**${spec.name}** — ${forms}\n\n${spec.description}\n`;
   const label = labelSpec(spec);
-  if (label.use !== 'none') md += `\n**Label** (${label.use})${label.description ? `: ${label.description}` : ''}\n`;
+  if (label.use !== 'none')
+    md += `\n**Label** (${label.use})${label.description ? `: ${label.description}` : ''}\n`;
   const attrs = Object.entries(spec.attributes ?? {});
   if (attrs.length) {
     md += '\n| Attribute | Type | Default |\n|---|---|---|\n';
@@ -16,7 +23,8 @@ export function directiveDocs(spec: DirectiveSpec): string {
     }
   }
   if (spec.content === 'data') md += '\nThe body is MarkUP Data (`key: value` lines).\n';
-  if (spec.allowedParents) md += `\nMust be placed inside ${spec.allowedParents.map((p) => `\`${p}\``).join(' or ')}.\n`;
+  if (spec.allowedParents)
+    md += `\nMust be placed inside ${spec.allowedParents.map((p) => `\`${p}\``).join(' or ')}.\n`;
   const example = spec.examples?.[0];
   if (example) md += `\n\`\`\`markup\n${example.source}\n\`\`\`\n`;
   return md;

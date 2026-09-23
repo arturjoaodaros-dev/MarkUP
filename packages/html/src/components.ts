@@ -6,8 +6,10 @@ import type { HtmlComponent, HtmlContext } from './render.ts';
 const ICON_PATHS: Record<CalloutType, string> = {
   note: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
   tip: '<path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/>',
-  important: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v4M12 14h.01"/>',
-  warning: '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+  important:
+    '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v4M12 14h.01"/>',
+  warning:
+    '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
   caution: '<path d="M7.9 2h8.2L22 7.9v8.2L16.1 22H7.9L2 16.1V7.9z"/><path d="M12 8v4M12 16h.01"/>',
 };
 
@@ -32,7 +34,10 @@ const card: HtmlComponent = (node, ctx) => {
   const props = ctx.props(node);
   const label = ctx.label(node);
   const href = typeof props.href === 'string' ? ctx.safeUrl(props.href) : null;
-  const iconText = typeof props.icon === 'string' ? `<span class="mu-card-icon" aria-hidden="true">${escapeHtml(props.icon)}</span>` : '';
+  const iconText =
+    typeof props.icon === 'string'
+      ? `<span class="mu-card-icon" aria-hidden="true">${escapeHtml(props.icon)}</span>`
+      : '';
   const title = label ? (href ? `<a href="${escapeHtml(href)}">${label}</a>` : label) : '';
   const head = title || iconText ? `<p class="mu-card-title">${iconText}${title}</p>` : '';
   return `<div${ctx.rootAttributes(node, ['mu-card'])}>${head}<div class="mu-card-body">\n${ctx.body(node)}</div></div>\n`;
@@ -45,7 +50,8 @@ const columns: HtmlComponent = (node, ctx) => {
 
 const column: HtmlComponent = (node, ctx) => {
   const span = Number(ctx.props(node).span);
-  const style = Number.isInteger(span) && span > 1 && span <= 12 ? ` style="--mu-span:${span}"` : '';
+  const style =
+    Number.isInteger(span) && span > 1 && span <= 12 ? ` style="--mu-span:${span}"` : '';
   return `<div${ctx.rootAttributes(node, ['mu-column'])}${style}>\n${ctx.body(node)}</div>\n`;
 };
 
@@ -53,7 +59,10 @@ const tabs: HtmlComponent = (node, ctx) => {
   if (node.type !== 'containerDirective' || node.body.kind !== 'flow') return '';
   const group = ctx.uniqueId('mu-tabs');
   const children = node.body.children;
-  const panels = children.filter((c): c is Directive & { type: 'containerDirective' } => c.type === 'containerDirective' && c.name === 'tab');
+  const panels = children.filter(
+    (c): c is Directive & { type: 'containerDirective' } =>
+      c.type === 'containerDirective' && c.name === 'tab',
+  );
   const others = children.filter((c) => !(c.type === 'containerDirective' && c.name === 'tab'));
   let selected = panels.findIndex((p) => ctx.props(p).selected === true);
   if (selected === -1) selected = 0;

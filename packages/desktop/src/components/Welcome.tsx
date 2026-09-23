@@ -13,15 +13,25 @@ export function Welcome() {
       <div className="welcome-inner">
         <img className="welcome-logo" src="/icon.svg" alt="" width={56} height={56} />
         <h1>MarkUP</h1>
-        <p className="welcome-tagline">Markdown with components. Write, check and preview in one place.</p>
+        <p className="welcome-tagline">
+          Markdown with components. Write, check and preview in one place.
+        </p>
 
         <div className="welcome-actions">
           {workspace ? (
-            <button type="button" className="button is-primary" onClick={() => wb.startCreate('new-file')}>
+            <button
+              type="button"
+              className="button is-primary"
+              onClick={() => wb.startCreate('new-file')}
+            >
               <FilePlus size={16} /> New file
             </button>
           ) : (
-            <button type="button" className="button is-primary" onClick={() => void wb.pickAndOpenFolder()}>
+            <button
+              type="button"
+              className="button is-primary"
+              onClick={() => void wb.pickAndOpenFolder()}
+            >
               <FolderOpen size={16} /> Open folder
             </button>
           )}

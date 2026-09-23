@@ -8,10 +8,17 @@
     "markup": "dist/markup.js"
   },
   "exports": {
-    ".": { "source": "./src/main.ts", "default": "./dist/markup.js" }
+    ".": {
+      "source": "./src/main.ts",
+      "default": "./dist/markup.js"
+    }
   },
-  "files": ["dist"],
-  "engines": { "node": ">=22.12" },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22.12"
+  },
   "scripts": {
     "build": "node build.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"

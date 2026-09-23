@@ -6,7 +6,9 @@ const text = (source: string) => renderText(parse(source).document);
 
 describe('renderText', () => {
   it('renders blocks separated by blank lines', () => {
-    expect(text('# Title\n\nSome **bold** and `code`.\n\n- a\n- [x] b\n\n1. one')).toBe('Title\n\nSome bold and code.\n\n- a\n- [x] b\n\n1. one');
+    expect(text('# Title\n\nSome **bold** and `code`.\n\n- a\n- [x] b\n\n1. one')).toBe(
+      'Title\n\nSome bold and code.\n\n- a\n- [x] b\n\n1. one',
+    );
   });
 
   it('renders components as readable text', () => {

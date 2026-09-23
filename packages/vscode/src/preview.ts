@@ -31,29 +31,57 @@ class Preview {
     this.context = context;
     this.plugins = plugins;
     this.uri = uri;
-    const roots = [vscode.Uri.joinPath(context.extensionUri, 'dist'), ...(vscode.workspace.workspaceFolders?.map((f) => f.uri) ?? [])];
+    const roots = [
+      vscode.Uri.joinPath(context.extensionUri, 'dist'),
+      ...(vscode.workspace.workspaceFolders?.map((f) => f.uri) ?? []),
+    ];
     if (uri.scheme === 'file') roots.push(vscode.Uri.joinPath(uri, '..'));
-    this.panel = vscode.window.createWebviewPanel('markup.preview', title ?? this.title(), { viewColumn: column, preserveFocus: true }, {
-      enableScripts: true,
-      enableFindWidget: true,
-      retainContextWhenHidden: false,
-      localResourceRoots: roots,
-    });
+    this.panel = vscode.window.createWebviewPanel(
+      'markup.preview',
+      title ?? this.title(),
+      { viewColumn: column, preserveFocus: true },
+      {
+        enableScripts: true,
+        enableFindWidget: true,
+        retainContextWhenHidden: false,
+        localResourceRoots: roots,
+      },
+    );
     this.panel.iconPath = vscode.Uri.joinPath(context.extensionUri, 'media', 'file-icon.svg');
     this.panel.webview.html = this.shell();
-    this.panel.onDidDispose(() => {
-      this.disposables.forEach((d) => d.dispose());
-      onDispose();
-    }, null, this.disposables);
-    this.panel.webview.onDidReceiveMessage((message: FromWebview) => this.onMessage(message), null, this.disposables);
-    vscode.workspace.onDidChangeTextDocument((e) => {
-      if (e.document.uri.toString() === this.uri.toString()) this.schedule();
-    }, null, this.disposables);
-    vscode.window.onDidChangeTextEditorVisibleRanges((e) => this.onEditorScroll(e), null, this.disposables);
+    this.panel.onDidDispose(
+      () => {
+        this.disposables.forEach((d) => d.dispose());
+        onDispose();
+      },
+      null,
+      this.disposables,
+    );
+    this.panel.webview.onDidReceiveMessage(
+      (message: FromWebview) => this.onMessage(message),
+      null,
+      this.disposables,
+    );
+    vscode.workspace.onDidChangeTextDocument(
+      (e) => {
+        if (e.document.uri.toString() === this.uri.toString()) this.schedule();
+      },
+      null,
+      this.disposables,
+    );
+    vscode.window.onDidChangeTextEditorVisibleRanges(
+      (e) => this.onEditorScroll(e),
+      null,
+      this.disposables,
+    );
     vscode.window.onDidChangeActiveColorTheme(() => this.postTheme(), null, this.disposables);
-    vscode.workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration('markup.preview')) this.postTheme();
-    }, null, this.disposables);
+    vscode.workspace.onDidChangeConfiguration(
+      (e) => {
+        if (e.affectsConfiguration('markup.preview')) this.postTheme();
+      },
+      null,
+      this.disposables,
+    );
   }
 
   private title(): string {
@@ -61,13 +89,21 @@ class Preview {
   }
 
   private nonce(): string {
-    return Array.from({ length: 32 }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 62)]).join('');
+    return Array.from(
+      { length: 32 },
+      () =>
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[
+          Math.floor(Math.random() * 62)
+        ],
+    ).join('');
   }
 
   private shell(): string {
     const webview = this.panel.webview;
     const nonce = this.nonce();
-    const script = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'dist', 'preview.js'));
+    const script = webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, 'dist', 'preview.js'),
+    );
     // Inline style attributes (table alignment, progress width) are allowed; scripts only with the nonce.
     const csp = [
       "default-src 'none'",
@@ -100,10 +136,14 @@ ${MARKUP_CSS}
   }
 
   private theme(): 'light' | 'dark' {
-    const setting = vscode.workspace.getConfiguration('markup').get<string>('preview.theme', 'auto');
+    const setting = vscode.workspace
+      .getConfiguration('markup')
+      .get<string>('preview.theme', 'auto');
     if (setting === 'light' || setting === 'dark') return setting;
     const kind = vscode.window.activeColorTheme.kind;
-    return kind === vscode.ColorThemeKind.Light || kind === vscode.ColorThemeKind.HighContrastLight ? 'light' : 'dark';
+    return kind === vscode.ColorThemeKind.Light || kind === vscode.ColorThemeKind.HighContrastLight
+      ? 'light'
+      : 'dark';
   }
 
   private postTheme(): void {
@@ -125,17 +165,34 @@ ${MARKUP_CSS}
       sourcePositions: true,
       rewriteUrl: (url, kind) => {
         // Relative images load from the document's folder through the webview.
-        if (kind !== 'image' || !base || ABSOLUTE.test(url) || url.startsWith('#') || url.startsWith('//')) return url;
-        return this.panel.webview.asWebviewUri(vscode.Uri.joinPath(base, url.split(/[?#]/)[0]!)).toString();
+        if (
+          kind !== 'image' ||
+          !base ||
+          ABSOLUTE.test(url) ||
+          url.startsWith('#') ||
+          url.startsWith('//')
+        )
+          return url;
+        return this.panel.webview
+          .asWebviewUri(vscode.Uri.joinPath(base, url.split(/[?#]/)[0]!))
+          .toString();
       },
     });
-    const editor = vscode.window.visibleTextEditors.find((e) => e.document.uri.toString() === this.uri.toString());
-    await this.panel.webview.postMessage({ type: 'update', html, theme: this.theme(), line: editor ? editor.visibleRanges[0]?.start.line : undefined });
+    const editor = vscode.window.visibleTextEditors.find(
+      (e) => e.document.uri.toString() === this.uri.toString(),
+    );
+    await this.panel.webview.postMessage({
+      type: 'update',
+      html,
+      theme: this.theme(),
+      line: editor ? editor.visibleRanges[0]?.start.line : undefined,
+    });
   }
 
   private onEditorScroll(e: vscode.TextEditorVisibleRangesChangeEvent): void {
     if (e.textEditor.document.uri.toString() !== this.uri.toString()) return;
-    if (!vscode.workspace.getConfiguration('markup').get<boolean>('preview.scrollSync', true)) return;
+    if (!vscode.workspace.getConfiguration('markup').get<boolean>('preview.scrollSync', true))
+      return;
     if (Date.now() < this.syncingUntil) return;
     const range = e.visibleRanges[0];
     if (!range) return;
@@ -149,8 +206,11 @@ ${MARKUP_CSS}
         await this.update();
         return;
       case 'revealLine': {
-        if (!vscode.workspace.getConfiguration('markup').get<boolean>('preview.scrollSync', true)) return;
-        const editor = vscode.window.visibleTextEditors.find((e) => e.document.uri.toString() === this.uri.toString());
+        if (!vscode.workspace.getConfiguration('markup').get<boolean>('preview.scrollSync', true))
+          return;
+        const editor = vscode.window.visibleTextEditors.find(
+          (e) => e.document.uri.toString() === this.uri.toString(),
+        );
         if (!editor) return;
         this.syncingUntil = Date.now() + 150;
         const line = Math.max(0, Math.floor(message.line) - 1);
@@ -158,13 +218,24 @@ ${MARKUP_CSS}
         return;
       }
       case 'openLine': {
-        if (!vscode.workspace.getConfiguration('markup').get<boolean>('preview.doubleClickToEdit', true)) return;
+        if (
+          !vscode.workspace
+            .getConfiguration('markup')
+            .get<boolean>('preview.doubleClickToEdit', true)
+        )
+          return;
         const line = Math.max(0, message.line - 1);
         const editor = await vscode.window.showTextDocument(this.uri, {
-          viewColumn: vscode.window.visibleTextEditors.find((e) => e.document.uri.toString() === this.uri.toString())?.viewColumn ?? vscode.ViewColumn.One,
+          viewColumn:
+            vscode.window.visibleTextEditors.find(
+              (e) => e.document.uri.toString() === this.uri.toString(),
+            )?.viewColumn ?? vscode.ViewColumn.One,
           selection: new vscode.Range(line, 0, line, 0),
         });
-        editor.revealRange(new vscode.Range(line, 0, line, 0), vscode.TextEditorRevealType.InCenterIfOutsideViewport);
+        editor.revealRange(
+          new vscode.Range(line, 0, line, 0),
+          vscode.TextEditorRevealType.InCenterIfOutsideViewport,
+        );
         return;
       }
       case 'openLink': {
@@ -181,7 +252,9 @@ ${MARKUP_CSS}
           await vscode.workspace.fs.stat(target);
           await vscode.window.showTextDocument(target, { viewColumn: vscode.ViewColumn.One });
         } catch {
-          void vscode.window.showWarningMessage(`File not found: ${vscode.workspace.asRelativePath(target)}`);
+          void vscode.window.showWarningMessage(
+            `File not found: ${vscode.workspace.asRelativePath(target)}`,
+          );
         }
         return;
       }
@@ -203,14 +276,20 @@ export class PreviewManager implements vscode.Disposable {
     this.plugins = plugins;
   }
 
-  async show(uri: vscode.Uri, column: vscode.ViewColumn, options: { title?: string } = {}): Promise<void> {
+  async show(
+    uri: vscode.Uri,
+    column: vscode.ViewColumn,
+    options: { title?: string } = {},
+  ): Promise<void> {
     const key = uri.toString();
     const existing = this.previews.get(key);
     if (existing) {
       existing.panel.reveal(column, true);
       return;
     }
-    const preview = new Preview(this.context, uri, column, this.plugins, options.title, () => this.previews.delete(key));
+    const preview = new Preview(this.context, uri, column, this.plugins, options.title, () =>
+      this.previews.delete(key),
+    );
     this.previews.set(key, preview);
   }
 

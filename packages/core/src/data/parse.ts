@@ -67,7 +67,12 @@ class DataParser {
       if (c === 0x20) {
         indent++;
       } else if (c === 0x09) {
-        this.error('MU1503', line.offset + indent, line.offset + indent + 1, 'Tabs are not allowed in MarkUP Data indentation; use spaces.');
+        this.error(
+          'MU1503',
+          line.offset + indent,
+          line.offset + indent + 1,
+          'Tabs are not allowed in MarkUP Data indentation; use spaces.',
+        );
         // Recover by reading the tab as one space so that the rest of the line keeps its offsets.
         raw = raw.slice(0, indent) + ' ' + raw.slice(indent + 1);
         indent++;
@@ -88,7 +93,12 @@ class DataParser {
     this.skipBlank();
     if (this.i < this.lines.length) {
       const line = this.lines[this.i]!;
-      this.error('MU1501', line.offset + line.indent, line.offset + line.raw.trimEnd().length, 'Unexpected content after the end of the data.');
+      this.error(
+        'MU1501',
+        line.offset + line.indent,
+        line.offset + line.raw.trimEnd().length,
+        'Unexpected content after the end of the data.',
+      );
     }
     return node;
   }
@@ -99,7 +109,12 @@ class DataParser {
   private parseNode(indent: number): DataNode {
     const line = this.lines[this.i]!;
     if (this.depth >= MAX_DEPTH) {
-      this.error('MU1501', line.offset, line.offset + line.raw.length, `Data is nested more than ${MAX_DEPTH} levels deep.`);
+      this.error(
+        'MU1501',
+        line.offset,
+        line.offset + line.raw.length,
+        `Data is nested more than ${MAX_DEPTH} levels deep.`,
+      );
       this.skipDeeperThan(indent - 1);
       return this.scalar(null, 'plain', line.offset + line.indent, line.offset + line.indent);
     }
@@ -127,20 +142,31 @@ class DataParser {
       if (!line || line.indent < indent) break;
       const content = line.raw.slice(line.indent);
       if (line.indent > indent) {
-        this.error('MU1501', line.offset + line.indent, line.offset + line.raw.trimEnd().length, 'Unexpected indentation.');
+        this.error(
+          'MU1501',
+          line.offset + line.indent,
+          line.offset + line.raw.trimEnd().length,
+          'Unexpected indentation.',
+        );
         this.i++;
         continue;
       }
       const keyEnd = findKeyEnd(content);
       if (keyEnd === null) {
         if (isSeqItem(content)) break; // Belongs to an enclosing compact sequence.
-        this.error('MU1501', line.offset + line.indent, line.offset + line.raw.trimEnd().length, 'Expected a `key: value` entry.');
+        this.error(
+          'MU1501',
+          line.offset + line.indent,
+          line.offset + line.raw.trimEnd().length,
+          'Expected a `key: value` entry.',
+        );
         this.i++;
         continue;
       }
       const keyStart = line.offset + line.indent;
       const key = readKey(content.slice(0, keyEnd.colon));
-      if (key.error) this.error(key.error.code, keyStart, keyStart + keyEnd.colon, key.error.message);
+      if (key.error)
+        this.error(key.error.code, keyStart, keyStart + keyEnd.colon, key.error.message);
       const keyRange = this.index.range(keyStart, keyStart + keyEnd.keyLength);
       const afterColon = line.indent + keyEnd.colon + 1;
       const value = this.parseEntryValue(line, afterColon, indent);
@@ -148,14 +174,22 @@ class DataParser {
         key: key.value,
         keyRange,
         value,
-        range: this.index.range(keyStart, Math.max(value.range.end.offset, keyRange.end.offset + 1)),
+        range: this.index.range(
+          keyStart,
+          Math.max(value.range.end.offset, keyRange.end.offset + 1),
+        ),
       };
       end = entry.range.end.offset;
       const previous = seen.get(key.value);
       if (previous) {
-        this.diagnostics.report('MU1502', keyRange, `Duplicate key \`${key.value}\`; this entry is ignored.`, {
-          related: [{ range: previous.keyRange, message: 'First defined here.' }],
-        });
+        this.diagnostics.report(
+          'MU1502',
+          keyRange,
+          `Duplicate key \`${key.value}\`; this entry is ignored.`,
+          {
+            related: [{ range: previous.keyRange, message: 'First defined here.' }],
+          },
+        );
       } else {
         seen.set(key.value, entry);
         entries.push(entry);
@@ -200,7 +234,12 @@ class DataParser {
       if (!line || line.indent < indent) break;
       const content = line.raw.slice(line.indent);
       if (line.indent > indent) {
-        this.error('MU1501', line.offset + line.indent, line.offset + line.raw.trimEnd().length, 'Unexpected indentation.');
+        this.error(
+          'MU1501',
+          line.offset + line.indent,
+          line.offset + line.raw.trimEnd().length,
+          'Unexpected indentation.',
+        );
         this.i++;
         continue;
       }
@@ -234,7 +273,12 @@ class DataParser {
     const header = /^\|([-+]?)\s*(#.*)?$/.exec(indicator);
     const indicatorStart = line.offset + column;
     if (!header) {
-      this.error('MU1501', indicatorStart, line.offset + line.raw.trimEnd().length, 'A literal block starts with `|` or `|-` followed by the end of the line.');
+      this.error(
+        'MU1501',
+        indicatorStart,
+        line.offset + line.raw.trimEnd().length,
+        'A literal block starts with `|` or `|-` followed by the end of the line.',
+      );
     }
     const chomp = header?.[1] ?? '';
     this.i++;
@@ -273,7 +317,13 @@ class DataParser {
   }
 
   /** Reads one value starting at `cursor.pos`. In flow context, plain scalars stop at `,` and `]`. */
-  private readValue(text: string, offset: number, cursor: { pos: number }, flow: boolean, depth: number): DataNode {
+  private readValue(
+    text: string,
+    offset: number,
+    cursor: { pos: number },
+    flow: boolean,
+    depth: number,
+  ): DataNode {
     const c = text.charCodeAt(cursor.pos);
     if (c === 0x22 /* " */) return this.readDoubleQuoted(text, offset, cursor);
     if (c === 0x27 /* ' */) return this.readSingleQuoted(text, offset, cursor);
@@ -282,13 +332,23 @@ class DataParser {
       const start = cursor.pos;
       const close = text.indexOf('}', start);
       const stop = close === -1 ? text.length : close + 1;
-      this.error('MU1501', offset + start, offset + stop, 'Flow mappings `{...}` are not supported in MarkUP Data; use an indented block mapping.');
+      this.error(
+        'MU1501',
+        offset + start,
+        offset + stop,
+        'Flow mappings `{...}` are not supported in MarkUP Data; use an indented block mapping.',
+      );
       cursor.pos = stop;
       return this.scalar(text.slice(start, stop), 'plain', offset + start, offset + stop);
     }
     if (!flow && c === 0x3e /* > */ && /^>[-+]?\s*(#.*)?$/.test(text.slice(cursor.pos).trimEnd())) {
       const start = cursor.pos;
-      this.error('MU1501', offset + start, offset + start + 1, 'Folded block scalars (`>`) are not supported; use a `|` literal block.');
+      this.error(
+        'MU1501',
+        offset + start,
+        offset + start + 1,
+        'Folded block scalars (`>`) are not supported; use a `|` literal block.',
+      );
       cursor.pos = text.length;
       this.skipDeeperThan(this.lines[this.i - 1]?.indent ?? 0);
       return this.scalar('', 'plain', offset + start, offset + start + 1);
@@ -296,13 +356,18 @@ class DataParser {
     return this.readPlain(text, offset, cursor, flow);
   }
 
-  private readPlain(text: string, offset: number, cursor: { pos: number }, flow: boolean): DataScalar {
+  private readPlain(
+    text: string,
+    offset: number,
+    cursor: { pos: number },
+    flow: boolean,
+  ): DataScalar {
     const start = cursor.pos;
     let pos = start;
     while (pos < text.length) {
       const c = text.charCodeAt(pos);
       if (c === 0x23 /* # */ && pos > start && isSpace(text.charCodeAt(pos - 1))) break;
-      if (flow && (c === 0x2c /* , */ || c === 0x5d /* ] */)) break;
+      if (flow && (c === 0x2c /* , */ || c === 0x5d) /* ] */) break;
       pos++;
     }
     cursor.pos = pos;
@@ -339,7 +404,12 @@ class DataParser {
             continue;
           }
         }
-        this.error('MU1501', offset + pos, offset + Math.min(pos + 2, text.length), `Unknown escape sequence \`\\${next ?? ''}\`.`);
+        this.error(
+          'MU1501',
+          offset + pos,
+          offset + Math.min(pos + 2, text.length),
+          `Unknown escape sequence \`\\${next ?? ''}\`.`,
+        );
         value += next ?? '';
         pos += 2;
         continue;
@@ -348,7 +418,12 @@ class DataParser {
       pos++;
     }
     cursor.pos = text.length;
-    this.error('MU1504', offset + start, offset + text.length, 'Unterminated double-quoted string.');
+    this.error(
+      'MU1504',
+      offset + start,
+      offset + text.length,
+      'Unterminated double-quoted string.',
+    );
     return this.scalar(value, 'double', offset + start, offset + text.length);
   }
 
@@ -371,34 +446,70 @@ class DataParser {
       pos++;
     }
     cursor.pos = text.length;
-    this.error('MU1504', offset + start, offset + text.length, 'Unterminated single-quoted string.');
+    this.error(
+      'MU1504',
+      offset + start,
+      offset + text.length,
+      'Unterminated single-quoted string.',
+    );
     return this.scalar(value, 'single', offset + start, offset + text.length);
   }
 
-  private readFlowSeq(text: string, offset: number, cursor: { pos: number }, depth: number): DataSeq {
+  private readFlowSeq(
+    text: string,
+    offset: number,
+    cursor: { pos: number },
+    depth: number,
+  ): DataSeq {
     const start = cursor.pos;
     const items: DataNode[] = [];
     if (depth >= MAX_DEPTH) {
-      this.error('MU1501', offset + start, offset + text.length, `Flow sequences are nested more than ${MAX_DEPTH} levels deep.`);
+      this.error(
+        'MU1501',
+        offset + start,
+        offset + text.length,
+        `Flow sequences are nested more than ${MAX_DEPTH} levels deep.`,
+      );
       cursor.pos = text.length;
-      return { kind: 'seq', items, flow: true, range: this.index.range(offset + start, offset + text.length) };
+      return {
+        kind: 'seq',
+        items,
+        flow: true,
+        range: this.index.range(offset + start, offset + text.length),
+      };
     }
     let pos = start + 1;
     let expectItem = true;
     while (true) {
       while (isSpace(text.charCodeAt(pos))) pos++;
       if (pos >= text.length) {
-        this.error('MU1501', offset + start, offset + text.length, 'Unterminated flow sequence: expected `]`.');
+        this.error(
+          'MU1501',
+          offset + start,
+          offset + text.length,
+          'Unterminated flow sequence: expected `]`.',
+        );
         cursor.pos = text.length;
-        return { kind: 'seq', items, flow: true, range: this.index.range(offset + start, offset + text.length) };
+        return {
+          kind: 'seq',
+          items,
+          flow: true,
+          range: this.index.range(offset + start, offset + text.length),
+        };
       }
       const c = text.charCodeAt(pos);
       if (c === 0x5d /* ] */) {
         cursor.pos = pos + 1;
-        return { kind: 'seq', items, flow: true, range: this.index.range(offset + start, offset + pos + 1) };
+        return {
+          kind: 'seq',
+          items,
+          flow: true,
+          range: this.index.range(offset + start, offset + pos + 1),
+        };
       }
       if (c === 0x2c /* , */) {
-        if (expectItem) this.error('MU1501', offset + pos, offset + pos + 1, 'Expected a value before `,`.');
+        if (expectItem)
+          this.error('MU1501', offset + pos, offset + pos + 1, 'Expected a value before `,`.');
         expectItem = true;
         pos++;
         continue;
@@ -407,9 +518,19 @@ class DataParser {
         this.error('MU1501', offset + pos, offset + pos + 1, 'Expected `,` or `]`.');
       }
       if (c === 0x23 /* # */ && isSpace(text.charCodeAt(pos - 1))) {
-        this.error('MU1501', offset + start, offset + text.length, 'Unterminated flow sequence: expected `]` before the comment.');
+        this.error(
+          'MU1501',
+          offset + start,
+          offset + text.length,
+          'Unterminated flow sequence: expected `]` before the comment.',
+        );
         cursor.pos = text.length;
-        return { kind: 'seq', items, flow: true, range: this.index.range(offset + start, offset + pos) };
+        return {
+          kind: 'seq',
+          items,
+          flow: true,
+          range: this.index.range(offset + start, offset + pos),
+        };
       }
       const itemCursor = { pos };
       const item = this.readValue(text, offset, itemCursor, true, depth + 1);
@@ -427,8 +548,17 @@ class DataParser {
     let p = pos;
     while (isSpace(text.charCodeAt(p))) p++;
     if (p >= text.length) return;
-    if (text.charCodeAt(p) === 0x23 && (p === pos ? p === 0 || isSpace(text.charCodeAt(p - 1)) : true)) return;
-    this.error('MU1501', offset + p, offset + text.trimEnd().length, 'Unexpected characters after the value.');
+    if (
+      text.charCodeAt(p) === 0x23 &&
+      (p === pos ? p === 0 || isSpace(text.charCodeAt(p - 1)) : true)
+    )
+      return;
+    this.error(
+      'MU1501',
+      offset + p,
+      offset + text.trimEnd().length,
+      'Unexpected characters after the value.',
+    );
   }
 
   // -------------------------------------------------------------------------
@@ -447,11 +577,21 @@ class DataParser {
     }
   }
 
-  private scalar(value: DataScalar['value'], style: DataScalar['style'], start: number, end: number): DataScalar {
+  private scalar(
+    value: DataScalar['value'],
+    style: DataScalar['style'],
+    start: number,
+    end: number,
+  ): DataScalar {
     return { kind: 'scalar', value, style, range: this.index.range(start, end) };
   }
 
-  private error(code: 'MU1501' | 'MU1503' | 'MU1504', start: number, end: number, message: string): void {
+  private error(
+    code: 'MU1501' | 'MU1503' | 'MU1504',
+    start: number,
+    end: number,
+    message: string,
+  ): void {
     this.diagnostics.report(code, this.index.range(start, Math.max(start, end)), message);
   }
 }
@@ -509,14 +649,23 @@ function findKeyEnd(content: string): { colon: number; keyLength: number } | nul
     if (colon + 1 < content.length && !isSpace(content.charCodeAt(colon + 1))) return null;
     return { colon, keyLength };
   }
-  if (first === 0x5b /* [ */ || first === 0x7b /* { */ || first === 0x23 /* # */ || first === 0x7c /* | */ || first === 0x3e /* > */) {
+  if (
+    first === 0x5b /* [ */ ||
+    first === 0x7b /* { */ ||
+    first === 0x23 /* # */ ||
+    first === 0x7c /* | */ ||
+    first === 0x3e /* > */
+  ) {
     return null;
   }
   if (isSeqItem(content)) return null;
   for (let pos = 0; pos < content.length; pos++) {
     const c = content.charCodeAt(pos);
     if (c === 0x23 && pos > 0 && isSpace(content.charCodeAt(pos - 1))) return null;
-    if (c === 0x3a /* : */ && (pos + 1 === content.length || isSpace(content.charCodeAt(pos + 1)))) {
+    if (
+      c === 0x3a /* : */ &&
+      (pos + 1 === content.length || isSpace(content.charCodeAt(pos + 1)))
+    ) {
       if (pos === 0) return null;
       let keyLength = pos;
       while (keyLength > 0 && isSpace(content.charCodeAt(keyLength - 1))) keyLength--;
@@ -532,7 +681,10 @@ function readKey(source: string): { value: string; error?: { code: 'MU1501'; mes
     try {
       return { value: JSON.parse(trimmed) as string };
     } catch {
-      return { value: trimmed.slice(1, -1), error: { code: 'MU1501', message: 'Invalid escape in quoted key.' } };
+      return {
+        value: trimmed.slice(1, -1),
+        error: { code: 'MU1501', message: 'Invalid escape in quoted key.' },
+      };
     }
   }
   if (trimmed.startsWith("'")) return { value: trimmed.slice(1, -1).replace(/''/g, "'") };

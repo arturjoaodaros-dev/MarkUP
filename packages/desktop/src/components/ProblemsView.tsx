@@ -32,7 +32,9 @@ export function ProblemsView() {
         } catch {
           continue;
         }
-        const diagnostics = wb.service.analyze(text, docs[path] ? path : `problems:${path}`).diagnostics.filter((d) => d.severity === 'error' || d.severity === 'warning');
+        const diagnostics = wb.service
+          .analyze(text, docs[path] ? path : `problems:${path}`)
+          .diagnostics.filter((d) => d.severity === 'error' || d.severity === 'warning');
         if (diagnostics.length) out.push({ path, diagnostics });
       }
       if (!cancelled) setDetails(out);
@@ -61,10 +63,18 @@ export function ProblemsView() {
                 className="problem-row"
                 onClick={async () => {
                   await wb.openFile(path);
-                  requestAnimationFrame(() => editor.select(d.range.start.offset, d.range.end.offset));
+                  requestAnimationFrame(() =>
+                    editor.select(d.range.start.offset, d.range.end.offset),
+                  );
                 }}
               >
-                {d.severity === 'error' ? <CircleX size={14} className="sev-error" /> : d.severity === 'warning' ? <TriangleAlert size={14} className="sev-warning" /> : <Info size={14} className="sev-info" />}
+                {d.severity === 'error' ? (
+                  <CircleX size={14} className="sev-error" />
+                ) : d.severity === 'warning' ? (
+                  <TriangleAlert size={14} className="sev-warning" />
+                ) : (
+                  <Info size={14} className="sev-info" />
+                )}
                 <span className="problem-message">{d.message}</span>
                 <span className="problem-meta">
                   {d.code} · {d.range.start.line}:{d.range.start.column}

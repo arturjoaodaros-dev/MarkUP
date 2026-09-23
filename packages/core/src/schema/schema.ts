@@ -92,20 +92,41 @@ type Options<T extends Schema> = Omit<T, 'kind' | 'items' | 'values' | 'properti
 export const s = {
   string: (options: Options<StringSchema> = {}): StringSchema => ({ kind: 'string', ...options }),
   number: (options: Options<NumberSchema> = {}): NumberSchema => ({ kind: 'number', ...options }),
-  boolean: (options: Options<BooleanSchema> = {}): BooleanSchema => ({ kind: 'boolean', ...options }),
-  enum: (values: readonly string[], options: Options<EnumSchema> & { valueDescriptions?: Record<string, string> } = {}): EnumSchema => ({
+  boolean: (options: Options<BooleanSchema> = {}): BooleanSchema => ({
+    kind: 'boolean',
+    ...options,
+  }),
+  enum: (
+    values: readonly string[],
+    options: Options<EnumSchema> & { valueDescriptions?: Record<string, string> } = {},
+  ): EnumSchema => ({
     kind: 'enum',
     values,
     ...options,
   }),
-  array: (items: Schema, options: Options<ArraySchema> = {}): ArraySchema => ({ kind: 'array', items, ...options }),
-  record: (values: Schema, options: Options<RecordSchema> = {}): RecordSchema => ({ kind: 'record', values, ...options }),
-  object: (properties: Record<string, Schema>, options: Options<ObjectSchema> = {}): ObjectSchema => ({
+  array: (items: Schema, options: Options<ArraySchema> = {}): ArraySchema => ({
+    kind: 'array',
+    items,
+    ...options,
+  }),
+  record: (values: Schema, options: Options<RecordSchema> = {}): RecordSchema => ({
+    kind: 'record',
+    values,
+    ...options,
+  }),
+  object: (
+    properties: Record<string, Schema>,
+    options: Options<ObjectSchema> = {},
+  ): ObjectSchema => ({
     kind: 'object',
     properties,
     ...options,
   }),
-  union: (options: readonly Schema[], extra: Options<UnionSchema> = {}): UnionSchema => ({ kind: 'union', options, ...extra }),
+  union: (options: readonly Schema[], extra: Options<UnionSchema> = {}): UnionSchema => ({
+    kind: 'union',
+    options,
+    ...extra,
+  }),
   any: (options: Options<AnySchema> = {}): AnySchema => ({ kind: 'any', ...options }),
 };
 
@@ -120,7 +141,8 @@ export function describeType(schema: Schema): string {
       return 'string';
     case 'number': {
       const base = schema.integer ? 'integer' : 'number';
-      if (schema.min !== undefined && schema.max !== undefined) return `${base} (${schema.min}–${schema.max})`;
+      if (schema.min !== undefined && schema.max !== undefined)
+        return `${base} (${schema.min}–${schema.max})`;
       if (schema.min !== undefined) return `${base} (≥ ${schema.min})`;
       if (schema.max !== undefined) return `${base} (≤ ${schema.max})`;
       return base;
@@ -193,12 +215,15 @@ function check(node: DataNode | null, schema: Schema, path: string, issues: Data
       checkNumber(node.value, schema, at);
       return;
     case 'boolean':
-      if (node.kind !== 'scalar' || typeof node.value !== 'boolean') at(`Expected \`true\` or \`false\`, found ${describeNode(node)}.`);
+      if (node.kind !== 'scalar' || typeof node.value !== 'boolean')
+        at(`Expected \`true\` or \`false\`, found ${describeNode(node)}.`);
       return;
     case 'enum': {
       const value = node.kind === 'scalar' && node.value !== null ? String(node.value) : null;
       if (value === null || !schema.values.includes(value)) {
-        at(`Expected one of ${schema.values.map((v) => `\`${v}\``).join(', ')}, found ${describeNode(node)}.`);
+        at(
+          `Expected one of ${schema.values.map((v) => `\`${v}\``).join(', ')}, found ${describeNode(node)}.`,
+        );
       }
       return;
     }
@@ -208,7 +233,9 @@ function check(node: DataNode | null, schema: Schema, path: string, issues: Data
         return;
       }
       if (schema.minItems !== undefined && node.items.length < schema.minItems) {
-        at(`Expected at least ${schema.minItems} item${schema.minItems === 1 ? '' : 's'}, found ${node.items.length}.`);
+        at(
+          `Expected at least ${schema.minItems} item${schema.minItems === 1 ? '' : 's'}, found ${node.items.length}.`,
+        );
       }
       if (schema.maxItems !== undefined && node.items.length > schema.maxItems) {
         at(`Expected at most ${schema.maxItems} items, found ${node.items.length}.`);
@@ -224,7 +251,8 @@ function check(node: DataNode | null, schema: Schema, path: string, issues: Data
       if (schema.minEntries !== undefined && node.entries.length < schema.minEntries) {
         at(`Expected at least ${schema.minEntries} entr${schema.minEntries === 1 ? 'y' : 'ies'}.`);
       }
-      for (const entry of node.entries) check(entry.value, schema.values, join(path, entry.key), issues);
+      for (const entry of node.entries)
+        check(entry.value, schema.values, join(path, entry.key), issues);
       return;
     }
     case 'object': {
@@ -235,7 +263,9 @@ function check(node: DataNode | null, schema: Schema, path: string, issues: Data
       const present = new Set<string>();
       for (const entry of node.entries) {
         present.add(entry.key);
-        const property = Object.hasOwn(schema.properties, entry.key) ? schema.properties[entry.key] : undefined;
+        const property = Object.hasOwn(schema.properties, entry.key)
+          ? schema.properties[entry.key]
+          : undefined;
         if (!property) {
           if (!schema.additional) {
             const suggestion = closest(entry.key, Object.keys(schema.properties));
@@ -263,7 +293,10 @@ function check(node: DataNode | null, schema: Schema, path: string, issues: Data
         const optionIssues: DataIssue[] = [];
         check(node, option, path, optionIssues);
         if (optionIssues.length === 0) return;
-        if (shapeMatches(node, option) && (closestIssues === null || optionIssues.length < closestIssues.length)) {
+        if (
+          shapeMatches(node, option) &&
+          (closestIssues === null || optionIssues.length < closestIssues.length)
+        ) {
           closestIssues = optionIssues;
         }
       }
@@ -292,16 +325,24 @@ function shapeMatches(node: DataNode, schema: Schema): boolean {
 
 function checkString(value: string, schema: StringSchema, at: (message: string) => void): void {
   if (schema.minLength !== undefined && value.length < schema.minLength) {
-    at(schema.minLength === 1 ? 'Expected a non-empty string.' : `Expected at least ${schema.minLength} characters.`);
+    at(
+      schema.minLength === 1
+        ? 'Expected a non-empty string.'
+        : `Expected at least ${schema.minLength} characters.`,
+    );
   }
-  if (schema.maxLength !== undefined && value.length > schema.maxLength) at(`Expected at most ${schema.maxLength} characters.`);
-  if (schema.pattern && !schema.pattern.test(value)) at(`Expected ${schema.patternLabel ?? `a value matching ${schema.pattern}`}.`);
+  if (schema.maxLength !== undefined && value.length > schema.maxLength)
+    at(`Expected at most ${schema.maxLength} characters.`);
+  if (schema.pattern && !schema.pattern.test(value))
+    at(`Expected ${schema.patternLabel ?? `a value matching ${schema.pattern}`}.`);
 }
 
 function checkNumber(value: number, schema: NumberSchema, at: (message: string) => void): void {
   if (schema.integer && !Number.isInteger(value)) at(`Expected an integer, found ${value}.`);
-  if (schema.min !== undefined && value < schema.min) at(`Expected a number ≥ ${schema.min}, found ${value}.`);
-  if (schema.max !== undefined && value > schema.max) at(`Expected a number ≤ ${schema.max}, found ${value}.`);
+  if (schema.min !== undefined && value < schema.min)
+    at(`Expected a number ≥ ${schema.min}, found ${value}.`);
+  if (schema.max !== undefined && value > schema.max)
+    at(`Expected a number ≤ ${schema.max}, found ${value}.`);
 }
 
 export function describeNode(node: DataNode): string {
@@ -312,7 +353,8 @@ export function describeNode(node: DataNode): string {
       return 'a list';
     case 'scalar':
       if (node.value === null) return 'an empty value';
-      if (typeof node.value === 'string') return `the string ${JSON.stringify(truncate(node.value))}`;
+      if (typeof node.value === 'string')
+        return `the string ${JSON.stringify(truncate(node.value))}`;
       return `\`${String(node.value)}\``;
   }
 }
@@ -344,16 +386,19 @@ export function coerceAttribute(raw: string | true, schema: Schema): Coerced {
       if (raw === 'false') return { ok: true, value: false };
       return { ok: false, message: `Expected \`true\` or \`false\`, found \`${raw}\`.` };
     case 'string': {
-      if (raw === true) return { ok: false, message: 'Expected a value (`key=value`), found a bare flag.' };
+      if (raw === true)
+        return { ok: false, message: 'Expected a value (`key=value`), found a bare flag.' };
       const problems: string[] = [];
       checkString(raw, schema, (m) => problems.push(m));
       return problems.length ? { ok: false, message: problems[0]! } : { ok: true, value: raw };
     }
     case 'number': {
-      if (raw === true) return { ok: false, message: 'Expected a number (`key=42`), found a bare flag.' };
+      if (raw === true)
+        return { ok: false, message: 'Expected a number (`key=42`), found a bare flag.' };
       const trimmed = raw.trim();
       const value = trimmed === '' ? NaN : Number(trimmed);
-      if (!Number.isFinite(value)) return { ok: false, message: `Expected a number, found \`${raw}\`.` };
+      if (!Number.isFinite(value))
+        return { ok: false, message: `Expected a number, found \`${raw}\`.` };
       const problems: string[] = [];
       checkNumber(value, schema, (m) => problems.push(m));
       return problems.length ? { ok: false, message: problems[0]! } : { ok: true, value };
@@ -397,7 +442,8 @@ export function editDistance(a: string, b: string, max = Infinity): number {
     for (let j = 1; j <= b.length; j++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1;
       let value = Math.min(prev[j]! + 1, current[j - 1]! + 1, prev[j - 1]! + cost);
-      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) value = Math.min(value, prevPrev[j - 2]! + 1);
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1])
+        value = Math.min(value, prevPrev[j - 2]! + 1);
       current.push(value);
       rowMin = Math.min(rowMin, value);
     }

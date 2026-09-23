@@ -58,7 +58,7 @@ export function isNameStart(c: number): boolean {
 }
 
 export function isNameChar(c: number): boolean {
-  return isAsciiLetter(c) || isAsciiDigit(c) || c === 0x2d /* - */ || c === 0x5f /* _ */;
+  return isAsciiLetter(c) || isAsciiDigit(c) || c === 0x2d /* - */ || c === 0x5f; /* _ */
 }
 
 /** Reads a directive name at `pos`; returns its end index or `pos` when there is none. */

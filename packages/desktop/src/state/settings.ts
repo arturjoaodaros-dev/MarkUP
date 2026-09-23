@@ -30,7 +30,8 @@ export function loadSettings(storage: Storage | null): Settings {
     const parsed = JSON.parse(raw) as Partial<Settings>;
     const merged: Settings = { ...DEFAULT_SETTINGS };
     for (const key of Object.keys(DEFAULT_SETTINGS) as (keyof Settings)[]) {
-      if (parsed[key] !== undefined && typeof parsed[key] === typeof DEFAULT_SETTINGS[key]) (merged as unknown as Record<string, unknown>)[key] = parsed[key];
+      if (parsed[key] !== undefined && typeof parsed[key] === typeof DEFAULT_SETTINGS[key])
+        (merged as unknown as Record<string, unknown>)[key] = parsed[key];
     }
     merged.fontSize = Math.min(28, Math.max(10, merged.fontSize));
     merged.tabSize = [2, 4, 8].includes(merged.tabSize) ? merged.tabSize : 2;
@@ -50,5 +51,7 @@ export function saveSettings(storage: Storage | null, settings: Settings): void 
 
 export function resolvedTheme(settings: Settings): 'dark' | 'light' {
   if (settings.theme !== 'system') return settings.theme;
-  return typeof matchMedia !== 'undefined' && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  return typeof matchMedia !== 'undefined' && matchMedia('(prefers-color-scheme: light)').matches
+    ? 'light'
+    : 'dark';
 }

@@ -30,7 +30,11 @@ import type {
 import type { DiagnosticBag } from '../diagnostics.ts';
 import type { DirectiveRegistry } from '../directives/spec.ts';
 import type { LineIndex, Range } from '../source/position.ts';
-import { findAttributeBlockEnd, looksLikeAttributes, parseAttributes } from '../syntax/attributes.ts';
+import {
+  findAttributeBlockEnd,
+  looksLikeAttributes,
+  parseAttributes,
+} from '../syntax/attributes.ts';
 import {
   charAt,
   charBefore,
@@ -96,7 +100,14 @@ export function parseInlines(
   ctx: InlineContext,
   options: { tableCell?: boolean; start?: number; end?: number; depth?: number } = {},
 ): Inline[] {
-  return new InlineParser(source, ctx, options.start ?? 0, options.end ?? source.text.length, options.tableCell ?? false, options.depth ?? 0).parse();
+  return new InlineParser(
+    source,
+    ctx,
+    options.start ?? 0,
+    options.end ?? source.text.length,
+    options.tableCell ?? false,
+    options.depth ?? 0,
+  ).parse();
 }
 
 const SPECIAL = /[\n\\`*_~[\]!<&:hHwW]/g;
@@ -116,7 +127,14 @@ class InlineParser {
   /** Code span backtick runs known to have no closer at or after a position. */
   private readonly backtickNoClose = new Map<number, number>();
 
-  constructor(src: SegmentText, ctx: InlineContext, start: number, end: number, tableCell: boolean, depth: number) {
+  constructor(
+    src: SegmentText,
+    ctx: InlineContext,
+    start: number,
+    end: number,
+    tableCell: boolean,
+    depth: number,
+  ) {
     this.src = src;
     this.text = src.text;
     this.ctx = ctx;
@@ -225,7 +243,8 @@ class InlineParser {
   }
 
   private skipLeadingSpaces(): void {
-    while (this.pos < this.end && (this.text[this.pos] === ' ' || this.text[this.pos] === '\t')) this.pos++;
+    while (this.pos < this.end && (this.text[this.pos] === ' ' || this.text[this.pos] === '\t'))
+      this.pos++;
   }
 
   private handleBackslash(): void {
@@ -262,10 +281,19 @@ class InlineParser {
         if (m === n && found + m <= this.end) {
           let content = this.text.slice(afterOpen, found).replace(/\n/g, ' ');
           if (this.tableCell) content = content.replace(/\\\|/g, '|');
-          if (content.length >= 2 && content.startsWith(' ') && content.endsWith(' ') && content.trim().length > 0) {
+          if (
+            content.length >= 2 &&
+            content.startsWith(' ') &&
+            content.endsWith(' ') &&
+            content.trim().length > 0
+          ) {
             content = content.slice(1, -1);
           }
-          this.append({ type: 'inlineCode', value: content, position: NO_POS } satisfies InlineCode, start, found + m);
+          this.append(
+            { type: 'inlineCode', value: content, position: NO_POS } satisfies InlineCode,
+            start,
+            found + m,
+          );
           this.pos = found + m;
           return;
         }
@@ -302,7 +330,16 @@ class InlineParser {
     const lnode = this.appendText(char.repeat(n), start, end);
     this.pos = end;
     if (canOpen || canClose) {
-      const delimiter: Delimiter = { lnode, char, count: n, origCount: n, canOpen, canClose, prev: this.delimiters, next: null };
+      const delimiter: Delimiter = {
+        lnode,
+        char,
+        count: n,
+        origCount: n,
+        canOpen,
+        canClose,
+        prev: this.delimiters,
+        next: null,
+      };
       if (this.delimiters) this.delimiters.next = delimiter;
       this.delimiters = delimiter;
     }
@@ -325,11 +362,18 @@ class InlineParser {
     const start = this.pos;
     // Footnote reference: [^label]
     if (this.text[start + 1] === '^') {
-      const m = /^\[\^([^\]\s[]{1,100})\]/.exec(this.text.slice(start, Math.min(this.end, start + 104)));
+      const m = /^\[\^([^\]\s[]{1,100})\]/.exec(
+        this.text.slice(start, Math.min(this.end, start + 104)),
+      );
       if (m) {
         const label = m[1]!;
         this.append(
-          { type: 'footnoteReference', label, identifier: normalizeLabel(label), position: NO_POS } satisfies FootnoteReference,
+          {
+            type: 'footnoteReference',
+            label,
+            identifier: normalizeLabel(label),
+            position: NO_POS,
+          } satisfies FootnoteReference,
           start,
           start + m[0].length,
         );
@@ -345,7 +389,15 @@ class InlineParser {
 
   private pushBracket(lnode: LNode, image: boolean, contentStart: number): void {
     if (this.brackets) this.brackets.bracketAfter = true;
-    this.brackets = { lnode, image, active: true, contentStart, prevDelimiter: this.delimiters, prev: this.brackets, bracketAfter: false };
+    this.brackets = {
+      lnode,
+      image,
+      active: true,
+      contentStart,
+      prevDelimiter: this.delimiters,
+      prev: this.brackets,
+      bracketAfter: false,
+    };
   }
 
   private handleCloseBracket(): void {
@@ -431,7 +483,11 @@ class InlineParser {
           attributes = parseAttributes(
             this.text,
             end,
-            { index: this.ctx.index, diagnostics: this.ctx.diagnostics, toOffset: (i) => this.src.toOffset(i) },
+            {
+              index: this.ctx.index,
+              diagnostics: this.ctx.diagnostics,
+              toOffset: (i) => this.src.toOffset(i),
+            },
             close + 1,
           ).attributes;
           end = close + 1;
@@ -439,7 +495,14 @@ class InlineParser {
         }
       }
       const inner = finalizeChain(children, this);
-      const image: Image = { type: 'image', url, title, alt: plainText(inner), attributes, position: NO_POS };
+      const image: Image = {
+        type: 'image',
+        url,
+        title,
+        alt: plainText(inner),
+        attributes,
+        position: NO_POS,
+      };
       this.append(image, openerStart, end);
     } else {
       const inner = unwrapLinks(finalizeChain(children, this));
@@ -457,7 +520,16 @@ class InlineParser {
     if (rest.startsWith('<!--')) {
       const close = this.text.indexOf('-->', start + 4);
       if (close !== -1 && close + 3 <= this.end) {
-        this.append({ type: 'comment', value: this.text.slice(start + 4, close), closed: true, position: NO_POS } satisfies Comment, start, close + 3);
+        this.append(
+          {
+            type: 'comment',
+            value: this.text.slice(start + 4, close),
+            closed: true,
+            position: NO_POS,
+          } satisfies Comment,
+          start,
+          close + 3,
+        );
         this.pos = close + 3;
         return true;
       }
@@ -466,14 +538,39 @@ class InlineParser {
     // URI autolink
     let m = /^<([A-Za-z][A-Za-z0-9+.-]{1,31}:[^\s<>]*)>/.exec(rest);
     if (m) {
-      this.append({ type: 'link', kind: 'autolink', url: m[1]!, title: null, children: [this.textNode(m[1]!, start + 1, start + 1 + m[1]!.length)], position: NO_POS } satisfies Link, start, start + m[0].length);
+      this.append(
+        {
+          type: 'link',
+          kind: 'autolink',
+          url: m[1]!,
+          title: null,
+          children: [this.textNode(m[1]!, start + 1, start + 1 + m[1]!.length)],
+          position: NO_POS,
+        } satisfies Link,
+        start,
+        start + m[0].length,
+      );
       this.pos = start + m[0].length;
       return true;
     }
     // Email autolink
-    m = /^<([A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*)>/.exec(rest);
+    m =
+      /^<([A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*)>/.exec(
+        rest,
+      );
     if (m) {
-      this.append({ type: 'link', kind: 'autolink', url: `mailto:${m[1]!}`, title: null, children: [this.textNode(m[1]!, start + 1, start + 1 + m[1]!.length)], position: NO_POS } satisfies Link, start, start + m[0].length);
+      this.append(
+        {
+          type: 'link',
+          kind: 'autolink',
+          url: `mailto:${m[1]!}`,
+          title: null,
+          children: [this.textNode(m[1]!, start + 1, start + 1 + m[1]!.length)],
+          position: NO_POS,
+        } satisfies Link,
+        start,
+        start + m[0].length,
+      );
       this.pos = start + m[0].length;
       return true;
     }
@@ -508,7 +605,11 @@ class InlineParser {
       const close = findInlineLabelEnd(this.text, pos, this.end);
       if (close === -1) {
         if (known) {
-          this.ctx.diagnostics.report('MU1007', this.range(start, Math.min(this.end, pos + 1)), `Unterminated label for \`:${name}\`: expected \`]\`.`);
+          this.ctx.diagnostics.report(
+            'MU1007',
+            this.range(start, Math.min(this.end, pos + 1)),
+            `Unterminated label for \`:${name}\`: expected \`]\`.`,
+          );
         }
         return false;
       }
@@ -521,7 +622,11 @@ class InlineParser {
       const close = findAttributeBlockEnd(this.text, pos, this.end);
       if (close === -1) {
         if (known) {
-          this.ctx.diagnostics.report('MU1008', this.range(pos, Math.min(this.end, pos + 1)), `Unterminated attribute block for \`:${name}\`: expected \`}\`.`);
+          this.ctx.diagnostics.report(
+            'MU1008',
+            this.range(pos, Math.min(this.end, pos + 1)),
+            `Unterminated attribute block for \`:${name}\`: expected \`}\`.`,
+          );
         } else if (labelStart === -1) {
           return false;
         }
@@ -529,7 +634,11 @@ class InlineParser {
         attributes = parseAttributes(
           this.text,
           pos,
-          { index: this.ctx.index, diagnostics: this.ctx.diagnostics, toOffset: (i) => this.src.toOffset(i) },
+          {
+            index: this.ctx.index,
+            diagnostics: this.ctx.diagnostics,
+            toOffset: (i) => this.src.toOffset(i),
+          },
           close + 1,
         ).attributes;
         pos = close + 1;
@@ -544,10 +653,19 @@ class InlineParser {
       if (this.ctx.registry.labelModel(name) === 'raw') {
         label = [this.textNode(rawLabel, labelStart, labelEnd)];
       } else if (this.depth + 1 > MAX_INLINE_DEPTH) {
-        this.ctx.diagnostics.report('MU1015', this.range(labelStart, labelEnd), `Directive labels are nested more than ${MAX_INLINE_DEPTH} levels deep; this label is kept as text.`);
+        this.ctx.diagnostics.report(
+          'MU1015',
+          this.range(labelStart, labelEnd),
+          `Directive labels are nested more than ${MAX_INLINE_DEPTH} levels deep; this label is kept as text.`,
+        );
         label = [this.textNode(this.text.slice(labelStart, labelEnd), labelStart, labelEnd)];
       } else {
-        label = parseInlines(this.src, this.ctx, { start: labelStart, end: labelEnd, depth: this.depth + 1, tableCell: this.tableCell });
+        label = parseInlines(this.src, this.ctx, {
+          start: labelStart,
+          end: labelEnd,
+          depth: this.depth + 1,
+          tableCell: this.tableCell,
+        });
       }
     }
     const node: InlineDirective = {
@@ -569,7 +687,16 @@ class InlineParser {
   private handleBareUrl(): boolean {
     const start = this.pos;
     const before = charBefore(this.text, start);
-    if (!(before === undefined || isUnicodeWhitespace(before) || before === '*' || before === '_' || before === '~' || before === '(' || before === '"' || before === "'")) {
+    if (!(
+      before === undefined ||
+      isUnicodeWhitespace(before) ||
+      before === '*' ||
+      before === '_' ||
+      before === '~' ||
+      before === '(' ||
+      before === '"' ||
+      before === "'"
+    )) {
       return false;
     }
     const head = this.text.slice(start, start + 8).toLowerCase();
@@ -604,9 +731,25 @@ class InlineParser {
     }
     const raw = this.text.slice(start, end);
     const host = raw.replace(/^(https?:\/\/|www\.)/i, '');
-    if (!/^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*/.test(host) || host.length === 0 || (www && !host.includes('.'))) return false;
+    if (
+      !/^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*/.test(host) ||
+      host.length === 0 ||
+      (www && !host.includes('.'))
+    )
+      return false;
     const url = www ? `http://${raw}` : raw;
-    this.append({ type: 'link', kind: 'bare', url, title: null, children: [this.textNode(raw, start, end)], position: NO_POS } satisfies Link, start, end);
+    this.append(
+      {
+        type: 'link',
+        kind: 'bare',
+        url,
+        title: null,
+        children: [this.textNode(raw, start, end)],
+        position: NO_POS,
+      } satisfies Link,
+      start,
+      end,
+    );
     this.pos = end;
     return true;
   }
@@ -630,8 +773,14 @@ class InlineParser {
       let found = false;
       while (opener && opener !== stackBottom && opener !== bottom) {
         const oddMatch =
-          (closer.canOpen || opener.canClose) && closer.origCount % 3 !== 0 && (opener.origCount + closer.origCount) % 3 === 0;
-        if (opener.char === closer.char && opener.canOpen && (closer.char === '~' ? opener.count === closer.count : !oddMatch)) {
+          (closer.canOpen || opener.canClose) &&
+          closer.origCount % 3 !== 0 &&
+          (opener.origCount + closer.origCount) % 3 === 0;
+        if (
+          opener.char === closer.char &&
+          opener.canOpen &&
+          (closer.char === '~' ? opener.count === closer.count : !oddMatch)
+        ) {
           found = true;
           break;
         }
@@ -688,7 +837,8 @@ class InlineParser {
       }
     }
     // Remove every delimiter above stackBottom.
-    while (this.delimiters && this.delimiters !== stackBottom) this.removeDelimiter(this.delimiters);
+    while (this.delimiters && this.delimiters !== stackBottom)
+      this.removeDelimiter(this.delimiters);
   }
 
   private removeDelimiter(d: Delimiter): void {
@@ -759,7 +909,10 @@ class InlineParser {
   }
 }
 
-const NO_POS: Range = { start: { line: 0, column: 0, offset: 0 }, end: { line: 0, column: 0, offset: 0 } };
+const NO_POS: Range = {
+  start: { line: 0, column: 0, offset: 0 },
+  end: { line: 0, column: 0, offset: 0 },
+};
 
 /** Converts a detached chain into finished nodes: assigns positions and merges text. */
 function finalizeChain(first: LNode | null, parser: InlineParser): Inline[] {
@@ -782,7 +935,11 @@ function mergeText(nodes: Inline[]): Inline[] {
       if (node.value.length === 0) continue;
       const last = out[out.length - 1];
       if (last?.type === 'text') {
-        out[out.length - 1] = { type: 'text', value: last.value + node.value, position: { start: last.position.start, end: node.position.end } };
+        out[out.length - 1] = {
+          type: 'text',
+          value: last.value + node.value,
+          position: { start: last.position.start, end: node.position.end },
+        };
         continue;
       }
     }

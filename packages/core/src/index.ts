@@ -21,7 +21,13 @@ export {
   type Severity,
   type TextEdit,
 } from './diagnostics.ts';
-export { LineIndex, compareRanges, rangeContains, type Point, type Range } from './source/position.ts';
+export {
+  LineIndex,
+  compareRanges,
+  rangeContains,
+  type Point,
+  type Range,
+} from './source/position.ts';
 export { scanLines, type SourceLine } from './source/lines.ts';
 
 export {
@@ -34,7 +40,13 @@ export {
   type DirectiveValidationContext,
   type LabelSpec,
 } from './directives/spec.ts';
-export { BUILTIN_DIRECTIVES, CALLOUT_TYPES, CHART_TYPES, builtinRegistry, type CalloutType } from './directives/builtins.ts';
+export {
+  BUILTIN_DIRECTIVES,
+  CALLOUT_TYPES,
+  CHART_TYPES,
+  builtinRegistry,
+  type CalloutType,
+} from './directives/builtins.ts';
 export { createRegistry, definePlugin, type MarkupPlugin } from './plugin.ts';
 
 export {

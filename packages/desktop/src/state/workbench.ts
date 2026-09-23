@@ -5,16 +5,35 @@
  */
 import { renderDocument } from '@markup-lang/html';
 import { LanguageService } from '@markup-lang/language-service';
-import { basename, dirname, flatten, join, MARKUP_FILE, normalize, type WorkspaceFs } from '../fs/types.ts';
+import {
+  basename,
+  dirname,
+  flatten,
+  join,
+  MARKUP_FILE,
+  normalize,
+  type WorkspaceFs,
+} from '../fs/types.ts';
 import { resetMemoryFs, SAMPLE_ROOT } from '../fs/memory.ts';
 import { saveSettings, type Settings } from './settings.ts';
-import { isDirty, type Store, type PaletteMode, type SidebarView, type State, type Toast, type ViewMode } from './store.ts';
+import {
+  isDirty,
+  type Store,
+  type PaletteMode,
+  type SidebarView,
+  type State,
+  type Toast,
+  type ViewMode,
+} from './store.ts';
 
 const SESSION_KEY = 'markup.desktop.session.v1';
 
 interface Session {
   recent: string[];
-  byRoot: Record<string, { tabs: string[]; active: string | null; expanded: Record<string, boolean> }>;
+  byRoot: Record<
+    string,
+    { tabs: string[]; active: string | null; expanded: Record<string, boolean> }
+  >;
   view?: ViewMode;
   sidebar?: SidebarView | null;
   sidebarWidth?: number;
@@ -59,7 +78,14 @@ export class Workbench {
   }
 
   async openWorkspace(path: string): Promise<void> {
-    if (!(await this.confirmDiscard(Object.values(this.state.docs).filter(isDirty).map((d) => d.path)))) return;
+    if (
+      !(await this.confirmDiscard(
+        Object.values(this.state.docs)
+          .filter(isDirty)
+          .map((d) => d.path),
+      ))
+    )
+      return;
     try {
       const root = await this.fs.open(path);
       this.unwatch?.();
@@ -75,7 +101,8 @@ export class Workbench {
       });
       await this.refreshTree();
       for (const tab of saved?.tabs ?? []) await this.openFile(tab, { quiet: true });
-      if (saved?.active && this.state.tabs.includes(saved.active)) this.store.set({ active: saved.active });
+      if (saved?.active && this.state.tabs.includes(saved.active))
+        this.store.set({ active: saved.active });
       this.unwatch = await this.fs.watch((paths) => void this.onExternalChange(paths));
       this.persist();
       void this.scanProblems();
@@ -91,7 +118,8 @@ export class Workbench {
 
   async resetSamples(): Promise<void> {
     if (this.fs.kind !== 'memory') return;
-    if (!(await this.fs.confirm('Restore the sample files? Your changes to them will be lost.'))) return;
+    if (!(await this.fs.confirm('Restore the sample files? Your changes to them will be lost.')))
+      return;
     resetMemoryFs();
     location.reload();
   }
@@ -107,7 +135,9 @@ export class Workbench {
 
   /** Parses every MarkUP file once to fill the Problems view. */
   async scanProblems(): Promise<void> {
-    const files = flatten(this.state.tree).filter((e) => e.kind === 'file' && MARKUP_FILE.test(e.path));
+    const files = flatten(this.state.tree).filter(
+      (e) => e.kind === 'file' && MARKUP_FILE.test(e.path),
+    );
     const problems: State['problems'] = {};
     for (const file of files.slice(0, 2000)) {
       try {
@@ -138,13 +168,19 @@ export class Workbench {
     if (!this.state.docs[path]) {
       try {
         const content = await this.fs.readText(path);
-        this.store.set((s) => ({ docs: { ...s.docs, [path]: { path, content, saved: content, conflict: false } } }));
+        this.store.set((s) => ({
+          docs: { ...s.docs, [path]: { path, content, saved: content, conflict: false } },
+        }));
       } catch (error) {
-        if (!options.quiet) this.toast('error', `Could not open ${basename(path)}: ${message(error)}`);
+        if (!options.quiet)
+          this.toast('error', `Could not open ${basename(path)}: ${message(error)}`);
         return;
       }
     }
-    this.store.set((s) => ({ tabs: s.tabs.includes(path) ? s.tabs : [...s.tabs, path], active: path }));
+    this.store.set((s) => ({
+      tabs: s.tabs.includes(path) ? s.tabs : [...s.tabs, path],
+      active: path,
+    }));
     this.revealInTree(path);
     this.persist();
   }
@@ -181,7 +217,8 @@ export class Workbench {
       const tabs = s.tabs.filter((t) => t !== path);
       const docs = { ...s.docs };
       delete docs[path];
-      const active = s.active === path ? (tabs[Math.min(index, tabs.length - 1)] ?? null) : s.active;
+      const active =
+        s.active === path ? (tabs[Math.min(index, tabs.length - 1)] ?? null) : s.active;
       return { tabs, docs, active };
     });
     this.service.forget(path);
@@ -210,7 +247,9 @@ export class Workbench {
     try {
       this.ownWrites.set(path, Date.now());
       await this.fs.writeText(path, doc.content);
-      this.store.set((s) => ({ docs: { ...s.docs, [path]: { ...s.docs[path]!, saved: doc.content, conflict: false } } }));
+      this.store.set((s) => ({
+        docs: { ...s.docs, [path]: { ...s.docs[path]!, saved: doc.content, conflict: false } },
+      }));
       return true;
     } catch (error) {
       this.toast('error', `Could not save ${basename(path)}: ${message(error)}`);
@@ -226,7 +265,10 @@ export class Workbench {
   async confirmDiscard(paths: string[]): Promise<boolean> {
     if (paths.length === 0) return true;
     const names = paths.map((p) => basename(p)).join(', ');
-    return this.fs.confirm(`${names} ${paths.length === 1 ? 'has' : 'have'} unsaved changes. Discard them?`, { okLabel: 'Discard' });
+    return this.fs.confirm(
+      `${names} ${paths.length === 1 ? 'has' : 'have'} unsaved changes. Discard them?`,
+      { okLabel: 'Discard' },
+    );
   }
 
   private async onExternalChange(paths: string[]): Promise<void> {
@@ -248,7 +290,9 @@ export class Workbench {
         this.store.set((s) => ({ docs: { ...s.docs, [path]: { ...doc, conflict: true } } }));
         this.toast('info', `${basename(path)} changed on disk. Saving will overwrite it.`);
       } else {
-        this.store.set((s) => ({ docs: { ...s.docs, [path]: { ...doc, content, saved: content } } }));
+        this.store.set((s) => ({
+          docs: { ...s.docs, [path]: { ...doc, content, saved: content } },
+        }));
       }
     }
     void this.scanProblems();
@@ -259,7 +303,11 @@ export class Workbench {
 
   startCreate(kind: 'new-file' | 'new-folder', parent = this.defaultParent()): void {
     if (!parent) return;
-    this.store.set((s) => ({ editing: { kind, parent }, expanded: { ...s.expanded, [parent]: true }, sidebar: 'explorer' }));
+    this.store.set((s) => ({
+      editing: { kind, parent },
+      expanded: { ...s.expanded, [parent]: true },
+      sidebar: 'explorer',
+    }));
   }
 
   startRename(path: string): void {
@@ -289,7 +337,9 @@ export class Workbench {
         await this.fs.createDirectory(join(editing.parent, trimmed));
       } else {
         const file = join(editing.parent, /\.[^.]+$/.test(trimmed) ? trimmed : `${trimmed}.markup`);
-        const title = basename(file).replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
+        const title = basename(file)
+          .replace(/\.[^.]+$/, '')
+          .replace(/[-_]+/g, ' ');
         await this.fs.createFile(file, `# ${title[0]?.toUpperCase() ?? ''}${title.slice(1)}\n\n`);
         await this.refreshTree();
         await this.openFile(file);
@@ -302,9 +352,11 @@ export class Workbench {
 
   private renameOpenDocs(from: string, to: string): void {
     this.store.set((s) => {
-      const move = (p: string) => (p === from || p.startsWith(`${from}/`) ? to + p.slice(from.length) : p);
+      const move = (p: string) =>
+        p === from || p.startsWith(`${from}/`) ? to + p.slice(from.length) : p;
       const docs: State['docs'] = {};
-      for (const [path, doc] of Object.entries(s.docs)) docs[move(path)] = { ...doc, path: move(path) };
+      for (const [path, doc] of Object.entries(s.docs))
+        docs[move(path)] = { ...doc, path: move(path) };
       return { docs, tabs: s.tabs.map(move), active: s.active ? move(s.active) : null };
     });
     this.persist();
@@ -312,11 +364,14 @@ export class Workbench {
 
   async remove(path: string): Promise<void> {
     const trash = this.fs.kind === 'tauri' ? ' It will be moved to the trash.' : '';
-    if (!(await this.fs.confirm(`Delete ${basename(path)}?${trash}`, { okLabel: 'Delete' }))) return;
+    if (!(await this.fs.confirm(`Delete ${basename(path)}?${trash}`, { okLabel: 'Delete' })))
+      return;
     try {
       await this.fs.remove(path);
       for (const tab of this.state.tabs.filter((t) => t === path || t.startsWith(`${path}/`))) {
-        this.store.set((s) => ({ docs: { ...s.docs, [tab]: { ...s.docs[tab]!, saved: s.docs[tab]!.content } } }));
+        this.store.set((s) => ({
+          docs: { ...s.docs, [tab]: { ...s.docs[tab]!, saved: s.docs[tab]!.content } },
+        }));
         await this.closeTab(tab);
       }
       await this.refreshTree();
@@ -340,7 +395,8 @@ export class Workbench {
     const root = this.state.workspace?.root;
     if (!root) return;
     const expanded = { ...this.state.expanded };
-    for (let dir = dirname(path); dir.length > root.length; dir = dirname(dir)) expanded[dir] = true;
+    for (let dir = dirname(path); dir.length > root.length; dir = dirname(dir))
+      expanded[dir] = true;
     this.store.set({ expanded });
   }
 
@@ -358,11 +414,22 @@ export class Workbench {
     if (!path || !doc) return;
     const analysis = this.service.analyze(doc.content, path);
     const html = renderDocument(analysis.document, {
-      theme: this.state.settings.theme === 'light' ? 'light' : this.state.settings.theme === 'dark' ? 'dark' : 'auto',
-      rewriteUrl: (url) => (/^[a-z][a-z0-9+.-]*:/i.test(url) ? url : url.replace(/\.(?:markup|mkup|md)(?=[?#]|$)/i, '.html')),
+      theme:
+        this.state.settings.theme === 'light'
+          ? 'light'
+          : this.state.settings.theme === 'dark'
+            ? 'dark'
+            : 'auto',
+      rewriteUrl: (url) =>
+        /^[a-z][a-z0-9+.-]*:/i.test(url)
+          ? url
+          : url.replace(/\.(?:markup|mkup|md)(?=[?#]|$)/i, '.html'),
     });
     try {
-      const target = await this.fs.exportHtml(basename(path).replace(MARKUP_FILE, '') + '.html', html);
+      const target = await this.fs.exportHtml(
+        basename(path).replace(MARKUP_FILE, '') + '.html',
+        html,
+      );
       if (target) this.toast('success', `Exported ${basename(target)}`);
     } catch (error) {
       this.toast('error', `Export failed: ${message(error)}`);
@@ -412,7 +479,9 @@ export class Workbench {
   }
 
   zoom(delta: number): void {
-    this.updateSettings({ fontSize: Math.min(28, Math.max(10, this.state.settings.fontSize + delta)) });
+    this.updateSettings({
+      fontSize: Math.min(28, Math.max(10, this.state.settings.fontSize + delta)),
+    });
   }
 
   toast(kind: Toast['kind'], text: string): void {
@@ -441,7 +510,8 @@ export class Workbench {
   persist(): void {
     const s = this.state;
     const session = this.session();
-    if (s.workspace) session.byRoot[s.workspace.root] = { tabs: s.tabs, active: s.active, expanded: s.expanded };
+    if (s.workspace)
+      session.byRoot[s.workspace.root] = { tabs: s.tabs, active: s.active, expanded: s.expanded };
     session.recent = s.recent;
     session.view = s.view;
     session.sidebar = s.sidebar;

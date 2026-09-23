@@ -4,37 +4,53 @@ import { codeList, codes, diagnostics, tree } from './helpers.ts';
 
 describe('container directives', () => {
   it('parses name, label, attributes and a flow body', () => {
-    expect(tree(':::card[Title]{#c .wide icon=x}\nBody **text**\n:::')).toBe(':::card["Title"]{#c .wide icon=x}(p("Body ", strong("text")))');
+    expect(tree(':::card[Title]{#c .wide icon=x}\nBody **text**\n:::')).toBe(
+      ':::card["Title"]{#c .wide icon=x}(p("Body ", strong("text")))',
+    );
   });
 
   it('parses the example from the brief', () => {
-    const source = '# Doc\n\n:::card[Card title]\nCard content\n:::\n\n:::chart\ntype: bar\ndata:\n  Python: 80\n  JavaScript: 60\n  Rust: 40\n:::';
+    const source =
+      '# Doc\n\n:::card[Card title]\nCard content\n:::\n\n:::chart\ntype: bar\ndata:\n  Python: 80\n  JavaScript: 60\n  Rust: 40\n:::';
     const result = parse(source);
     expect(result.diagnostics).toEqual([]);
     const chart = result.document.children[2] as ContainerDirective;
     expect(chart.body.kind).toBe('data');
-    expect(chart.body.kind === 'data' && toPlainData(chart.body.value)).toEqual({ type: 'bar', data: { Python: 80, JavaScript: 60, Rust: 40 } });
+    expect(chart.body.kind === 'data' && toPlainData(chart.body.value)).toEqual({
+      type: 'bar',
+      data: { Python: 80, JavaScript: 60, Rust: 40 },
+    });
   });
 
   it('nests with the same number of colons', () => {
-    expect(tree(':::note\n:::details[More]\ninner\n:::\nouter\n:::')).toBe(':::note(:::details["More"](p("inner")), p("outer"))');
+    expect(tree(':::note\n:::details[More]\ninner\n:::\nouter\n:::')).toBe(
+      ':::note(:::details["More"](p("inner")), p("outer"))',
+    );
   });
 
   it('nests with more colons on the outside', () => {
-    expect(tree('::::columns\n:::column\nA\n:::\n:::column\nB\n:::\n::::')).toBe('::::columns(:::column(p("A")), :::column(p("B")))');
+    expect(tree('::::columns\n:::column\nA\n:::\n:::column\nB\n:::\n::::')).toBe(
+      '::::columns(:::column(p("A")), :::column(p("B")))',
+    );
   });
 
   it('allows indentation of fences and content', () => {
-    expect(tree('::::tabs\n  :::tab[A]\n  one\n  :::\n::::')).toBe('::::tabs(:::tab["A"](p("one")))');
+    expect(tree('::::tabs\n  :::tab[A]\n  one\n  :::\n::::')).toBe(
+      '::::tabs(:::tab["A"](p("one")))',
+    );
   });
 
   it('may appear inside lists and blockquotes and closes at that level', () => {
-    expect(tree('- item\n  :::note\n  inside\n  :::\n- next')).toBe('ul(li(p("item"), :::note(p("inside"))), li(p("next")))');
+    expect(tree('- item\n  :::note\n  inside\n  :::\n- next')).toBe(
+      'ul(li(p("item"), :::note(p("inside"))), li(p("next")))',
+    );
     expect(tree('> :::tip\n> quoted\n> :::')).toBe('quote(:::tip(p("quoted")))');
   });
 
   it('closes a list that it contains', () => {
-    expect(tree(':::note\n- a\n- b\n:::\nafter')).toBe(':::note(ul(li(p("a")), li(p("b")))) p("after")');
+    expect(tree(':::note\n- a\n- b\n:::\nafter')).toBe(
+      ':::note(ul(li(p("a")), li(p("b")))) p("after")',
+    );
   });
 
   it('interrupts paragraphs with opening and closing fences', () => {
@@ -153,9 +169,14 @@ describe('directive header errors', () => {
 
 describe('content models', () => {
   it('parses data bodies with MarkUP Data', () => {
-    const { document } = parse(':::chart\nlabels: [a, b]\nseries:\n  - name: s\n    values: [1, 2]\n:::');
+    const { document } = parse(
+      ':::chart\nlabels: [a, b]\nseries:\n  - name: s\n    values: [1, 2]\n:::',
+    );
     const chart = document.children[0] as ContainerDirective;
-    expect(chart.body.kind === 'data' && toPlainData(chart.body.value)).toEqual({ labels: ['a', 'b'], series: [{ name: 's', values: [1, 2] }] });
+    expect(chart.body.kind === 'data' && toPlainData(chart.body.value)).toEqual({
+      labels: ['a', 'b'],
+      series: [{ name: 's', values: [1, 2] }],
+    });
   });
 
   it('does not treat `:::` lines with a name as closing a data body', () => {
@@ -164,17 +185,31 @@ describe('content models', () => {
   });
 
   it('keeps raw bodies verbatim, including fences and markup', () => {
-    const raw = defineDirective({ name: 'raw-demo', forms: ['container'], description: 'test', content: 'raw' });
+    const raw = defineDirective({
+      name: 'raw-demo',
+      forms: ['container'],
+      description: 'test',
+      content: 'raw',
+    });
     const source = ':::raw-demo\n  **not bold**\n```\n:::inner\n:::';
-    const { document, diagnostics } = parse(source, { plugins: [{ name: 't', directives: [raw] }] });
+    const { document, diagnostics } = parse(source, {
+      plugins: [{ name: 't', directives: [raw] }],
+    });
     const node = document.children[0] as ContainerDirective;
     expect(node.body).toMatchObject({ kind: 'raw', value: '  **not bold**\n```\n:::inner' });
     expect(diagnostics).toEqual([]);
   });
 
   it('strips the fence indentation from raw bodies', () => {
-    const raw = defineDirective({ name: 'raw-demo', forms: ['container'], description: 'test', content: 'raw' });
-    const { document } = parse('  :::raw-demo\n    a\n  b\n  :::', { plugins: [{ name: 't', directives: [raw] }] });
+    const raw = defineDirective({
+      name: 'raw-demo',
+      forms: ['container'],
+      description: 'test',
+      content: 'raw',
+    });
+    const { document } = parse('  :::raw-demo\n    a\n  b\n  :::', {
+      plugins: [{ name: 't', directives: [raw] }],
+    });
     expect((document.children[0] as ContainerDirective).body).toMatchObject({ value: '  a\nb' });
   });
 
@@ -199,8 +234,15 @@ describe('extensibility', () => {
   });
 
   it('lets plugins override built-ins', () => {
-    const noteAsData = defineDirective({ name: 'note', forms: ['container'], description: 'x', content: 'data' });
-    const { document } = parse(':::note\na: 1\n:::', { plugins: [{ name: 'o', directives: [noteAsData] }] });
+    const noteAsData = defineDirective({
+      name: 'note',
+      forms: ['container'],
+      description: 'x',
+      content: 'data',
+    });
+    const { document } = parse(':::note\na: 1\n:::', {
+      plugins: [{ name: 'o', directives: [noteAsData] }],
+    });
     expect((document.children[0] as ContainerDirective).body.kind).toBe('data');
   });
 });

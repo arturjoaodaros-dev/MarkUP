@@ -14,7 +14,9 @@ export function ActivityBar() {
   const { wb } = useWorkbench();
   const sidebar = useAppState((s) => s.sidebar);
   const hasWorkspace = useAppState((s) => s.workspace !== null);
-  const problemCount = useAppState((s) => Object.values(s.problems).reduce((n, p) => n + p.errors + p.warnings, 0));
+  const problemCount = useAppState((s) =>
+    Object.values(s.problems).reduce((n, p) => n + p.errors + p.warnings, 0),
+  );
 
   return (
     <nav className="activity-bar" aria-label="Views">
@@ -30,11 +32,19 @@ export function ActivityBar() {
           onClick={() => wb.showSidebar(view)}
         >
           <Icon size={20} strokeWidth={1.6} />
-          {view === 'problems' && problemCount > 0 && <span className="activity-badge">{problemCount > 99 ? '99+' : problemCount}</span>}
+          {view === 'problems' && problemCount > 0 && (
+            <span className="activity-badge">{problemCount > 99 ? '99+' : problemCount}</span>
+          )}
         </button>
       ))}
       <div className="activity-spacer" />
-      <button type="button" className="activity-item" aria-label="Settings" title={`Settings (${formatShortcut('mod+,')})`} onClick={() => wb.store.set({ settingsOpen: true })}>
+      <button
+        type="button"
+        className="activity-item"
+        aria-label="Settings"
+        title={`Settings (${formatShortcut('mod+,')})`}
+        onClick={() => wb.store.set({ settingsOpen: true })}
+      >
         <Settings size={20} strokeWidth={1.6} />
       </button>
     </nav>

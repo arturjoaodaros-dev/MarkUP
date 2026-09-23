@@ -18,7 +18,8 @@ function Dialog() {
   const [tab, setTab] = useState<Tab>('general');
   const dialog = useRef<HTMLDivElement>(null);
   const close = () => wb.store.set({ settingsOpen: false });
-  const set = <K extends keyof Settings>(key: K, value: Settings[K]) => wb.updateSettings({ [key]: value } as Partial<Settings>);
+  const set = <K extends keyof Settings>(key: K, value: Settings[K]) =>
+    wb.updateSettings({ [key]: value } as Partial<Settings>);
 
   useEffect(() => {
     dialog.current?.querySelector<HTMLElement>('button, select, input')?.focus();
@@ -28,14 +29,27 @@ function Dialog() {
   }, []);
 
   return (
-    <div className="overlay is-centered" onMouseDown={(e) => e.target === e.currentTarget && close()}>
+    <div
+      className="overlay is-centered"
+      onMouseDown={(e) => e.target === e.currentTarget && close()}
+    >
       <div className="dialog" role="dialog" aria-modal="true" aria-label="Settings" ref={dialog}>
         <header className="dialog-header">
           <div className="dialog-tabs" role="tablist">
-            <button type="button" role="tab" aria-selected={tab === 'general'} onClick={() => setTab('general')}>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === 'general'}
+              onClick={() => setTab('general')}
+            >
               Settings
             </button>
-            <button type="button" role="tab" aria-selected={tab === 'shortcuts'} onClick={() => setTab('shortcuts')}>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === 'shortcuts'}
+              onClick={() => setTab('shortcuts')}
+            >
               Keyboard shortcuts
             </button>
           </div>
@@ -48,34 +62,96 @@ function Dialog() {
             <>
               <Section title="Appearance">
                 <Row label="Theme" description="The color scheme of the app.">
-                  <Segmented value={settings.theme} options={[['dark', 'Dark'], ['light', 'Light'], ['system', 'System']]} onChange={(v) => set('theme', v)} />
+                  <Segmented
+                    value={settings.theme}
+                    options={[
+                      ['dark', 'Dark'],
+                      ['light', 'Light'],
+                      ['system', 'System'],
+                    ]}
+                    onChange={(v) => set('theme', v)}
+                  />
                 </Row>
-                <Row label="Preview theme" description="Follow the app, or always render light or dark.">
-                  <Segmented value={settings.previewTheme} options={[['app', 'Same as app'], ['light', 'Light'], ['dark', 'Dark']]} onChange={(v) => set('previewTheme', v)} />
+                <Row
+                  label="Preview theme"
+                  description="Follow the app, or always render light or dark."
+                >
+                  <Segmented
+                    value={settings.previewTheme}
+                    options={[
+                      ['app', 'Same as app'],
+                      ['light', 'Light'],
+                      ['dark', 'Dark'],
+                    ]}
+                    onChange={(v) => set('previewTheme', v)}
+                  />
                 </Row>
               </Section>
               <Section title="Editor">
-                <Row label="Font size" description={`${settings.fontSize}px — also ${formatShortcut('mod+=')} and ${formatShortcut('mod+-')}.`}>
-                  <input type="range" min={10} max={24} value={settings.fontSize} onChange={(e) => set('fontSize', Number(e.target.value))} aria-label="Font size" />
+                <Row
+                  label="Font size"
+                  description={`${settings.fontSize}px — also ${formatShortcut('mod+=')} and ${formatShortcut('mod+-')}.`}
+                >
+                  <input
+                    type="range"
+                    min={10}
+                    max={24}
+                    value={settings.fontSize}
+                    onChange={(e) => set('fontSize', Number(e.target.value))}
+                    aria-label="Font size"
+                  />
                 </Row>
                 <Row label="Tab size">
-                  <Segmented value={String(settings.tabSize)} options={[['2', '2'], ['4', '4'], ['8', '8']]} onChange={(v) => set('tabSize', Number(v))} />
+                  <Segmented
+                    value={String(settings.tabSize)}
+                    options={[
+                      ['2', '2'],
+                      ['4', '4'],
+                      ['8', '8'],
+                    ]}
+                    onChange={(v) => set('tabSize', Number(v))}
+                  />
                 </Row>
                 <Row label="Word wrap" description="Wrap long lines to the width of the editor.">
-                  <Toggle checked={settings.wordWrap} onChange={(v) => set('wordWrap', v)} label="Word wrap" />
+                  <Toggle
+                    checked={settings.wordWrap}
+                    onChange={(v) => set('wordWrap', v)}
+                    label="Word wrap"
+                  />
                 </Row>
                 <Row label="Line numbers">
-                  <Toggle checked={settings.lineNumbers} onChange={(v) => set('lineNumbers', v)} label="Line numbers" />
+                  <Toggle
+                    checked={settings.lineNumbers}
+                    onChange={(v) => set('lineNumbers', v)}
+                    label="Line numbers"
+                  />
                 </Row>
               </Section>
               <Section title="Preview">
-                <Row label="Scroll sync" description="Keep the editor and the preview scrolled to the same place.">
-                  <Toggle checked={settings.scrollSync} onChange={(v) => set('scrollSync', v)} label="Scroll sync" />
+                <Row
+                  label="Scroll sync"
+                  description="Keep the editor and the preview scrolled to the same place."
+                >
+                  <Toggle
+                    checked={settings.scrollSync}
+                    onChange={(v) => set('scrollSync', v)}
+                    label="Scroll sync"
+                  />
                 </Row>
               </Section>
               <Section title="Files">
-                <Row label="Auto save" description="Save changes automatically after a short pause.">
-                  <Segmented value={settings.autosave === 'afterDelay' ? 'afterDelay' : 'off'} options={[['off', 'Off'], ['afterDelay', 'After a pause']]} onChange={(v) => set('autosave', v)} />
+                <Row
+                  label="Auto save"
+                  description="Save changes automatically after a short pause."
+                >
+                  <Segmented
+                    value={settings.autosave === 'afterDelay' ? 'afterDelay' : 'off'}
+                    options={[
+                      ['off', 'Off'],
+                      ['afterDelay', 'After a pause'],
+                    ]}
+                    onChange={(v) => set('autosave', v)}
+                  />
                 </Row>
               </Section>
             </>
@@ -128,7 +204,15 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Row({ label, description, children }: { label: string; description?: string; children: React.ReactNode }) {
+function Row({
+  label,
+  description,
+  children,
+}: {
+  label: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="settings-row">
       <div>
@@ -140,11 +224,26 @@ function Row({ label, description, children }: { label: string; description?: st
   );
 }
 
-function Segmented<T extends string>({ value, options, onChange }: { value: T; options: [T, string][]; onChange: (value: T) => void }) {
+function Segmented<T extends string>({
+  value,
+  options,
+  onChange,
+}: {
+  value: T;
+  options: [T, string][];
+  onChange: (value: T) => void;
+}) {
   return (
     <div className="segmented is-labelled" role="radiogroup">
       {options.map(([v, label]) => (
-        <button key={v} type="button" role="radio" aria-checked={value === v} aria-pressed={value === v} onClick={() => onChange(v)}>
+        <button
+          key={v}
+          type="button"
+          role="radio"
+          aria-checked={value === v}
+          aria-pressed={value === v}
+          onClick={() => onChange(v)}
+        >
           {label}
         </button>
       ))}
@@ -152,6 +251,23 @@ function Segmented<T extends string>({ value, options, onChange }: { value: T; o
   );
 }
 
-function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (value: boolean) => void; label: string }) {
-  return <button type="button" role="switch" aria-checked={checked} aria-label={label} className="switch" onClick={() => onChange(!checked)} />;
+function Toggle({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean;
+  onChange: (value: boolean) => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      className="switch"
+      onClick={() => onChange(!checked)}
+    />
+  );
 }

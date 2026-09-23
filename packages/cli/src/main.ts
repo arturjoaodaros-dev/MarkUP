@@ -1,7 +1,15 @@
 import { mkdirSync, readFileSync, watch, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
-import { createRegistry, describeType, hasErrors, isRequired, labelSpec, parse, type ParseResult } from '@markup-lang/core';
+import {
+  createRegistry,
+  describeType,
+  hasErrors,
+  isRequired,
+  labelSpec,
+  parse,
+  type ParseResult,
+} from '@markup-lang/core';
 import { MARKUP_CSS, renderDocument, renderHtml } from '@markup-lang/html';
 import { renderText } from '@markup-lang/text';
 import { startPreview } from './preview.ts';
@@ -77,7 +85,9 @@ export async function main(argv: readonly string[], io: Io): Promise<number> {
       },
     });
   } catch (error) {
-    io.stderr(`${error instanceof Error ? error.message : String(error)}\nRun \`markup --help\` for usage.\n`);
+    io.stderr(
+      `${error instanceof Error ? error.message : String(error)}\nRun \`markup --help\` for usage.\n`,
+    );
     return 2;
   }
   const { values, positionals } = parsed;
@@ -97,13 +107,38 @@ export async function main(argv: readonly string[], io: Io): Promise<number> {
     const theme = parseTheme(values.theme) ?? config.theme;
     switch (command) {
       case 'render':
-        return await render(args, { format: values.format ?? 'html', out: values.out, standalone: !!values.standalone, theme }, config, io);
+        return await render(
+          args,
+          {
+            format: values.format ?? 'html',
+            out: values.out,
+            standalone: !!values.standalone,
+            theme,
+          },
+          config,
+          io,
+        );
       case 'build':
-        return await build(args, { out: values.out, watch: !!values.watch, css: !!values.css, theme }, config, io);
+        return await build(
+          args,
+          { out: values.out, watch: !!values.watch, css: !!values.css, theme },
+          config,
+          io,
+        );
       case 'check':
-        return check(args, { format: values.format ?? 'pretty', maxWarnings: parseCount(values['max-warnings']) }, config, io);
+        return check(
+          args,
+          { format: values.format ?? 'pretty', maxWarnings: parseCount(values['max-warnings']) },
+          config,
+          io,
+        );
       case 'preview':
-        return await preview(args, { port: parseCount(values.port) ?? 4000, open: !!values.open, theme }, config, io);
+        return await preview(
+          args,
+          { port: parseCount(values.port) ?? 4000, open: !!values.open, theme },
+          config,
+          io,
+        );
       case 'components':
         return components(args, config, io);
       default:
@@ -127,7 +162,8 @@ function parseTheme(value: string | undefined): Config['theme'] | undefined {
 function parseCount(value: string | undefined): number | undefined {
   if (value === undefined) return undefined;
   const n = Number(value);
-  if (!Number.isInteger(n) || n < 0) throw new UsageError(`Expected a non-negative integer, got \`${value}\`.`);
+  if (!Number.isInteger(n) || n < 0)
+    throw new UsageError(`Expected a non-negative integer, got \`${value}\`.`);
   return n;
 }
 
@@ -135,7 +171,9 @@ function readSource(path: string, io: Io): string {
   try {
     return readFileSync(path, 'utf8');
   } catch (error) {
-    throw new UsageError(`Cannot read ${display(path, io.cwd)}: ${error instanceof Error ? error.message : String(error)}`);
+    throw new UsageError(
+      `Cannot read ${display(path, io.cwd)}: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 
@@ -189,7 +227,8 @@ async function render(
 
 /** Errors go to stderr so that stdout stays clean for pipes. */
 function reportErrorsBriefly(result: ParseResult, file: string, source: string, io: Io): void {
-  for (const d of result.diagnostics) if (d.severity === 'error') io.stderr(formatDiagnostic(d, file, source, io));
+  for (const d of result.diagnostics)
+    if (d.severity === 'error') io.stderr(formatDiagnostic(d, file, source, io));
 }
 
 async function build(
@@ -199,7 +238,9 @@ async function build(
   io: Io,
 ): Promise<number> {
   if (args.length === 0) throw new UsageError('build needs at least one file or directory.');
-  const outDir = options.out ? resolve(io.cwd, options.out) : (config.out ?? resolve(io.cwd, 'out'));
+  const outDir = options.out
+    ? resolve(io.cwd, options.out)
+    : (config.out ?? resolve(io.cwd, 'out'));
   const c = paint(io);
 
   const buildAll = (): number => {
@@ -213,15 +254,26 @@ async function build(
       const source = readSource(file, io);
       const result = parse(source, { plugins: config.plugins });
       count(result.diagnostics, totals);
-      for (const d of result.diagnostics) if (d.severity === 'error' || d.severity === 'warning') io.stderr(formatDiagnostic(d, display(file, io.cwd), source, io));
+      for (const d of result.diagnostics)
+        if (d.severity === 'error' || d.severity === 'warning')
+          io.stderr(formatDiagnostic(d, display(file, io.cwd), source, io));
       if (hasErrors(result.diagnostics)) failed++;
       const target = join(outDir, relative(base, file)).replace(/\.(markup|mkup|md)$/i, '.html');
-      writeOutput(target, renderDocument(result.document, { plugins: config.plugins, theme: options.theme, rewriteUrl }));
+      writeOutput(
+        target,
+        renderDocument(result.document, {
+          plugins: config.plugins,
+          theme: options.theme,
+          rewriteUrl,
+        }),
+      );
     }
     if (options.css) writeOutput(join(outDir, 'markup.css'), `${MARKUP_CSS}\n`);
     const ms = Math.round(performance.now() - started);
     const summary = `${plural(files.length, 'page')} → ${display(outDir, io.cwd)} in ${ms} ms`;
-    io.stdout(`${failed ? c.red('✖') : c.green('✔')} ${summary}${totals.errors || totals.warnings ? ` (${plural(totals.errors, 'error')}, ${plural(totals.warnings, 'warning')})` : ''}\n`);
+    io.stdout(
+      `${failed ? c.red('✖') : c.green('✔')} ${summary}${totals.errors || totals.warnings ? ` (${plural(totals.errors, 'error')}, ${plural(totals.warnings, 'warning')})` : ''}\n`,
+    );
     return failed ? 1 : 0;
   };
 
@@ -246,8 +298,14 @@ async function build(
   });
 }
 
-function check(args: string[], options: { format: string; maxWarnings: number | undefined }, config: Config, io: Io): number {
-  if (options.format !== 'pretty' && options.format !== 'json') throw new UsageError(`Unknown format \`${options.format}\` (pretty, json).`);
+function check(
+  args: string[],
+  options: { format: string; maxWarnings: number | undefined },
+  config: Config,
+  io: Io,
+): number {
+  if (options.format !== 'pretty' && options.format !== 'json')
+    throw new UsageError(`Unknown format \`${options.format}\` (pretty, json).`);
   const files = collectFiles(args.length ? args : ['.'], io.cwd);
   const totals = count([]);
   const report: { file: string; diagnostics: ParseResult['diagnostics'] }[] = [];
@@ -258,29 +316,47 @@ function check(args: string[], options: { format: string; maxWarnings: number | 
     count(diagnostics, totals);
     const name = display(file, io.cwd);
     report.push({ file: name, diagnostics });
-    if (options.format === 'pretty') for (const d of diagnostics) io.stdout(`${formatDiagnostic(d, name, source, io)}\n`);
+    if (options.format === 'pretty')
+      for (const d of diagnostics) io.stdout(`${formatDiagnostic(d, name, source, io)}\n`);
   }
   if (options.format === 'json') {
-    io.stdout(`${JSON.stringify({ files: report, summary: { files: files.length, ...totals } }, null, 2)}\n`);
+    io.stdout(
+      `${JSON.stringify({ files: report, summary: { files: files.length, ...totals } }, null, 2)}\n`,
+    );
   } else if (totals.errors + totals.warnings + totals.others === 0) {
     io.stdout(`${c.green('✔')} ${plural(files.length, 'file')} checked, no problems\n`);
   } else {
     const mark = totals.errors ? c.red('✖') : c.yellow('⚠');
-    io.stdout(`${mark} ${plural(totals.errors, 'error')}, ${plural(totals.warnings, 'warning')}${totals.others ? `, ${plural(totals.others, 'hint')}` : ''} in ${plural(files.length, 'file')}\n`);
+    io.stdout(
+      `${mark} ${plural(totals.errors, 'error')}, ${plural(totals.warnings, 'warning')}${totals.others ? `, ${plural(totals.others, 'hint')}` : ''} in ${plural(files.length, 'file')}\n`,
+    );
   }
   if (totals.errors > 0) return 1;
   if (options.maxWarnings !== undefined && totals.warnings > options.maxWarnings) {
-    if (options.format === 'pretty') io.stdout(c.red(`Too many warnings (${totals.warnings} > ${options.maxWarnings}).\n`));
+    if (options.format === 'pretty')
+      io.stdout(c.red(`Too many warnings (${totals.warnings} > ${options.maxWarnings}).\n`));
     return 1;
   }
   return 0;
 }
 
-async function preview(args: string[], options: { port: number; open: boolean; theme: Config['theme'] }, config: Config, io: Io): Promise<number> {
+async function preview(
+  args: string[],
+  options: { port: number; open: boolean; theme: Config['theme'] },
+  config: Config,
+  io: Io,
+): Promise<number> {
   if (args.length !== 1) throw new UsageError('preview takes exactly one file.');
   const file = resolve(io.cwd, args[0]!);
   readSource(file, io);
-  await startPreview({ file, port: options.port, open: options.open, theme: options.theme, plugins: config.plugins, io });
+  await startPreview({
+    file,
+    port: options.port,
+    open: options.open,
+    theme: options.theme,
+    plugins: config.plugins,
+    io,
+  });
   return new Promise<number>(() => {});
 }
 
@@ -291,31 +367,46 @@ function components(args: string[], config: Config, io: Io): number {
     const specs = registry.list();
     const width = Math.max(...specs.map((s) => s.name.length));
     for (const spec of specs) {
-      const forms = spec.forms.map((f) => (f === 'container' ? ':::' : f === 'leaf' ? '::' : ':')).join(' ');
-      io.stdout(`${c.bold(spec.name.padEnd(width))}  ${c.gray(forms.padEnd(9))} ${spec.description.split('. ')[0]!.replace(/\.$/, '')}.\n`);
+      const forms = spec.forms
+        .map((f) => (f === 'container' ? ':::' : f === 'leaf' ? '::' : ':'))
+        .join(' ');
+      io.stdout(
+        `${c.bold(spec.name.padEnd(width))}  ${c.gray(forms.padEnd(9))} ${spec.description.split('. ')[0]!.replace(/\.$/, '')}.\n`,
+      );
     }
-    io.stdout(c.gray(`\n${specs.length} components. Run \`markup components <name>\` for details.\n`));
+    io.stdout(
+      c.gray(`\n${specs.length} components. Run \`markup components <name>\` for details.\n`),
+    );
     return 0;
   }
   const spec = registry.get(args[0]!);
   if (!spec) {
     const suggestion = registry.suggest(args[0]!);
-    throw new UsageError(`Unknown component \`${args[0]}\`${suggestion ? ` — did you mean \`${suggestion}\`?` : '.'}`);
+    throw new UsageError(
+      `Unknown component \`${args[0]}\`${suggestion ? ` — did you mean \`${suggestion}\`?` : '.'}`,
+    );
   }
   const label = labelSpec(spec);
   let out = `${c.bold(spec.name)} ${c.gray(`(${spec.forms.join(', ')}${spec.content && spec.content !== 'flow' ? `, ${spec.content} body` : ''})`)}\n\n${spec.description}\n`;
-  if (label.use !== 'none') out += `\n${c.bold('Label')} ${label.use === 'required' ? '(required)' : '(optional)'}: ${label.description ?? ''}\n`;
+  if (label.use !== 'none')
+    out += `\n${c.bold('Label')} ${label.use === 'required' ? '(required)' : '(optional)'}: ${label.description ?? ''}\n`;
   const attrs = Object.entries(spec.attributes ?? {});
   if (attrs.length) {
     out += `\n${c.bold('Attributes')}\n`;
     for (const [key, schema] of attrs) {
-      const extra = schema.default !== undefined ? ` = ${JSON.stringify(schema.default)}` : isRequired(schema) ? ' (required)' : '';
+      const extra =
+        schema.default !== undefined
+          ? ` = ${JSON.stringify(schema.default)}`
+          : isRequired(schema)
+            ? ' (required)'
+            : '';
       out += `  ${c.cyan(key)}: ${describeType(schema)}${extra}${schema.description ? `  ${c.gray(schema.description)}` : ''}\n`;
     }
   }
   if (spec.allowedParents) out += `\nMust be inside: ${spec.allowedParents.join(', ')}\n`;
   if (spec.allowedChildren) out += `\nMay contain: ${spec.allowedChildren.join(', ')}\n`;
-  for (const example of spec.examples ?? []) out += `\n${c.bold(example.title ?? 'Example')}\n${example.source.replace(/^/gm, '  ')}\n`;
+  for (const example of spec.examples ?? [])
+    out += `\n${c.bold(example.title ?? 'Example')}\n${example.source.replace(/^/gm, '  ')}\n`;
   io.stdout(out);
   return 0;
 }

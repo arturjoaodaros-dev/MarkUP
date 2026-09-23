@@ -67,7 +67,15 @@ export function EditorPane() {
         highlightActiveLine(),
         highlightSelectionMatches(),
         search({ top: true }),
-        keymap.of([...closeBracketsKeymap, ...defaultKeymap, ...searchKeymap, ...historyKeymap, ...foldKeymap, ...lintKeymap, indentWithTab]),
+        keymap.of([
+          ...closeBracketsKeymap,
+          ...defaultKeymap,
+          ...searchKeymap,
+          ...historyKeymap,
+          ...foldKeymap,
+          ...lintKeymap,
+          indentWithTab,
+        ]),
         markupLanguage({
           service: wb.service,
           documentKey: () => path,
@@ -118,7 +126,9 @@ export function EditorPane() {
       let next = states.current.get(active);
       if (!next || next.doc.toString() !== content) next = createState(active, content);
       v.setState(next);
-      v.dispatch({ effects: settingsCompartment.reconfigure(settingsExtensions(wb.state.settings)) });
+      v.dispatch({
+        effects: settingsCompartment.reconfigure(settingsExtensions(wb.state.settings)),
+      });
       current.current = active;
       requestAnimationFrame(() => v.focus());
       return;
@@ -131,11 +141,14 @@ export function EditorPane() {
 
   // Forget states of closed tabs.
   useEffect(() => {
-    for (const path of states.current.keys()) if (!openTabs.includes(path)) states.current.delete(path);
+    for (const path of states.current.keys())
+      if (!openTabs.includes(path)) states.current.delete(path);
   }, [openTabs]);
 
   useEffect(() => {
-    view.current?.dispatch({ effects: settingsCompartment.reconfigure(settingsExtensions(settings)) });
+    view.current?.dispatch({
+      effects: settingsCompartment.reconfigure(settingsExtensions(settings)),
+    });
   }, [settings]);
 
   return <div ref={host} className="editor-host" />;

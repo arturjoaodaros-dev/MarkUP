@@ -8,9 +8,20 @@ export function Toasts() {
     <div className="toasts" role="status" aria-live="polite">
       {toasts.map((toast) => (
         <div key={toast.id} className={`toast is-${toast.kind}`}>
-          {toast.kind === 'error' ? <CircleX size={16} /> : toast.kind === 'success' ? <CircleCheck size={16} /> : <Info size={16} />}
+          {toast.kind === 'error' ? (
+            <CircleX size={16} />
+          ) : toast.kind === 'success' ? (
+            <CircleCheck size={16} />
+          ) : (
+            <Info size={16} />
+          )}
           <span>{toast.message}</span>
-          <button type="button" className="icon-button" aria-label="Dismiss" onClick={() => wb.dismissToast(toast.id)}>
+          <button
+            type="button"
+            className="icon-button"
+            aria-label="Dismiss"
+            onClick={() => wb.dismissToast(toast.id)}
+          >
             <X size={14} />
           </button>
         </div>

@@ -48,12 +48,16 @@ export function visit(root: Node, visitor: Visitor): void {
     const children = childrenOf(node);
     if (children.length === 0) continue;
     const next = [...ancestors, node];
-    for (let i = children.length - 1; i >= 0; i--) stack.push({ node: children[i]!, ancestors: next });
+    for (let i = children.length - 1; i >= 0; i--)
+      stack.push({ node: children[i]!, ancestors: next });
   }
 }
 
 /** All nodes of a given type, in document order. */
-export function selectAll<T extends Node['type']>(root: Node, type: T): Extract<Node, { type: T }>[] {
+export function selectAll<T extends Node['type']>(
+  root: Node,
+  type: T,
+): Extract<Node, { type: T }>[] {
   const out: Extract<Node, { type: T }>[] = [];
   visit(root, (node) => {
     if (node.type === type) out.push(node as Extract<Node, { type: T }>);

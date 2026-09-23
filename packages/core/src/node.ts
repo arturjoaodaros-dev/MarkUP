@@ -25,7 +25,11 @@ export const CONFIG_FILE = 'markup.config.json';
  * exists) and imports its plugins plus `extraPlugins`. A plugin module exports a
  * MarkupPlugin — or an array of them — as its default export (or as `plugin`).
  */
-export async function loadConfig(cwd: string, configPath?: string, extraPlugins: readonly string[] = []): Promise<MarkupConfig> {
+export async function loadConfig(
+  cwd: string,
+  configPath?: string,
+  extraPlugins: readonly string[] = [],
+): Promise<MarkupConfig> {
   const path = configPath ? resolve(cwd, configPath) : join(cwd, CONFIG_FILE);
   let raw: { plugins?: unknown; theme?: unknown; out?: unknown } = {};
   let found: string | null = null;
@@ -34,14 +38,19 @@ export async function loadConfig(cwd: string, configPath?: string, extraPlugins:
     try {
       raw = JSON.parse(readFileSync(path, 'utf8')) as typeof raw;
     } catch (error) {
-      throw new ConfigError(`Invalid config ${path}: ${error instanceof Error ? error.message : String(error)}`);
+      throw new ConfigError(
+        `Invalid config ${path}: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new ConfigError(`Invalid config ${path}: expected a JSON object.`);
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw))
+      throw new ConfigError(`Invalid config ${path}: expected a JSON object.`);
     found = path;
   }
   const base = found ? dirname(found) : cwd;
   const specifiers = [
-    ...(Array.isArray(raw.plugins) ? raw.plugins.filter((p): p is string => typeof p === 'string').map((p) => resolve(base, p)) : []),
+    ...(Array.isArray(raw.plugins)
+      ? raw.plugins.filter((p): p is string => typeof p === 'string').map((p) => resolve(base, p))
+      : []),
     ...extraPlugins.map((p) => resolve(cwd, p)),
   ];
   return {
@@ -59,12 +68,20 @@ export async function loadPlugins(paths: readonly string[]): Promise<MarkupPlugi
     try {
       module = (await import(pathToFileURL(path).href)) as typeof module;
     } catch (error) {
-      throw new ConfigError(`Cannot load plugin ${path}: ${error instanceof Error ? error.message : String(error)}`);
+      throw new ConfigError(
+        `Cannot load plugin ${path}: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
     const exported = module.default ?? module.plugin;
     for (const plugin of Array.isArray(exported) ? exported : [exported]) {
-      if (!plugin || typeof plugin !== 'object' || typeof (plugin as MarkupPlugin).name !== 'string') {
-        throw new ConfigError(`${path} does not export a MarkUP plugin (an object with a \`name\`).`);
+      if (
+        !plugin ||
+        typeof plugin !== 'object' ||
+        typeof (plugin as MarkupPlugin).name !== 'string'
+      ) {
+        throw new ConfigError(
+          `${path} does not export a MarkUP plugin (an object with a \`name\`).`,
+        );
       }
       plugins.push(plugin as MarkupPlugin);
     }

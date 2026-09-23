@@ -50,11 +50,17 @@ describe('source positions', () => {
   it('point at the exact source of nodes', () => {
     const { document } = parse(SAMPLE);
     const strong = selectAll(document, 'strong')[0]!;
-    expect(SAMPLE.slice(strong.position.start.offset, strong.position.end.offset)).toBe('**strong**');
+    expect(SAMPLE.slice(strong.position.start.offset, strong.position.end.offset)).toBe(
+      '**strong**',
+    );
     const link = selectAll(document, 'link')[0]!;
-    expect(SAMPLE.slice(link.position.start.offset, link.position.end.offset)).toBe('[a link](#top)');
+    expect(SAMPLE.slice(link.position.start.offset, link.position.end.offset)).toBe(
+      '[a link](#top)',
+    );
     const badge = selectAll(document, 'inlineDirective')[0]!;
-    expect(SAMPLE.slice(badge.position.start.offset, badge.position.end.offset)).toBe(':badge[new]{variant=info}');
+    expect(SAMPLE.slice(badge.position.start.offset, badge.position.end.offset)).toBe(
+      ':badge[new]{variant=info}',
+    );
     expect(SAMPLE.slice(badge.nameRange.start.offset, badge.nameRange.end.offset)).toBe('badge');
     const heading = selectAll(document, 'heading')[0]!;
     expect(heading.position.start).toMatchObject({ line: 4, column: 1 });
@@ -75,7 +81,11 @@ describe('source positions', () => {
 
   it('count columns in UTF-16 code units', () => {
     const { document } = parse('😀 *x*');
-    expect(selectAll(document, 'emphasis')[0]!.position.start).toMatchObject({ line: 1, column: 4, offset: 3 });
+    expect(selectAll(document, 'emphasis')[0]!.position.start).toMatchObject({
+      line: 1,
+      column: 4,
+      offset: 3,
+    });
   });
 });
 

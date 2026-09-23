@@ -10,8 +10,12 @@ export function OutlineView() {
   const active = useAppState((s) => s.active);
   const content = useAppState((s) => (s.active ? s.docs[s.active]?.content : undefined));
   const cursorLine = useAppState((s) => s.cursor.line);
-  const symbols = useMemo(() => (active && content !== undefined ? getSymbols(wb.service.analyze(content, active)) : []), [wb, active, content]);
-  const lineIndex = active && content !== undefined ? wb.service.analyze(content, active).lineIndex : null;
+  const symbols = useMemo(
+    () => (active && content !== undefined ? getSymbols(wb.service.analyze(content, active)) : []),
+    [wb, active, content],
+  );
+  const lineIndex =
+    active && content !== undefined ? wb.service.analyze(content, active).lineIndex : null;
 
   // The deepest symbol containing the cursor is highlighted.
   let current: DocumentSymbol | null = null;
@@ -37,7 +41,11 @@ export function OutlineView() {
           style={{ paddingLeft: 10 + depth * 14 }}
           onClick={() => editor.select(symbol.selectionFrom)}
         >
-          {symbol.kind === 'component' ? <Box size={13} className="outline-icon is-component" /> : <Hash size={13} className="outline-icon" />}
+          {symbol.kind === 'component' ? (
+            <Box size={13} className="outline-icon is-component" />
+          ) : (
+            <Hash size={13} className="outline-icon" />
+          )}
           <span className="tree-label">{symbol.name}</span>
           {symbol.kind === 'heading' && <span className="outline-detail">{symbol.detail}</span>}
         </button>
@@ -50,8 +58,13 @@ export function OutlineView() {
       <PanelHeader title="Outline" />
       <div className="outline">
         {!active && <p className="panel-empty">Open a document to see its outline.</p>}
-        {active && symbols.length === 0 && <p className="panel-empty">No headings or components yet.</p>}
-        {render(symbols.filter((s) => s.kind !== 'frontMatter'), 0)}
+        {active && symbols.length === 0 && (
+          <p className="panel-empty">No headings or components yet.</p>
+        )}
+        {render(
+          symbols.filter((s) => s.kind !== 'frontMatter'),
+          0,
+        )}
       </div>
     </section>
   );

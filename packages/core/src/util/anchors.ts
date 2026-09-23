@@ -94,7 +94,14 @@ export function collectAnchors(document: Document): AnchorIndex {
     const text = inlineText(heading.children);
     const id = slugger.slug(text);
     headingIds.set(heading, id);
-    anchors.push({ id, range: heading.position, node: heading, explicit: false, text, depth: heading.depth });
+    anchors.push({
+      id,
+      range: heading.position,
+      node: heading,
+      explicit: false,
+      text,
+      depth: heading.depth,
+    });
   }
   anchors.sort((a, b) => a.range.start.offset - b.range.start.offset);
   const byId = new Map<string, Anchor>();

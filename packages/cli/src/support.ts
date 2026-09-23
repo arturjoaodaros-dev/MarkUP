@@ -1,7 +1,11 @@
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import type { Diagnostic } from '@markup-lang/core';
-import { ConfigError, loadConfig as loadSharedConfig, type MarkupConfig } from '@markup-lang/core/node';
+import {
+  ConfigError,
+  loadConfig as loadSharedConfig,
+  type MarkupConfig,
+} from '@markup-lang/core/node';
 
 export interface Io {
   stdout: (text: string) => void;
@@ -17,7 +21,8 @@ export class UsageError extends Error {}
 // Colours
 
 export function paint(io: Io) {
-  const wrap = (open: number, close: number) => (text: string) => (io.color ? `\x1b[${open}m${text}\x1b[${close}m` : text);
+  const wrap = (open: number, close: number) => (text: string) =>
+    io.color ? `\x1b[${open}m${text}\x1b[${close}m` : text;
   return {
     red: wrap(31, 39),
     yellow: wrap(33, 39),
@@ -86,11 +91,16 @@ export function display(path: string, cwd: string): string {
 export type Config = MarkupConfig;
 
 /** The shared loader, with its errors turned into usage errors. */
-export async function loadConfig(cwd: string, configPath: string | undefined, pluginPaths: readonly string[]): Promise<Config> {
+export async function loadConfig(
+  cwd: string,
+  configPath: string | undefined,
+  pluginPaths: readonly string[],
+): Promise<Config> {
   try {
     return await loadSharedConfig(cwd, configPath, pluginPaths);
   } catch (error) {
-    if (error instanceof ConfigError) throw new UsageError(error.message.replaceAll(cwd + sep, '').replace(/\\/g, '/'));
+    if (error instanceof ConfigError)
+      throw new UsageError(error.message.replaceAll(cwd + sep, '').replace(/\\/g, '/'));
     throw error;
   }
 }
@@ -104,7 +114,10 @@ export interface Counts {
   others: number;
 }
 
-export function count(diagnostics: readonly Diagnostic[], into: Counts = { errors: 0, warnings: 0, others: 0 }): Counts {
+export function count(
+  diagnostics: readonly Diagnostic[],
+  into: Counts = { errors: 0, warnings: 0, others: 0 },
+): Counts {
   for (const d of diagnostics) {
     if (d.severity === 'error') into.errors++;
     else if (d.severity === 'warning') into.warnings++;
@@ -116,20 +129,29 @@ export function count(diagnostics: readonly Diagnostic[], into: Counts = { error
 /** `file:line:col severity CODE message` followed by a code frame. */
 export function formatDiagnostic(d: Diagnostic, file: string, source: string, io: Io): string {
   const c = paint(io);
-  const severity = d.severity === 'error' ? c.red('error') : d.severity === 'warning' ? c.yellow('warning') : c.blue(d.severity);
+  const severity =
+    d.severity === 'error'
+      ? c.red('error')
+      : d.severity === 'warning'
+        ? c.yellow('warning')
+        : c.blue(d.severity);
   const { line, column } = d.range.start;
   let out = `${c.bold(`${file}:${line}:${column}`)} ${severity} ${c.gray(d.code)} ${d.message}\n`;
   const lines = source.split(/\r\n|\r|\n/);
   const text = lines[line - 1];
   if (text !== undefined) {
     const gutter = String(line).length;
-    const width = d.range.end.line === line ? Math.max(1, d.range.end.column - column) : Math.max(1, text.length - column + 1);
+    const width =
+      d.range.end.line === line
+        ? Math.max(1, d.range.end.column - column)
+        : Math.max(1, text.length - column + 1);
     const shown = text.replace(/\t/g, ' ');
     out += `${c.gray(`${' '.repeat(gutter)} |`)}\n`;
     out += `${c.gray(`${line} |`)} ${shown}\n`;
     out += `${c.gray(`${' '.repeat(gutter)} |`)} ${' '.repeat(column - 1)}${(d.severity === 'error' ? c.red : c.yellow)('^'.repeat(Math.min(width, Math.max(1, shown.length - column + 2))))}\n`;
   }
-  for (const r of d.related ?? []) out += `  ${c.gray(`${file}:${r.range.start.line}:${r.range.start.column}`)} ${r.message}\n`;
+  for (const r of d.related ?? [])
+    out += `  ${c.gray(`${file}:${r.range.start.line}:${r.range.start.column}`)} ${r.message}\n`;
   const fix = d.fixes?.[0];
   if (fix) out += `  ${c.cyan('fix:')} ${fix.title}\n`;
   return out;

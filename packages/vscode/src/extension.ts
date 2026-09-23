@@ -1,5 +1,10 @@
 import * as vscode from 'vscode';
-import { LanguageClient, TransportKind, type LanguageClientOptions, type ServerOptions } from 'vscode-languageclient/node';
+import {
+  LanguageClient,
+  TransportKind,
+  type LanguageClientOptions,
+  type ServerOptions,
+} from 'vscode-languageclient/node';
 import { createRegistry, type MarkupPlugin } from '@markup-lang/core';
 import { loadConfig } from '@markup-lang/core/node';
 import { renderDocument } from '@markup-lang/html';
@@ -11,7 +16,10 @@ let client: LanguageClient | undefined;
 let plugins: MarkupPlugin[] = [];
 
 function pluginsEnabled(): boolean {
-  return vscode.workspace.isTrusted && vscode.workspace.getConfiguration('markup').get<boolean>('plugins.enable', true);
+  return (
+    vscode.workspace.isTrusted &&
+    vscode.workspace.getConfiguration('markup').get<boolean>('plugins.enable', true)
+  );
 }
 
 async function loadWorkspacePlugins(output: vscode.OutputChannel): Promise<MarkupPlugin[]> {
@@ -22,7 +30,9 @@ async function loadWorkspacePlugins(output: vscode.OutputChannel): Promise<Marku
     try {
       loaded.push(...(await loadConfig(folder.uri.fsPath)).plugins);
     } catch (error) {
-      output.appendLine(`Could not load plugins in ${folder.name}: ${error instanceof Error ? error.message : String(error)}`);
+      output.appendLine(
+        `Could not load plugins in ${folder.name}: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
   return loaded;
@@ -32,7 +42,11 @@ async function startClient(context: vscode.ExtensionContext): Promise<void> {
   const module = context.asAbsolutePath('dist/server.cjs');
   const serverOptions: ServerOptions = {
     run: { module, transport: TransportKind.ipc },
-    debug: { module, transport: TransportKind.ipc, options: { execArgv: ['--nolazy', '--inspect=6019'] } },
+    debug: {
+      module,
+      transport: TransportKind.ipc,
+      options: { execArgv: ['--nolazy', '--inspect=6019'] },
+    },
   };
   const clientOptions: LanguageClientOptions = {
     documentSelector: [{ language: 'markup' }],
@@ -53,7 +67,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     const editor = vscode.window.activeTextEditor;
     return editor?.document.languageId === 'markup' ? editor : undefined;
   };
-  const targetUri = (uri?: vscode.Uri): vscode.Uri | undefined => (uri instanceof vscode.Uri ? uri : activeMarkupEditor()?.document.uri);
+  const targetUri = (uri?: vscode.Uri): vscode.Uri | undefined =>
+    uri instanceof vscode.Uri ? uri : activeMarkupEditor()?.document.uri;
 
   context.subscriptions.push(
     vscode.commands.registerCommand('markup.showPreview', (uri?: vscode.Uri) => {
@@ -74,7 +89,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       });
       if (!destination) return;
       const { document: tree, diagnostics } = parse(document.getText(), { plugins });
-      const html = renderDocument(tree, { plugins, rewriteUrl: (url) => (/^[a-z][a-z0-9+.-]*:/i.test(url) ? url : url.replace(/\.(?:markup|mkup)(?=[?#]|$)/i, '.html')) });
+      const html = renderDocument(tree, {
+        plugins,
+        rewriteUrl: (url) =>
+          /^[a-z][a-z0-9+.-]*:/i.test(url)
+            ? url
+            : url.replace(/\.(?:markup|mkup)(?=[?#]|$)/i, '.html'),
+      });
       await vscode.workspace.fs.writeFile(destination, new TextEncoder().encode(html));
       const errors = diagnostics.filter((d) => d.severity === 'error').length;
       const choice = await vscode.window.showInformationMessage(
@@ -88,7 +109,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       if (!editor) return;
       const registry = createRegistry(plugins);
       const pick = await vscode.window.showQuickPick(
-        registry.list().map((spec) => ({ label: spec.name, description: spec.forms.map((f) => (f === 'container' ? ':::' : f === 'leaf' ? '::' : ':')).join(' '), detail: spec.description, spec })),
+        registry.list().map((spec) => ({
+          label: spec.name,
+          description: spec.forms
+            .map((f) => (f === 'container' ? ':::' : f === 'leaf' ? '::' : ':'))
+            .join(' '),
+          detail: spec.description,
+          spec,
+        })),
         { placeHolder: 'Insert a MarkUP component', matchOnDetail: true },
       );
       if (!pick) return;
@@ -98,12 +126,19 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       const colons = form === 'container' ? ':::' : form === 'leaf' ? '::' : ':';
       let snippet = snippetFor(pick.spec, form, colons, indent);
       // Block components go on their own line.
-      if (form !== 'inline' && editor.selection.active.character > indent.length) snippet = `\n${indent}${snippet}`;
+      if (form !== 'inline' && editor.selection.active.character > indent.length)
+        snippet = `\n${indent}${snippet}`;
       await editor.insertSnippet(new vscode.SnippetString(snippet));
     }),
     vscode.commands.registerCommand('markup.showComponentReference', async () => {
-      const source = componentReference(createRegistry(plugins), { live: true, title: 'MarkUP components' });
-      const document = await vscode.workspace.openTextDocument({ language: 'markup', content: source });
+      const source = componentReference(createRegistry(plugins), {
+        live: true,
+        title: 'MarkUP components',
+      });
+      const document = await vscode.workspace.openTextDocument({
+        language: 'markup',
+        content: source,
+      });
       await previews.show(document.uri, vscode.ViewColumn.Active, { title: 'MarkUP Components' });
     }),
     vscode.commands.registerCommand('markup.restartServer', async () => {
@@ -112,7 +147,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       await startClient(context);
       previews.refreshAll();
     }),
-    vscode.workspace.onDidGrantWorkspaceTrust(() => vscode.commands.executeCommand('markup.restartServer')),
+    vscode.workspace.onDidGrantWorkspaceTrust(() =>
+      vscode.commands.executeCommand('markup.restartServer'),
+    ),
   );
 
   await startClient(context);

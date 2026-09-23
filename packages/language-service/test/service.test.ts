@@ -37,7 +37,10 @@ describe('completion', () => {
     expect(labels(result)).toContain('note');
     expect(labels(result)).not.toContain('kbd');
     const card = result.items.find((i) => i.label === 'card')!;
-    expect(card).toMatchObject({ snippet: true, insertText: ':::card[${1:Title}]\n${2:Content}\n:::' });
+    expect(card).toMatchObject({
+      snippet: true,
+      insertText: ':::card[${1:Title}]\n${2:Content}\n:::',
+    });
     expect(card.documentation).toContain('**card**');
   });
 
@@ -49,7 +52,9 @@ describe('completion', () => {
 
   it('completes leaf components after `::`', () => {
     const { analysis, offset } = at('::|');
-    expect(labels(getCompletions(analysis, offset))).toEqual(expect.arrayContaining(['toc', 'progress']));
+    expect(labels(getCompletions(analysis, offset))).toEqual(
+      expect.arrayContaining(['toc', 'progress']),
+    );
     expect(labels(getCompletions(analysis, offset))).not.toContain('card');
   });
 
@@ -85,7 +90,13 @@ describe('completion', () => {
     expect(keys).toContain('data');
     expect(keys).not.toContain('type');
     const value = at(':::chart\ntype: |\n:::');
-    expect(labels(getCompletions(value.analysis, value.offset))).toEqual(['bar', 'line', 'area', 'pie', 'donut']);
+    expect(labels(getCompletions(value.analysis, value.offset))).toEqual([
+      'bar',
+      'line',
+      'area',
+      'pie',
+      'donut',
+    ]);
     const nested = at(':::chart\nlabels: [a]\nseries:\n  - name: s\n    |\n:::');
     expect(labels(getCompletions(nested.analysis, nested.offset))).toEqual(['values', 'color']);
     const item = at(':::chart\nlabels: [a]\nseries:\n  - |\n:::');
@@ -94,7 +105,10 @@ describe('completion', () => {
 
   it('completes anchors, footnotes and code languages', () => {
     const anchor = at('# Getting started\n\n## Setup {#install}\n\n[go](#|)');
-    expect(labels(getCompletions(anchor.analysis, anchor.offset))).toEqual(['getting-started', 'install']);
+    expect(labels(getCompletions(anchor.analysis, anchor.offset))).toEqual([
+      'getting-started',
+      'install',
+    ]);
     const footnote = at('Text[^|\n\n[^note]: A note.');
     expect(labels(getCompletions(footnote.analysis, footnote.offset))).toEqual(['note']);
     const lang = at('```ty|');
@@ -102,7 +116,17 @@ describe('completion', () => {
   });
 
   it('completes plugin components', () => {
-    const plugin = { name: 'p', directives: [defineDirective({ name: 'youtube', forms: ['leaf'], description: 'Embed a video from YouTube.', attributes: {} })] };
+    const plugin = {
+      name: 'p',
+      directives: [
+        defineDirective({
+          name: 'youtube',
+          forms: ['leaf'],
+          description: 'Embed a video from YouTube.',
+          attributes: {},
+        }),
+      ],
+    };
     const custom = new LanguageService({ plugins: [plugin] });
     expect(labels(getCompletions(custom.analyze('::y'), 3))).toContain('youtube');
   });
@@ -123,19 +147,29 @@ describe('hover', () => {
 
   it('shows anchor targets and footnote text', () => {
     const { analysis } = at('# Intro\n\n[see](#intro) and[^1]\n\n[^1]: The note.|');
-    expect(getHover(analysis, analysis.text.indexOf('[see') + 2)!.contents).toContain('heading **Intro**');
+    expect(getHover(analysis, analysis.text.indexOf('[see') + 2)!.contents).toContain(
+      'heading **Intro**',
+    );
     expect(getHover(analysis, analysis.text.indexOf('[^1]') + 1)!.contents).toContain('The note.');
   });
 });
 
 describe('outline and folding', () => {
-  const source = '---\ntitle: x\n---\n# A\n\n:::note[Hi]\n## Inside\n:::\n\n## B\n\n### B1\n\n# C\n';
+  const source =
+    '---\ntitle: x\n---\n# A\n\n:::note[Hi]\n## Inside\n:::\n\n## B\n\n### B1\n\n# C\n';
   it('nests headings and components', () => {
     const symbols = getSymbols(service.analyze(source, 'outline'));
-    const shape = (list: ReturnType<typeof getSymbols>): unknown => list.map((s) => [s.name, shape(s.children)]);
+    const shape = (list: ReturnType<typeof getSymbols>): unknown =>
+      list.map((s) => [s.name, shape(s.children)]);
     expect(shape(symbols)).toEqual([
       ['Front matter', []],
-      ['A', [['note: Hi', [['Inside', []]]], ['B', [['B1', []]]]]],
+      [
+        'A',
+        [
+          ['note: Hi', [['Inside', []]]],
+          ['B', [['B1', []]]],
+        ],
+      ],
       ['C', []],
     ]);
   });
@@ -156,7 +190,10 @@ describe('outline and folding', () => {
 describe('highlighting', () => {
   it('marks directive parts, attributes and data', () => {
     const analysis = service.analyze(':::chart{#c unit=%}\ntype: bar\n:::\n\n:::nope\n:::', 'hl');
-    const kinds = (kind: string) => getHighlights(analysis).filter((h) => h.kind === kind).map((h) => analysis.text.slice(h.from, h.to));
+    const kinds = (kind: string) =>
+      getHighlights(analysis)
+        .filter((h) => h.kind === kind)
+        .map((h) => analysis.text.slice(h.from, h.to));
     expect(kinds('directiveFence')).toEqual([':::', ':::', ':::', ':::']);
     expect(kinds('directiveName')).toEqual(['chart']);
     expect(kinds('directiveUnknown')).toEqual(['nope']);
@@ -168,7 +205,10 @@ describe('highlighting', () => {
 
   it('marks Markdown constructs', () => {
     const analysis = service.analyze('# Title\n\n**b** *i* `c` [l](u)\n\n> q\n\n- x', 'md');
-    const pick = (kind: string) => getHighlights(analysis).filter((h) => h.kind === kind).map((h) => analysis.text.slice(h.from, h.to));
+    const pick = (kind: string) =>
+      getHighlights(analysis)
+        .filter((h) => h.kind === kind)
+        .map((h) => analysis.text.slice(h.from, h.to));
     expect(pick('headingMarker')).toEqual(['#']);
     expect(pick('strong')).toEqual(['**b**']);
     expect(pick('code')).toEqual(['`c`']);
@@ -192,7 +232,8 @@ describe('highlighting', () => {
 });
 
 describe('navigation and fixes', () => {
-  const source = '# Intro {#top}\n\nGo [up](#top), [ref][r] and note[^n].\n\n[r]: https://example.com\n[^n]: A note.\n\n![img](pic.png)';
+  const source =
+    '# Intro {#top}\n\nGo [up](#top), [ref][r] and note[^n].\n\n[r]: https://example.com\n[^n]: A note.\n\n![img](pic.png)';
   const analysis = service.analyze(source, 'nav');
 
   it('goes to anchors, reference definitions and footnotes', () => {
@@ -239,6 +280,11 @@ describe('robustness', () => {
         getDefinition(a, i);
       }).not.toThrow();
     }
-    expect(() => [getSymbols(a), getFoldingRanges(a), getHighlights(a), getSemanticTokens(a)]).not.toThrow();
+    expect(() => [
+      getSymbols(a),
+      getFoldingRanges(a),
+      getHighlights(a),
+      getSemanticTokens(a),
+    ]).not.toThrow();
   });
 });

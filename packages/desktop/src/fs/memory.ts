@@ -47,7 +47,10 @@ export function createMemoryFs(storage: Storage | null = safeStorage()): Workspa
     }
     for (const listener of listeners) listener(changed);
   };
-  const exists = (path: string) => path in store.files || store.dirs.includes(path) || Object.keys(store.files).some((f) => f.startsWith(`${path}/`));
+  const exists = (path: string) =>
+    path in store.files ||
+    store.dirs.includes(path) ||
+    Object.keys(store.files).some((f) => f.startsWith(`${path}/`));
   const fail = (message: string): never => {
     throw new Error(message);
   };
@@ -69,9 +72,16 @@ export function createMemoryFs(storage: Storage | null = safeStorage()): Workspa
         return node;
       };
       for (const dir of store.dirs) dirNode(dir);
-      for (const path of Object.keys(store.files)) dirNode(dirname(path)).children!.push({ path, name: basename(path), kind: 'file' });
+      for (const path of Object.keys(store.files))
+        dirNode(dirname(path)).children!.push({ path, name: basename(path), kind: 'file' });
       const sort = (entries: FileEntry[]) => {
-        entries.sort((a, b) => (a.kind === b.kind ? a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }) : a.kind === 'directory' ? -1 : 1));
+        entries.sort((a, b) =>
+          a.kind === b.kind
+            ? a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+            : a.kind === 'directory'
+              ? -1
+              : 1,
+        );
         for (const e of entries) if (e.children) sort(e.children);
         return entries;
       };
@@ -105,11 +115,14 @@ export function createMemoryFs(storage: Storage | null = safeStorage()): Workspa
           changed.push(path, next);
         }
       }
-      store.dirs = store.dirs.map((d) => (d === from || d.startsWith(`${from}/`) ? to + d.slice(from.length) : d));
+      store.dirs = store.dirs.map((d) =>
+        d === from || d.startsWith(`${from}/`) ? to + d.slice(from.length) : d,
+      );
       persist(changed);
     },
     async remove(path) {
-      for (const file of Object.keys(store.files)) if (file === path || file.startsWith(`${path}/`)) delete store.files[file];
+      for (const file of Object.keys(store.files))
+        if (file === path || file.startsWith(`${path}/`)) delete store.files[file];
       store.dirs = store.dirs.filter((d) => d !== path && !d.startsWith(`${path}/`));
       persist([path]);
     },

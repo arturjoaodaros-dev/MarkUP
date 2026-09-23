@@ -33,19 +33,33 @@ export function Palette() {
   return <PaletteDialog mode={palette.mode} initialQuery={palette.query} />;
 }
 
-function PaletteDialog({ mode: initialMode, initialQuery }: { mode: PaletteMode; initialQuery: string }) {
+function PaletteDialog({
+  mode: initialMode,
+  initialQuery,
+}: {
+  mode: PaletteMode;
+  initialQuery: string;
+}) {
   const { wb, commands } = useWorkbench();
   const tree = useAppState((s) => s.tree);
   const root = useAppState((s) => s.workspace?.root ?? '');
   const active = useAppState((s) => s.active);
   const content = useAppState((s) => (s.active ? s.docs[s.active]?.content : undefined));
-  const prefix = initialMode === 'commands' ? '>' : initialMode === 'symbols' ? '@' : initialMode === 'line' ? ':' : '';
+  const prefix =
+    initialMode === 'commands'
+      ? '>'
+      : initialMode === 'symbols'
+        ? '@'
+        : initialMode === 'line'
+          ? ':'
+          : '';
   const [input, setInput] = useState(prefix + initialQuery);
   const [selected, setSelected] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  const mode: PaletteMode = initialMode === 'components' ? 'components' : (PREFIX[input[0] ?? ''] ?? 'files');
+  const mode: PaletteMode =
+    initialMode === 'components' ? 'components' : (PREFIX[input[0] ?? ''] ?? 'files');
   const query = mode === 'files' || mode === 'components' ? input : input.slice(1);
 
   useEffect(() => {
@@ -63,29 +77,49 @@ function PaletteDialog({ mode: initialMode, initialQuery }: { mode: PaletteMode;
     switch (mode) {
       case 'commands': {
         const list = commands.filter((c) => c.available?.() ?? true);
-        return fuzzyFilter(query, list, (c) => `${c.category}: ${c.title}`).map(({ item: c, match }) => ({
-          item: { key: c.id, label: `${c.category}: ${c.title}`, hint: c.shortcuts?.[0] ? formatShortcut(c.shortcuts[0]) : undefined, run: () => void c.run() },
-          indices: match.indices,
-        }));
+        return fuzzyFilter(query, list, (c) => `${c.category}: ${c.title}`).map(
+          ({ item: c, match }) => ({
+            item: {
+              key: c.id,
+              label: `${c.category}: ${c.title}`,
+              hint: c.shortcuts?.[0] ? formatShortcut(c.shortcuts[0]) : undefined,
+              run: () => void c.run(),
+            },
+            indices: match.indices,
+          }),
+        );
       }
       case 'files': {
         const files = flatten(tree).filter((e) => e.kind === 'file');
-        return fuzzyFilter(query, files, (f) => relative(root, f.path)).map(({ item: f, match }) => ({
-          item: { key: f.path, label: relative(root, f.path), icon: <FileIcon name={f.name} />, run: () => void wb.openFile(f.path) },
-          indices: match.indices,
-        }));
+        return fuzzyFilter(query, files, (f) => relative(root, f.path)).map(
+          ({ item: f, match }) => ({
+            item: {
+              key: f.path,
+              label: relative(root, f.path),
+              icon: <FileIcon name={f.name} />,
+              run: () => void wb.openFile(f.path),
+            },
+            indices: match.indices,
+          }),
+        );
       }
       case 'symbols': {
         if (!active || content === undefined) return [];
         const flat: DocumentSymbol[] = [];
-        const walk = (list: DocumentSymbol[]) => list.forEach((s) => (s.kind !== 'frontMatter' && flat.push(s), walk(s.children)));
+        const walk = (list: DocumentSymbol[]) =>
+          list.forEach((s) => (s.kind !== 'frontMatter' && flat.push(s), walk(s.children)));
         walk(getSymbols(wb.service.analyze(content, active)));
         return fuzzyFilter(query, flat, (s) => s.name).map(({ item: s, match }) => ({
           item: {
             key: `${s.from}`,
             label: s.name,
             hint: s.kind === 'heading' ? s.detail : undefined,
-            icon: s.kind === 'component' ? <Box size={14} className="outline-icon is-component" /> : <Hash size={14} className="outline-icon" />,
+            icon:
+              s.kind === 'component' ? (
+                <Box size={14} className="outline-icon is-component" />
+              ) : (
+                <Hash size={14} className="outline-icon" />
+              ),
             run: () => editor.select(s.selectionFrom),
           },
           indices: match.indices,
@@ -93,8 +127,24 @@ function PaletteDialog({ mode: initialMode, initialQuery }: { mode: PaletteMode;
       }
       case 'line': {
         const [line, column] = query.split(/[:,]/).map((n) => parseInt(n, 10));
-        if (!line) return [{ item: { key: 'hint', label: 'Type a line number, optionally :column', run: () => {} }, indices: [] }];
-        return [{ item: { key: 'go', label: `Go to line ${line}${column ? `, column ${column}` : ''}`, icon: <ChevronRight size={14} />, run: () => editor.gotoLine(line, column || 1) }, indices: [] }];
+        if (!line)
+          return [
+            {
+              item: { key: 'hint', label: 'Type a line number, optionally :column', run: () => {} },
+              indices: [],
+            },
+          ];
+        return [
+          {
+            item: {
+              key: 'go',
+              label: `Go to line ${line}${column ? `, column ${column}` : ''}`,
+              icon: <ChevronRight size={14} />,
+              run: () => editor.gotoLine(line, column || 1),
+            },
+            indices: [],
+          },
+        ];
       }
       case 'components': {
         const specs = wb.service.registry.list();
@@ -108,7 +158,8 @@ function PaletteDialog({ mode: initialMode, initialQuery }: { mode: PaletteMode;
               detail: spec.description,
               hint: `${syntax}${spec.name}`,
               icon: <Box size={14} className="outline-icon is-component" />,
-              run: () => editor.insertSnippet(snippetFor(spec, form, syntax, ''), form !== 'inline'),
+              run: () =>
+                editor.insertSnippet(snippetFor(spec, form, syntax, ''), form !== 'inline'),
             },
             indices: match.indices,
           };
@@ -119,7 +170,9 @@ function PaletteDialog({ mode: initialMode, initialQuery }: { mode: PaletteMode;
 
   useEffect(() => setSelected(0), [input]);
   useEffect(() => {
-    listRef.current?.querySelector<HTMLElement>('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' });
+    listRef.current
+      ?.querySelector<HTMLElement>('[aria-selected="true"]')
+      ?.scrollIntoView({ block: 'nearest' });
   }, [selected]);
 
   return (
@@ -182,8 +235,6 @@ function Highlighted({ text, indices }: { text: string; indices: number[] }) {
   if (indices.length === 0) return <>{text}</>;
   const set = new Set(indices);
   return (
-    <>
-      {[...text].map((ch, i) => (set.has(i) ? <b key={i}>{ch}</b> : <span key={i}>{ch}</span>))}
-    </>
+    <>{[...text].map((ch, i) => (set.has(i) ? <b key={i}>{ch}</b> : <span key={i}>{ch}</span>))}</>
   );
 }

@@ -45,7 +45,12 @@ beforeEach(async () => {
 
 describe('workspace', () => {
   it('lists the sample tree with folders first', () => {
-    expect(wb.state.tree.map((e) => e.name)).toEqual(['drafts', 'guides', 'showcase.markup', 'welcome.markup']);
+    expect(wb.state.tree.map((e) => e.name)).toEqual([
+      'drafts',
+      'guides',
+      'showcase.markup',
+      'welcome.markup',
+    ]);
     expect(wb.state.workspace?.name).toBe('samples');
   });
 
@@ -91,7 +96,9 @@ describe('documents', () => {
   });
 
   it('cycles tabs and activates the neighbour of a closed tab', async () => {
-    const files = ['welcome.markup', 'showcase.markup', 'guides/getting-started.markup'].map((f) => `${SAMPLE_ROOT}/${f}`);
+    const files = ['welcome.markup', 'showcase.markup', 'guides/getting-started.markup'].map(
+      (f) => `${SAMPLE_ROOT}/${f}`,
+    );
     for (const f of files) await wb.openFile(f);
     wb.cycleTab(1);
     expect(wb.state.active).toBe(files[0]);
@@ -167,28 +174,48 @@ describe('helpers', () => {
 
   it('ranks fuzzy matches sensibly', () => {
     expect(fuzzyMatch('xyz', 'showcase.markup')).toBeNull();
-    const ranked = fuzzyFilter('theme', ['Go: Go to Heading or Component', 'Preferences: Toggle Light / Dark Theme'], (s) => s);
+    const ranked = fuzzyFilter(
+      'theme',
+      ['Go: Go to Heading or Component', 'Preferences: Toggle Light / Dark Theme'],
+      (s) => s,
+    );
     expect(ranked[0]!.item).toMatch(/Theme/);
-    expect(fuzzyFilter('gs', ['guides/getting-started.markup', 'showcase.markup'], (s) => s)[0]!.item).toBe('guides/getting-started.markup');
+    expect(
+      fuzzyFilter('gs', ['guides/getting-started.markup', 'showcase.markup'], (s) => s)[0]!.item,
+    ).toBe('guides/getting-started.markup');
   });
 
   it('converts LSP snippets to CodeMirror snippets', () => {
-    expect(toCodeMirrorSnippet(':::card[${1:Title}]\n$0\n:::')).toBe(':::card[${1:Title}]\n${0}\n:::');
-    expect(toCodeMirrorSnippet(':badge[${1:Text}]{variant=${2|neutral,info|}}')).toBe(':badge[${1:Text}]\\{variant=${2:neutral}\\}');
+    expect(toCodeMirrorSnippet(':::card[${1:Title}]\n$0\n:::')).toBe(
+      ':::card[${1:Title}]\n${0}\n:::',
+    );
+    expect(toCodeMirrorSnippet(':badge[${1:Text}]{variant=${2|neutral,info|}}')).toBe(
+      ':badge[${1:Text}]\\{variant=${2:neutral}\\}',
+    );
     expect(toCodeMirrorSnippet('::toc{depth=${1:3}}')).toBe('::toc\\{depth=${1:3}\\}');
   });
 
   it('normalises keyboard shortcuts', () => {
-    const event = new KeyboardEvent('keydown', { key: 'P', code: 'KeyP', ctrlKey: true, shiftKey: true });
+    const event = new KeyboardEvent('keydown', {
+      key: 'P',
+      code: 'KeyP',
+      ctrlKey: true,
+      shiftKey: true,
+    });
     expect(eventToShortcut(event)).toBe('mod+shift+p');
-    expect(eventToShortcut(new KeyboardEvent('keydown', { key: '|', code: 'Backslash', ctrlKey: true }))).toBe('mod+\\');
+    expect(
+      eventToShortcut(new KeyboardEvent('keydown', { key: '|', code: 'Backslash', ctrlKey: true })),
+    ).toBe('mod+\\');
     expect(formatShortcut('mod+shift+p')).toBe('Ctrl+Shift+P');
   });
 
   it('loads settings defensively', () => {
     const s = new MemoryStorage();
     expect(loadSettings(s)).toEqual(DEFAULT_SETTINGS);
-    s.setItem('markup.desktop.settings.v1', JSON.stringify({ fontSize: 99, tabSize: 3, theme: 'light', bogus: 1, wordWrap: 'yes' }));
+    s.setItem(
+      'markup.desktop.settings.v1',
+      JSON.stringify({ fontSize: 99, tabSize: 3, theme: 'light', bogus: 1, wordWrap: 'yes' }),
+    );
     expect(loadSettings(s)).toEqual({ ...DEFAULT_SETTINGS, fontSize: 28, theme: 'light' });
     s.setItem('markup.desktop.settings.v1', '{broken');
     expect(loadSettings(s)).toEqual(DEFAULT_SETTINGS);

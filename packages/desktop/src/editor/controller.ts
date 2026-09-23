@@ -10,7 +10,8 @@ export function topVisibleLine(view: EditorView): number {
   const height = view.scrollDOM.getBoundingClientRect().top - view.documentTop;
   const block = view.lineBlockAtHeight(Math.max(0, height));
   const line = view.state.doc.lineAt(block.from).number;
-  const within = block.height > 0 ? Math.min(1, Math.max(0, (height - block.top) / block.height)) : 0;
+  const within =
+    block.height > 0 ? Math.min(1, Math.max(0, (height - block.top) / block.height)) : 0;
   return line + within;
 }
 
@@ -20,7 +21,10 @@ export function scrollToLine(view: EditorView, line: number): void {
   const whole = Math.min(Math.max(1, Math.floor(line)), doc.lines);
   const block = view.lineBlockAt(doc.line(whole).from);
   const top = block.top + (line - whole) * block.height;
-  view.scrollDOM.scrollTop = top + (view.documentTop - view.scrollDOM.getBoundingClientRect().top) + view.scrollDOM.scrollTop;
+  view.scrollDOM.scrollTop =
+    top +
+    (view.documentTop - view.scrollDOM.getBoundingClientRect().top) +
+    view.scrollDOM.scrollTop;
 }
 
 /** A handle on the live editor for commands that are not typed into it. */
@@ -36,7 +40,10 @@ export const editor = {
     if (!view) return;
     const target = view.state.doc.line(Math.min(Math.max(1, line), view.state.doc.lines));
     const pos = Math.min(target.from + Math.max(0, column - 1), target.to);
-    view.dispatch({ selection: EditorSelection.cursor(pos), effects: EditorView.scrollIntoView(pos, { y: 'center' }) });
+    view.dispatch({
+      selection: EditorSelection.cursor(pos),
+      effects: EditorView.scrollIntoView(pos, { y: 'center' }),
+    });
     view.focus();
   },
 
@@ -46,7 +53,10 @@ export const editor = {
     const max = view.state.doc.length;
     const a = Math.min(from, max);
     const b = Math.min(to, max);
-    view.dispatch({ selection: EditorSelection.range(a, b), effects: EditorView.scrollIntoView(a, { y: 'center' }) });
+    view.dispatch({
+      selection: EditorSelection.range(a, b),
+      effects: EditorView.scrollIntoView(a, { y: 'center' }),
+    });
     view.focus();
   },
 
@@ -56,7 +66,8 @@ export const editor = {
     if (!view) return;
     const { from, to } = view.state.selection.main;
     const line = view.state.doc.lineAt(from);
-    const prefix = block && from > line.from + (/^\s*/.exec(line.text)?.[0].length ?? 0) ? '\n' : '';
+    const prefix =
+      block && from > line.from + (/^\s*/.exec(line.text)?.[0].length ?? 0) ? '\n' : '';
     snippet(prefix + toCodeMirrorSnippet(template))(view, { label: 'component' }, from, to);
     view.focus();
   },

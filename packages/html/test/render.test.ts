@@ -1,7 +1,14 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { defineDirective, definePlugin, parse, s } from '@markup-lang/core';
-import { chartModel, markupToHtml, niceTicks, renderDocument, renderHtml, type HtmlComponent } from '@markup-lang/html';
+import {
+  chartModel,
+  markupToHtml,
+  niceTicks,
+  renderDocument,
+  renderHtml,
+  type HtmlComponent,
+} from '@markup-lang/html';
 
 const html = (source: string, options = {}) => markupToHtml(source, options).html;
 
@@ -9,7 +16,9 @@ const html = (source: string, options = {}) => markupToHtml(source, options).htm
 function balanced(markup: string): boolean {
   const voids = new Set(['br', 'hr', 'img', 'input', 'meta']);
   const stack: string[] = [];
-  for (const [, closing, name, selfClosing] of markup.matchAll(/<(\/?)([a-zA-Z][\w-]*)[^>]*?(\/?)>/g)) {
+  for (const [, closing, name, selfClosing] of markup.matchAll(
+    /<(\/?)([a-zA-Z][\w-]*)[^>]*?(\/?)>/g,
+  )) {
     const tag = name!.toLowerCase();
     if (selfClosing || (!closing && voids.has(tag))) continue;
     if (!closing) stack.push(tag);
@@ -30,16 +39,24 @@ describe('Markdown elements', () => {
     expect(html('- a\n- b')).toBe('<ul>\n<li>a</li>\n<li>b</li>\n</ul>\n');
     expect(html('- a\n\n- b')).toBe('<ul>\n<li><p>a</p></li>\n<li><p>b</p></li>\n</ul>\n');
     expect(html('3. x')).toBe('<ol start="3">\n<li>x</li>\n</ol>\n');
-    expect(html('- [x] done')).toContain('<li class="mu-task"><input type="checkbox" disabled checked> done</li>');
+    expect(html('- [x] done')).toContain(
+      '<li class="mu-task"><input type="checkbox" disabled checked> done</li>',
+    );
   });
 
   it('renders code blocks with language and title', () => {
-    expect(html('```ts\nlet a = 1 < 2;\n```')).toBe('<pre class="mu-code" data-lang="ts"><code class="language-ts">let a = 1 &lt; 2;\n</code></pre>\n');
-    expect(html('```js {title="app.js"}\nx\n```')).toContain('<figure class="mu-code-block"><figcaption>app.js</figcaption>');
+    expect(html('```ts\nlet a = 1 < 2;\n```')).toBe(
+      '<pre class="mu-code" data-lang="ts"><code class="language-ts">let a = 1 &lt; 2;\n</code></pre>\n',
+    );
+    expect(html('```js {title="app.js"}\nx\n```')).toContain(
+      '<figure class="mu-code-block"><figcaption>app.js</figcaption>',
+    );
   });
 
   it('uses a highlighter when provided', () => {
-    expect(html('```ts\nx\n```', { highlight: (code: string) => `<b>${code}</b>` })).toContain('<code class="language-ts"><b>x</b>');
+    expect(html('```ts\nx\n```', { highlight: (code: string) => `<b>${code}</b>` })).toContain(
+      '<code class="language-ts"><b>x</b>',
+    );
   });
 
   it('renders tables with alignment', () => {
@@ -80,7 +97,9 @@ describe('Markdown elements', () => {
 
 describe('security', () => {
   it('escapes all text, including raw HTML', () => {
-    expect(html('<script>alert(1)</script> & "q"')).toBe('<p>&lt;script&gt;alert(1)&lt;/script&gt; &amp; &quot;q&quot;</p>\n');
+    expect(html('<script>alert(1)</script> & "q"')).toBe(
+      '<p>&lt;script&gt;alert(1)&lt;/script&gt; &amp; &quot;q&quot;</p>\n',
+    );
   });
 
   it('drops unsafe URLs', () => {
@@ -91,31 +110,83 @@ describe('security', () => {
   });
 
   it('escapes attribute values and never emits event handlers', () => {
-    const out = html(':::card{href="x\\" onclick=\\"evil" icon="<b>"}\nx\n:::\n\n# T {onclick=evil}');
+    const out = html(
+      ':::card{href="x\\" onclick=\\"evil" icon="<b>"}\nx\n:::\n\n# T {onclick=evil}',
+    );
     expect(out).not.toMatch(/ onclick=/);
     expect(out).toContain('&lt;b&gt;');
     expect(out).toContain('data-onclick="evil"');
   });
 
   it('never produces script tags or javascript: URLs for arbitrary input', () => {
-    const fragments = fc.constantFrom('<script>', '</script>', 'javascript:', '[x](', ')', '![y](', '"', "'", '<', '>', ':::card{href=', '}', '\n', 'onload=', ':badge[', ']', '{', '&#106;avascript:', '<img src=x>');
+    const fragments = fc.constantFrom(
+      '<script>',
+      '</script>',
+      'javascript:',
+      '[x](',
+      ')',
+      '![y](',
+      '"',
+      "'",
+      '<',
+      '>',
+      ':::card{href=',
+      '}',
+      '\n',
+      'onload=',
+      ':badge[',
+      ']',
+      '{',
+      '&#106;avascript:',
+      '<img src=x>',
+    );
     fc.assert(
-      fc.property(fc.array(fragments, { maxLength: 30 }).map((a) => a.join('')), (source) => {
-        const out = html(source);
-        expect(out).not.toMatch(/<script/i);
-        expect(out).not.toMatch(/href="\s*javascript:/i);
-        expect(out).not.toMatch(/<img[^>]*\son\w+=/i);
-      }),
+      fc.property(
+        fc.array(fragments, { maxLength: 30 }).map((a) => a.join('')),
+        (source) => {
+          const out = html(source);
+          expect(out).not.toMatch(/<script/i);
+          expect(out).not.toMatch(/href="\s*javascript:/i);
+          expect(out).not.toMatch(/<img[^>]*\son\w+=/i);
+        },
+      ),
       { numRuns: 400 },
     );
   });
 
   it('produces balanced markup for arbitrary documents', () => {
-    const fragments = fc.constantFrom('# ', '- ', '> ', ':::note', ':::', '::::tabs', ':::tab[A]', '::::', ':::chart', 'data:', '  a: 1', '```', '*a*', '[l](u)', '| a |', '|---|', 'text', '::toc', ':badge[b]', '[^1]', '[^1]: n', '\n', '\n\n');
+    const fragments = fc.constantFrom(
+      '# ',
+      '- ',
+      '> ',
+      ':::note',
+      ':::',
+      '::::tabs',
+      ':::tab[A]',
+      '::::',
+      ':::chart',
+      'data:',
+      '  a: 1',
+      '```',
+      '*a*',
+      '[l](u)',
+      '| a |',
+      '|---|',
+      'text',
+      '::toc',
+      ':badge[b]',
+      '[^1]',
+      '[^1]: n',
+      '\n',
+      '\n\n',
+    );
     fc.assert(
-      fc.property(fc.array(fragments, { maxLength: 40 }).map((a) => a.join('')), (source) => {
-        expect(balanced(html(source))).toBe(true);
-      }),
+      fc.property(
+        fc.array(fragments, { maxLength: 40 }).map((a) => a.join('')),
+        (source) => {
+          expect(balanced(html(source))).toBe(true);
+        },
+      ),
       { numRuns: 400 },
     );
   });
@@ -124,19 +195,27 @@ describe('security', () => {
 describe('components', () => {
   it('renders callouts with default and custom titles', () => {
     const out = html(':::warning\nCareful.\n:::');
-    expect(out).toMatch(/^<aside class="mu-callout mu-callout-warning" role="note"><p class="mu-callout-title"><svg[^>]*>.*<\/svg><span>Warning<\/span><\/p>/);
+    expect(out).toMatch(
+      /^<aside class="mu-callout mu-callout-warning" role="note"><p class="mu-callout-title"><svg[^>]*>.*<\/svg><span>Warning<\/span><\/p>/,
+    );
     expect(out).toContain('<p>Careful.</p>');
     expect(html(':::tip[Pro tip]\nx\n:::')).toContain('<span>Pro tip</span>');
-    expect(html(':::note{collapsible}\nx\n:::')).toMatch(/^<details class="mu-callout mu-callout-note">/);
+    expect(html(':::note{collapsible}\nx\n:::')).toMatch(
+      /^<details class="mu-callout mu-callout-note">/,
+    );
   });
 
   it('applies ids and classes from attributes', () => {
-    expect(html(':::note{#n .wide}\nx\n:::')).toMatch(/^<aside id="n" class="mu-callout mu-callout-note wide"/);
+    expect(html(':::note{#n .wide}\nx\n:::')).toMatch(
+      /^<aside id="n" class="mu-callout mu-callout-note wide"/,
+    );
   });
 
   it('renders cards with icon and link', () => {
     const out = html(':::card[Docs]{href=/docs icon=📘}\nRead\n:::');
-    expect(out).toContain('<p class="mu-card-title"><span class="mu-card-icon" aria-hidden="true">📘</span><a href="/docs">Docs</a></p>');
+    expect(out).toContain(
+      '<p class="mu-card-title"><span class="mu-card-icon" aria-hidden="true">📘</span><a href="/docs">Docs</a></p>',
+    );
   });
 
   it('renders CSS-only tabs with unique groups', () => {
@@ -144,7 +223,9 @@ describe('components', () => {
     const out = html(`${src}\n\n${src}`);
     expect(out.match(/name="mu-tabs-1"/g)).toHaveLength(2);
     expect(out.match(/name="mu-tabs-2"/g)).toHaveLength(2);
-    expect(out).toContain('<input type="radio" class="mu-tab-input" name="mu-tabs-1" id="mu-tabs-1-2" checked>');
+    expect(out).toContain(
+      '<input type="radio" class="mu-tab-input" name="mu-tabs-1" id="mu-tabs-1-2" checked>',
+    );
     expect(out).toContain('<label class="mu-tab-label" for="mu-tabs-1-1">A</label>');
   });
 
@@ -155,9 +236,15 @@ describe('components', () => {
   });
 
   it('renders details, figures and abbreviations', () => {
-    expect(html(':::details[Why?]{open}\nBecause.\n:::')).toMatch(/^<details class="mu-details" open><summary>Why\?<\/summary>/);
-    expect(html(':::figure[Caption]\n![a](b.png)\n:::')).toContain('<figcaption>Caption</figcaption></figure>');
-    expect(html(':abbr[AST]{title="Abstract syntax tree"}')).toBe('<p><abbr title="Abstract syntax tree">AST</abbr></p>\n');
+    expect(html(':::details[Why?]{open}\nBecause.\n:::')).toMatch(
+      /^<details class="mu-details" open><summary>Why\?<\/summary>/,
+    );
+    expect(html(':::figure[Caption]\n![a](b.png)\n:::')).toContain(
+      '<figcaption>Caption</figcaption></figure>',
+    );
+    expect(html(':abbr[AST]{title="Abstract syntax tree"}')).toBe(
+      '<p><abbr title="Abstract syntax tree">AST</abbr></p>\n',
+    );
   });
 
   it('renders keyboard shortcuts key by key', () => {
@@ -167,7 +254,9 @@ describe('components', () => {
   });
 
   it('renders badges and progress bars', () => {
-    expect(html(':badge[beta]{variant=warning}')).toBe('<p><span class="mu-badge" data-variant="warning">beta</span></p>\n');
+    expect(html(':badge[beta]{variant=warning}')).toBe(
+      '<p><span class="mu-badge" data-variant="warning">beta</span></p>\n',
+    );
     const bar = html('::progress[Docs]{value=30 max=40}');
     expect(bar).toContain('style="width:75%"');
     expect(bar).toContain('aria-valuenow="30"');
@@ -176,14 +265,18 @@ describe('components', () => {
 
   it('renders a nested table of contents', () => {
     const out = html('::toc{depth=3}\n\n# Doc\n## A\n### A1\n## B\n#### deep');
-    expect(out).toContain('<nav class="mu-toc" aria-label="Table of contents"><ul><li><a href="#a">A</a><ul><li><a href="#a1">A1</a></li></ul></li><li><a href="#b">B</a></li></ul></nav>');
+    expect(out).toContain(
+      '<nav class="mu-toc" aria-label="Table of contents"><ul><li><a href="#a">A</a><ul><li><a href="#a1">A1</a></li></ul></li><li><a href="#b">B</a></li></ul></nav>',
+    );
   });
 
   it('keeps unknown components and their content', () => {
     expect(html(':::mystery[Label]{#m}\n**body**\n:::')).toBe(
       '<div id="m" class="mu-directive" data-directive="mystery"><div class="mu-directive-label">Label</div><p><strong>body</strong></p>\n</div>\n',
     );
-    expect(html('x :thing[y]{a=1}')).toBe('<p>x <span class="mu-directive" data-directive="thing">y</span></p>\n');
+    expect(html('x :thing[y]{a=1}')).toBe(
+      '<p>x <span class="mu-directive" data-directive="thing">y</span></p>\n',
+    );
   });
 
   it('falls back when a component is used in a form it does not support', () => {
@@ -194,7 +287,9 @@ describe('components', () => {
     const broken: HtmlComponent = () => {
       throw new Error('boom');
     };
-    expect(html(':::note\nx\n:::', { components: { note: broken } })).toContain('<div class="mu-error">Component “note” failed: boom</div>');
+    expect(html(':::note\nx\n:::', { components: { note: broken } })).toContain(
+      '<div class="mu-error">Component “note” failed: boom</div>',
+    );
   });
 });
 
@@ -208,7 +303,9 @@ describe('charts', () => {
   });
 
   it('renders grouped series with a legend and custom colours', () => {
-    const out = html(':::chart{type=line}\nlabels: [a, b]\nseries:\n  - name: x\n    values: [1, 2]\n  - name: y\n    color: "#ff0000"\n    values: [2, 3]\n:::');
+    const out = html(
+      ':::chart{type=line}\nlabels: [a, b]\nseries:\n  - name: x\n    values: [1, 2]\n  - name: y\n    color: "#ff0000"\n    values: [2, 3]\n:::',
+    );
     expect(out).toContain('class="mu-s1"');
     expect(out).toContain('style="stroke:#ff0000"');
     expect(out).toContain('<ul class="mu-chart-legend">');
@@ -222,7 +319,9 @@ describe('charts', () => {
   });
 
   it('handles negative values, stacking and areas', () => {
-    const out = html(':::chart{type=bar stacked}\nlabels: [q1, q2]\nseries:\n  - name: a\n    values: [-3, 4]\n  - name: b\n    values: [2, -1]\n:::');
+    const out = html(
+      ':::chart{type=bar stacked}\nlabels: [q1, q2]\nseries:\n  - name: a\n    values: [-3, 4]\n  - name: b\n    values: [2, -1]\n:::',
+    );
     expect(out).toContain('mu-chart-zero');
     expect(html(':::chart{type=area}\ndata:\n  a: 1\n  b: 2\n:::')).toContain('mu-chart-area');
   });
@@ -233,8 +332,13 @@ describe('charts', () => {
 
   it('builds models defensively', () => {
     expect(chartModel({ data: { a: 1, b: 'x' } }, '')?.labels).toEqual(['a']);
-    expect(chartModel({ series: [{ values: [1] }], labels: ['a'], type: 'pie' }, 'T')?.series).toHaveLength(1);
-    expect(chartModel({ series: [{ values: [1], color: 'red;background:url(x)' }], labels: ['a'] }, '')?.series[0]?.color).toBeNull();
+    expect(
+      chartModel({ series: [{ values: [1] }], labels: ['a'], type: 'pie' }, 'T')?.series,
+    ).toHaveLength(1);
+    expect(
+      chartModel({ series: [{ values: [1], color: 'red;background:url(x)' }], labels: ['a'] }, '')
+        ?.series[0]?.color,
+    ).toBeNull();
     expect(chartModel({}, '')).toBeNull();
   });
 
@@ -249,22 +353,34 @@ describe('plugins', () => {
   it('renders plugin components', () => {
     const plugin = definePlugin({
       name: 'video',
-      directives: [defineDirective({ name: 'youtube', forms: ['leaf'], description: 'Video', attributes: { id: s.string() } })],
+      directives: [
+        defineDirective({
+          name: 'youtube',
+          forms: ['leaf'],
+          description: 'Video',
+          attributes: { id: s.string() },
+        }),
+      ],
       renderers: {
         html: {
-          youtube: ((node, ctx) => `<iframe${ctx.rootAttributes(node, ['yt'], { src: `https://www.youtube-nocookie.com/embed/${encodeURIComponent(String(ctx.props(node).id))}` })}></iframe>`) satisfies HtmlComponent,
+          youtube: ((node, ctx) =>
+            `<iframe${ctx.rootAttributes(node, ['yt'], { src: `https://www.youtube-nocookie.com/embed/${encodeURIComponent(String(ctx.props(node).id))}` })}></iframe>`) satisfies HtmlComponent,
         },
       },
     });
     const { html: out, diagnostics } = markupToHtml('::youtube{id=abc}', { plugins: [plugin] });
     expect(diagnostics).toEqual([]);
-    expect(out).toBe('<iframe class="yt" src="https://www.youtube-nocookie.com/embed/abc"></iframe>');
+    expect(out).toBe(
+      '<iframe class="yt" src="https://www.youtube-nocookie.com/embed/abc"></iframe>',
+    );
   });
 });
 
 describe('standalone documents', () => {
   it('uses front matter for title, description and language', () => {
-    const { document } = parse('---\ntitle: My <Doc>\ndescription: About it\nlang: pt-BR\n---\n# Heading');
+    const { document } = parse(
+      '---\ntitle: My <Doc>\ndescription: About it\nlang: pt-BR\n---\n# Heading',
+    );
     const out = renderDocument(document);
     expect(out).toMatch(/^<!doctype html>\n<html lang="pt-BR">/);
     expect(out).toContain('<title>My &lt;Doc&gt;</title>');
@@ -280,7 +396,9 @@ describe('standalone documents', () => {
   });
 
   it('rejects an invalid language tag', () => {
-    expect(renderDocument(parse('---\nlang: "en\\" onload=x"\n---').document)).toContain('<html lang="en">');
+    expect(renderDocument(parse('---\nlang: "en\\" onload=x"\n---').document)).toContain(
+      '<html lang="en">',
+    );
   });
 
   it('renders an empty document', () => {

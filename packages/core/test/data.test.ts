@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { DiagnosticBag, LineIndex, parseData, toPlainData, type DataNode } from '@markup-lang/core';
 
-function data(source: string): { value: unknown; node: DataNode | null; codes: string[]; messages: string[] } {
+function data(source: string): {
+  value: unknown;
+  node: DataNode | null;
+  codes: string[];
+  messages: string[];
+} {
   const index = new LineIndex(source);
   const diagnostics = new DiagnosticBag();
   let offset = 0;
@@ -21,7 +26,9 @@ function data(source: string): { value: unknown; node: DataNode | null; codes: s
 
 describe('MarkUP Data: scalars', () => {
   it('resolves plain scalars', () => {
-    expect(data('a: 1\nb: -2.5e3\nc: true\nd: FALSE\ne: null\nf: ~\ng: hello world\nh:').value).toEqual({
+    expect(
+      data('a: 1\nb: -2.5e3\nc: true\nd: FALSE\ne: null\nf: ~\ng: hello world\nh:').value,
+    ).toEqual({
       a: 1,
       b: -2500,
       c: true,
@@ -34,7 +41,11 @@ describe('MarkUP Data: scalars', () => {
   });
 
   it('keeps numbers with leading zeros as strings', () => {
-    expect(data('zip: 01234\nzero: 0\nfrac: 0.5').value).toEqual({ zip: '01234', zero: 0, frac: 0.5 });
+    expect(data('zip: 01234\nzero: 0\nfrac: 0.5').value).toEqual({
+      zip: '01234',
+      zero: 0,
+      frac: 0.5,
+    });
   });
 
   it('does not treat yes/no/on/off as booleans', () => {
@@ -42,26 +53,42 @@ describe('MarkUP Data: scalars', () => {
   });
 
   it('parses quoted strings with escapes', () => {
-    expect(data(`a: "line\\nnext \\"q\\" \\u00e9"\nb: 'it''s'`).value).toEqual({ a: 'line\nnext "q" é', b: "it's" });
+    expect(data(`a: "line\\nnext \\"q\\" \\u00e9"\nb: 'it''s'`).value).toEqual({
+      a: 'line\nnext "q" é',
+      b: "it's",
+    });
   });
 
   it('strips comments but not hashes inside values', () => {
-    expect(data('# heading comment\na: 1 # trailing\nb: C#\nc: "x # y"').value).toEqual({ a: 1, b: 'C#', c: 'x # y' });
+    expect(data('# heading comment\na: 1 # trailing\nb: C#\nc: "x # y"').value).toEqual({
+      a: 1,
+      b: 'C#',
+      c: 'x # y',
+    });
   });
 
   it('allows colons inside plain values', () => {
-    expect(data('url: https://example.com:8080/a\ntime: 10:30').value).toEqual({ url: 'https://example.com:8080/a', time: '10:30' });
+    expect(data('url: https://example.com:8080/a\ntime: 10:30').value).toEqual({
+      url: 'https://example.com:8080/a',
+      time: '10:30',
+    });
   });
 
   it('parses literal blocks', () => {
-    expect(data('text: |\n  line 1\n    indented\n\n  line 3\nnext: x').value).toEqual({ text: 'line 1\n  indented\n\nline 3\n', next: 'x' });
+    expect(data('text: |\n  line 1\n    indented\n\n  line 3\nnext: x').value).toEqual({
+      text: 'line 1\n  indented\n\nline 3\n',
+      next: 'x',
+    });
     expect(data('text: |-\n  a\n  b').value).toEqual({ text: 'a\nb' });
   });
 });
 
 describe('MarkUP Data: collections', () => {
   it('nests mappings by indentation', () => {
-    expect(data('a:\n  b:\n    c: 1\n  d: 2\ne: 3').value).toEqual({ a: { b: { c: 1 }, d: 2 }, e: 3 });
+    expect(data('a:\n  b:\n    c: 1\n  d: 2\ne: 3').value).toEqual({
+      a: { b: { c: 1 }, d: 2 },
+      e: 3,
+    });
   });
 
   it('parses block sequences, including compact ones under a key', () => {
@@ -82,7 +109,9 @@ describe('MarkUP Data: collections', () => {
   });
 
   it('parses flow sequences', () => {
-    expect(data('a: [1, two, "three, 3", [4, 5], []]').value).toEqual({ a: [1, 'two', 'three, 3', [4, 5], []] });
+    expect(data('a: [1, two, "three, 3", [4, 5], []]').value).toEqual({
+      a: [1, 'two', 'three, 3', [4, 5], []],
+    });
     expect(data('a: [1, 2,]').value).toEqual({ a: [1, 2] });
   });
 

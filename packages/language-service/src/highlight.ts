@@ -54,7 +54,11 @@ export function getHighlights(analysis: Analysis): Highlight[] {
   if (fm) {
     add(fm.position.start.offset, fm.position.end.offset, 'frontMatter');
     const firstEnd = text.indexOf('\n', fm.position.start.offset);
-    add(fm.position.start.offset, firstEnd === -1 ? fm.position.end.offset : firstEnd, 'punctuation');
+    add(
+      fm.position.start.offset,
+      firstEnd === -1 ? fm.position.end.offset : firstEnd,
+      'punctuation',
+    );
     if (fm.value) data(fm.value, add);
   }
 
@@ -164,7 +168,11 @@ function directive(node: Extract<Node, { name: string }>, analysis: Analysis, ad
   const known = analysis.registry.has(node.name);
   const s = node.position.start.offset;
   add(s, node.nameRange.start.offset, 'directiveFence');
-  add(node.nameRange.start.offset, node.nameRange.end.offset, known ? 'directiveName' : 'directiveUnknown');
+  add(
+    node.nameRange.start.offset,
+    node.nameRange.end.offset,
+    known ? 'directiveName' : 'directiveUnknown',
+  );
   if (node.labelRange) {
     add(node.labelRange.start.offset, node.labelRange.start.offset + 1, 'punctuation');
     add(node.labelRange.start.offset + 1, node.labelRange.end.offset - 1, 'directiveLabel');
@@ -172,7 +180,8 @@ function directive(node: Extract<Node, { name: string }>, analysis: Analysis, ad
   }
   if (node.attributes) attributes(node.attributes, add);
   if (node.type === 'containerDirective') {
-    if (node.closeRange) add(node.closeRange.start.offset, node.closeRange.end.offset, 'directiveFence');
+    if (node.closeRange)
+      add(node.closeRange.start.offset, node.closeRange.end.offset, 'directiveFence');
     if (node.body.kind === 'data' && node.body.value) data(node.body.value, add);
   }
 }
@@ -182,10 +191,13 @@ function attributes(attrs: Attributes, add: Add): void {
   add(attrs.range.end.offset - 1, attrs.range.end.offset, 'punctuation');
   for (const item of attrs.items) {
     if (item.kind === 'id') add(item.range.start.offset, item.range.end.offset, 'attributeId');
-    else if (item.kind === 'class') add(item.range.start.offset, item.range.end.offset, 'attributeClass');
+    else if (item.kind === 'class')
+      add(item.range.start.offset, item.range.end.offset, 'attributeClass');
     else {
-      if (item.nameRange) add(item.nameRange.start.offset, item.nameRange.end.offset, 'attributeKey');
-      if (item.valueRange) add(item.valueRange.start.offset, item.valueRange.end.offset, 'attributeValue');
+      if (item.nameRange)
+        add(item.nameRange.start.offset, item.nameRange.end.offset, 'attributeKey');
+      if (item.valueRange)
+        add(item.valueRange.start.offset, item.valueRange.end.offset, 'attributeValue');
     }
   }
 }
@@ -202,7 +214,12 @@ function data(node: DataNode, add: Add): void {
     } else if (n.kind === 'seq') {
       stack.push(...n.items);
     } else if (n.range.end.offset > n.range.start.offset) {
-      const kind = typeof n.value === 'number' ? 'dataNumber' : typeof n.value === 'string' ? 'dataString' : 'dataLiteral';
+      const kind =
+        typeof n.value === 'number'
+          ? 'dataNumber'
+          : typeof n.value === 'string'
+            ? 'dataString'
+            : 'dataLiteral';
       add(n.range.start.offset, n.range.end.offset, kind);
     }
   }
@@ -213,8 +230,11 @@ function markers(text: string, node: Node, add: Add): void {
   const s = node.position.start.offset;
   if (node.type === 'listItem') {
     add(s, s + node.marker.length, 'marker');
-    const task = /^[ \t]+\[[ xX]\]/.exec(text.slice(s + node.marker.length, s + node.marker.length + 8));
-    if (node.checked !== null && task) add(s + node.marker.length, s + node.marker.length + task[0].length, 'marker');
+    const task = /^[ \t]+\[[ xX]\]/.exec(
+      text.slice(s + node.marker.length, s + node.marker.length + 8),
+    );
+    if (node.checked !== null && task)
+      add(s + node.marker.length, s + node.marker.length + task[0].length, 'marker');
     return;
   }
   // Every line of the quote: the first `>` at or after the quote's column.
@@ -246,7 +266,15 @@ function lineStart(text: string, from: number): number {
 // ---------------------------------------------------------------------------
 // LSP semantic tokens: a non-overlapping, single-line subset.
 
-export const SEMANTIC_TOKEN_TYPES = ['keyword', 'class', 'property', 'string', 'number', 'variable', 'comment'] as const;
+export const SEMANTIC_TOKEN_TYPES = [
+  'keyword',
+  'class',
+  'property',
+  'string',
+  'number',
+  'variable',
+  'comment',
+] as const;
 export const SEMANTIC_TOKEN_MODIFIERS = ['defaultLibrary', 'deprecated'] as const;
 
 export interface SemanticToken {
@@ -283,7 +311,13 @@ export function getSemanticTokens(analysis: Analysis): SemanticToken[] {
       const to = Math.min(h.to, lineEnd(analysis.text, from));
       if (to > from) {
         const p = analysis.lineIndex.pointAt(from);
-        tokens.push({ line: p.line - 1, character: p.column - 1, length: to - from, type: mapped[0], modifiers: mapped[1] });
+        tokens.push({
+          line: p.line - 1,
+          character: p.column - 1,
+          length: to - from,
+          type: mapped[0],
+          modifiers: mapped[1],
+        });
       }
       from = to + (analysis.text[to] === '\r' && analysis.text[to + 1] === '\n' ? 2 : 1);
     }
@@ -299,7 +333,13 @@ export function encodeSemanticTokens(tokens: readonly SemanticToken[]): number[]
   let character = 0;
   for (const t of tokens) {
     const deltaLine = t.line - line;
-    data.push(deltaLine, deltaLine === 0 ? t.character - character : t.character, t.length, t.type, t.modifiers);
+    data.push(
+      deltaLine,
+      deltaLine === 0 ? t.character - character : t.character,
+      t.length,
+      t.type,
+      t.modifiers,
+    );
     line = t.line;
     character = t.character;
   }

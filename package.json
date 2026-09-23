@@ -27,7 +27,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "docs:generate": "node --conditions=source scripts/generate-docs.ts",
-    "check": "npm run lint && npm run typecheck && npm test"
+    "check": "npm run lint && npm run typecheck && npm test",
+    "docs:check": "node --conditions=source scripts/generate-docs.ts --check",
+    "site": "node --conditions=source packages/cli/src/bin.ts build README.md docs examples --out site --css"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",

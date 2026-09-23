@@ -8,9 +8,14 @@
     "markup-language-server": "dist/server.cjs"
   },
   "exports": {
-    ".": { "source": "./src/server.ts", "default": "./dist/server.cjs" }
+    ".": {
+      "source": "./src/server.ts",
+      "default": "./dist/server.cjs"
+    }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "node build.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"

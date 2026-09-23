@@ -1,0 +1,11 @@
+# A small document
+
+MarkUP reads like Markdown. This paragraph has **bold**, *italic*, `code` and a
+[link](https://example.com).
+
+:::note
+Components are written with colons.
+:::
+
+- Lists
+- [x] and tasks

@@ -1,4 +1,11 @@
-import { getEntry, inlineText, parse, type Diagnostic, type Document, type ParseOptions } from '@markup-lang/core';
+import {
+  getEntry,
+  inlineText,
+  parse,
+  type Diagnostic,
+  type Document,
+  type ParseOptions,
+} from '@markup-lang/core';
 import { escapeHtml } from './escape.ts';
 import { renderHtml, type HtmlOptions } from './render.ts';
 import { MARKUP_CSS } from './theme.ts';
@@ -15,11 +22,17 @@ export interface DocumentOptions extends HtmlOptions {
 }
 
 /** Metadata read from front matter, with the first heading as a title fallback. */
-export function documentMeta(document: Document): { title: string | null; description: string | null; lang: string | null } {
+export function documentMeta(document: Document): {
+  title: string | null;
+  description: string | null;
+  lang: string | null;
+} {
   const fm = document.frontMatter?.value ?? null;
   const str = (key: string) => {
     const entry = getEntry(fm, key);
-    return entry?.value.kind === 'scalar' && entry.value.value !== null ? String(entry.value.value) : null;
+    return entry?.value.kind === 'scalar' && entry.value.value !== null
+      ? String(entry.value.value)
+      : null;
   };
   let title = str('title');
   if (!title) {
@@ -34,7 +47,8 @@ export function renderDocument(document: Document, options: DocumentOptions = {}
   const meta = documentMeta(document);
   const title = options.title ?? meta.title ?? 'MarkUP document';
   const theme = options.theme ?? 'auto';
-  const lang = meta.lang && /^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$/.test(meta.lang) ? meta.lang : 'en';
+  const lang =
+    meta.lang && /^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$/.test(meta.lang) ? meta.lang : 'en';
   return `<!doctype html>
 <html${theme === 'auto' ? '' : ` data-theme="${theme}"`} lang="${lang}">
 <head>
@@ -67,10 +81,16 @@ export interface RenderResult {
 }
 
 /** Parses and renders in one step. */
-export function markupToHtml(source: string, options: HtmlOptions & ParseOptions & { standalone?: boolean | DocumentOptions } = {}): RenderResult {
+export function markupToHtml(
+  source: string,
+  options: HtmlOptions & ParseOptions & { standalone?: boolean | DocumentOptions } = {},
+): RenderResult {
   const { document, diagnostics } = parse(source, options);
   const html = options.standalone
-    ? renderDocument(document, { ...options, ...(typeof options.standalone === 'object' ? options.standalone : {}) })
+    ? renderDocument(document, {
+        ...options,
+        ...(typeof options.standalone === 'object' ? options.standalone : {}),
+      })
     : renderHtml(document, options);
   return { html, document, diagnostics };
 }

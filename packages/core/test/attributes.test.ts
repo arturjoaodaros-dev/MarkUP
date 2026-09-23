@@ -5,7 +5,11 @@ function attrs(text: string) {
   const index = new LineIndex(text);
   const diagnostics = new DiagnosticBag();
   const result = parseAttributes(text, 0, { index, diagnostics, toOffset: (i) => i });
-  return { ...result, codes: diagnostics.items.map((d) => d.code), messages: diagnostics.items.map((d) => d.message) };
+  return {
+    ...result,
+    codes: diagnostics.items.map((d) => d.code),
+    messages: diagnostics.items.map((d) => d.message),
+  };
 }
 
 describe('attribute blocks', () => {
@@ -16,11 +20,20 @@ describe('attribute blocks', () => {
     expect(attributes.id).toBe('main');
     expect(attributes.classes).toEqual(['a', 'b']);
     expect({ ...attributes.values }).toEqual({ key: 'value', flag: true, other: 'x y' });
-    expect(attributes.items.map((i) => i.kind)).toEqual(['id', 'class', 'class', 'pair', 'flag', 'pair']);
+    expect(attributes.items.map((i) => i.kind)).toEqual([
+      'id',
+      'class',
+      'class',
+      'pair',
+      'flag',
+      'pair',
+    ]);
   });
 
   it('supports single quotes and escapes in quoted values', () => {
-    expect({ ...attrs(`{a='single' b="say \\"hi\\"" c='x\\'y' d="back\\\\slash"}`).attributes.values }).toEqual({
+    expect({
+      ...attrs(`{a='single' b="say \\"hi\\"" c='x\\'y' d="back\\\\slash"}`).attributes.values,
+    }).toEqual({
       a: 'single',
       b: 'say "hi"',
       c: "x'y",
@@ -29,11 +42,19 @@ describe('attribute blocks', () => {
   });
 
   it('accepts commas as separators', () => {
-    expect({ ...attrs('{type=bar, title=Hello}').attributes.values }).toEqual({ type: 'bar', title: 'Hello' });
+    expect({ ...attrs('{type=bar, title=Hello}').attributes.values }).toEqual({
+      type: 'bar',
+      title: 'Hello',
+    });
   });
 
   it('allows keys with dashes, colons, dots and underscores', () => {
-    expect(Object.keys(attrs('{data-x=1 aria:label=2 a.b=3 _c=4}').attributes.values)).toEqual(['data-x', 'aria:label', 'a.b', '_c']);
+    expect(Object.keys(attrs('{data-x=1 aria:label=2 a.b=3 _c=4}').attributes.values)).toEqual([
+      'data-x',
+      'aria:label',
+      'a.b',
+      '_c',
+    ]);
   });
 
   it('records precise ranges', () => {
@@ -82,6 +103,9 @@ describe('attribute blocks', () => {
   });
 
   it('keeps Unicode values', () => {
-    expect(attrs('{icon=🚀 label="Olá, mundo"}').attributes.values).toMatchObject({ icon: '🚀', label: 'Olá, mundo' });
+    expect(attrs('{icon=🚀 label="Olá, mundo"}').attributes.values).toMatchObject({
+      icon: '🚀',
+      label: 'Olá, mundo',
+    });
   });
 });

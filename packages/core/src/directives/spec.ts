@@ -74,8 +74,14 @@ export function defineDirective<T extends DirectiveSpec>(spec: T): T {
   return spec;
 }
 
-export function labelSpec(spec: DirectiveSpec): Required<Omit<LabelSpec, 'description'>> & { description?: string } {
-  return { use: spec.label?.use ?? 'optional', model: spec.label?.model ?? 'inline', description: spec.label?.description };
+export function labelSpec(
+  spec: DirectiveSpec,
+): Required<Omit<LabelSpec, 'description'>> & { description?: string } {
+  return {
+    use: spec.label?.use ?? 'optional',
+    model: spec.label?.model ?? 'inline',
+    description: spec.label?.description,
+  };
 }
 
 /**
@@ -115,8 +121,16 @@ export class DirectiveRegistry {
   /** The closest known name for a misspelt directive, preferring ones that accept `form`. */
   suggest(name: string, form?: DirectiveForm): string | null {
     const all = this.list();
-    const preferred = form ? all.filter((spec) => spec.forms.includes(form)).map((spec) => spec.name) : [];
-    return closest(name, preferred) ?? closest(name, all.map((spec) => spec.name));
+    const preferred = form
+      ? all.filter((spec) => spec.forms.includes(form)).map((spec) => spec.name)
+      : [];
+    return (
+      closest(name, preferred) ??
+      closest(
+        name,
+        all.map((spec) => spec.name),
+      )
+    );
   }
 
   /** The content model used to parse the body of a container directive named `name`. */

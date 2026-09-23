@@ -3,7 +3,12 @@
  * every feature comes from the shared service, positions are converted here.
  */
 import { fileURLToPath } from 'node:url';
-import type { Diagnostic as MarkupDiagnostic, LineIndex, MarkupPlugin, Range as MarkupRange } from '@markup-lang/core';
+import type {
+  Diagnostic as MarkupDiagnostic,
+  LineIndex,
+  MarkupPlugin,
+  Range as MarkupRange,
+} from '@markup-lang/core';
 import { CONFIG_FILE, loadConfig } from '@markup-lang/core/node';
 import {
   encodeSemanticTokens,
@@ -66,13 +71,17 @@ export function startServer(connection: Connection): void {
   let service = new LanguageService();
   const timers = new Map<string, NodeJS.Timeout>();
 
-  const analyze = (document: TextDocument): Analysis => service.analyze(document.getText(), document.uri);
+  const analyze = (document: TextDocument): Analysis =>
+    service.analyze(document.getText(), document.uri);
 
   const toPosition = (index: LineIndex, offset: number): Position => {
     const p = index.pointAt(offset);
     return { line: p.line - 1, character: p.column - 1 };
   };
-  const toRange = (index: LineIndex, from: number, to: number): Range => ({ start: toPosition(index, from), end: toPosition(index, to) });
+  const toRange = (index: LineIndex, from: number, to: number): Range => ({
+    start: toPosition(index, from),
+    end: toPosition(index, to),
+  });
   const fromRange = (r: MarkupRange): Range => ({
     start: { line: r.start.line - 1, character: r.start.column - 1 },
     end: { line: r.end.line - 1, character: r.end.column - 1 },
@@ -81,24 +90,40 @@ export function startServer(connection: Connection): void {
   const toDiagnostic = (d: MarkupDiagnostic, uri: string): Diagnostic => ({
     range: fromRange(d.range),
     severity:
-      d.severity === 'error' ? DiagnosticSeverity.Error : d.severity === 'warning' ? DiagnosticSeverity.Warning : d.severity === 'info' ? DiagnosticSeverity.Information : DiagnosticSeverity.Hint,
+      d.severity === 'error'
+        ? DiagnosticSeverity.Error
+        : d.severity === 'warning'
+          ? DiagnosticSeverity.Warning
+          : d.severity === 'info'
+            ? DiagnosticSeverity.Information
+            : DiagnosticSeverity.Hint,
     code: d.code,
     source: 'markup',
     message: d.message,
     tags: d.code === 'MU2022' ? [DiagnosticTag.Unnecessary] : undefined,
-    relatedInformation: d.related?.map((r) => ({ location: { uri, range: fromRange(r.range) }, message: r.message })),
+    relatedInformation: d.related?.map((r) => ({
+      location: { uri, range: fromRange(r.range) },
+      message: r.message,
+    })),
   });
 
   const validate = (document: TextDocument) => {
     const analysis = analyze(document);
-    void connection.sendDiagnostics({ uri: document.uri, version: document.version, diagnostics: analysis.diagnostics.map((d) => toDiagnostic(d, document.uri)) });
+    void connection.sendDiagnostics({
+      uri: document.uri,
+      version: document.version,
+      diagnostics: analysis.diagnostics.map((d) => toDiagnostic(d, document.uri)),
+    });
   };
 
   const schedule = (document: TextDocument) => {
     clearTimeout(timers.get(document.uri));
     // Larger documents wait a little longer so typing stays smooth.
     const delay = Math.min(400, 80 + document.getText().length / 5000);
-    timers.set(document.uri, setTimeout(() => validate(document), delay));
+    timers.set(
+      document.uri,
+      setTimeout(() => validate(document), delay),
+    );
   };
 
   connection.onInitialize(async (params): Promise<InitializeResult> => {
@@ -110,7 +135,9 @@ export function startServer(connection: Connection): void {
           const root = fileURLToPath(folder.uri);
           plugins.push(...(await loadConfig(root)).plugins);
         } catch (error) {
-          connection.console.error(`MarkUP: could not load ${CONFIG_FILE}: ${error instanceof Error ? error.message : String(error)}`);
+          connection.console.error(
+            `MarkUP: could not load ${CONFIG_FILE}: ${error instanceof Error ? error.message : String(error)}`,
+          );
         }
       }
       service = new LanguageService({ plugins });
@@ -118,7 +145,10 @@ export function startServer(connection: Connection): void {
     return {
       capabilities: {
         textDocumentSync: TextDocumentSyncKind.Incremental,
-        completionProvider: { triggerCharacters: [':', '{', ' ', '=', '#', '^', '`', '-'], resolveProvider: false },
+        completionProvider: {
+          triggerCharacters: [':', '{', ' ', '=', '#', '^', '`', '-'],
+          resolveProvider: false,
+        },
         hoverProvider: true,
         documentSymbolProvider: true,
         foldingRangeProvider: true,
@@ -127,7 +157,10 @@ export function startServer(connection: Connection): void {
         documentLinkProvider: { resolveProvider: false },
         codeActionProvider: { codeActionKinds: [CodeActionKind.QuickFix] },
         semanticTokensProvider: {
-          legend: { tokenTypes: [...SEMANTIC_TOKEN_TYPES], tokenModifiers: [...SEMANTIC_TOKEN_MODIFIERS] },
+          legend: {
+            tokenTypes: [...SEMANTIC_TOKEN_TYPES],
+            tokenModifiers: [...SEMANTIC_TOKEN_MODIFIERS],
+          },
           full: true,
         },
       },
@@ -152,18 +185,18 @@ export function startServer(connection: Connection): void {
     const range = toRange(analysis.lineIndex, result.from, result.to);
     // The replaced range may start with colons (`:::no`); filter against the same shape.
     const prefix = /^[^A-Za-z0-9_]*/.exec(document.getText(range))![0];
-    return result.items.map(
-      (item): CompletionItem => ({
-        label: item.label,
-        kind: COMPLETION_KINDS[item.kind],
-        detail: item.detail,
-        documentation: item.documentation ? { kind: MarkupKind.Markdown, value: item.documentation } : undefined,
-        insertTextFormat: item.snippet ? InsertTextFormat.Snippet : InsertTextFormat.PlainText,
-        textEdit: { range, newText: item.insertText },
-        filterText: prefix + item.label,
-        sortText: item.sortText,
-      }),
-    );
+    return result.items.map((item): CompletionItem => ({
+      label: item.label,
+      kind: COMPLETION_KINDS[item.kind],
+      detail: item.detail,
+      documentation: item.documentation
+        ? { kind: MarkupKind.Markdown, value: item.documentation }
+        : undefined,
+      insertTextFormat: item.snippet ? InsertTextFormat.Snippet : InsertTextFormat.PlainText,
+      textEdit: { range, newText: item.insertText },
+      filterText: prefix + item.label,
+      sortText: item.sortText,
+    }));
   });
 
   connection.onHover((params) => {
@@ -171,7 +204,12 @@ export function startServer(connection: Connection): void {
     if (!document) return null;
     const analysis = analyze(document);
     const hover = getHover(analysis, document.offsetAt(params.position));
-    return hover ? { contents: { kind: MarkupKind.Markdown, value: hover.contents }, range: toRange(analysis.lineIndex, hover.from, hover.to) } : null;
+    return hover
+      ? {
+          contents: { kind: MarkupKind.Markdown, value: hover.contents },
+          range: toRange(analysis.lineIndex, hover.from, hover.to),
+        }
+      : null;
   });
 
   connection.onDocumentSymbol((params) => {
@@ -182,7 +220,11 @@ export function startServer(connection: Connection): void {
       DocumentSymbol.create(
         s.name,
         s.detail,
-        s.kind === 'heading' ? SymbolKind.String : s.kind === 'frontMatter' ? SymbolKind.Namespace : SymbolKind.Class,
+        s.kind === 'heading'
+          ? SymbolKind.String
+          : s.kind === 'frontMatter'
+            ? SymbolKind.Namespace
+            : SymbolKind.Class,
         toRange(analysis.lineIndex, s.from, s.to),
         toRange(analysis.lineIndex, s.selectionFrom, s.selectionTo),
         s.children.map(convert),
@@ -196,7 +238,12 @@ export function startServer(connection: Connection): void {
     return getFoldingRanges(analyze(document)).map((r) => ({
       startLine: r.startLine - 1,
       endLine: r.endLine - 1,
-      kind: r.kind === 'comment' ? FoldingRangeKind.Comment : r.kind === 'imports' ? FoldingRangeKind.Imports : FoldingRangeKind.Region,
+      kind:
+        r.kind === 'comment'
+          ? FoldingRangeKind.Comment
+          : r.kind === 'imports'
+            ? FoldingRangeKind.Imports
+            : FoldingRangeKind.Region,
     }));
   });
 
@@ -205,14 +252,19 @@ export function startServer(connection: Connection): void {
     if (!document) return null;
     const analysis = analyze(document);
     const location = getDefinition(analysis, document.offsetAt(params.position));
-    return location ? { uri: document.uri, range: toRange(analysis.lineIndex, location.from, location.to) } : null;
+    return location
+      ? { uri: document.uri, range: toRange(analysis.lineIndex, location.from, location.to) }
+      : null;
   });
 
   connection.onReferences((params) => {
     const document = documents.get(params.textDocument.uri);
     if (!document) return [];
     const analysis = analyze(document);
-    return getReferences(analysis, document.offsetAt(params.position)).map((l) => ({ uri: document.uri, range: toRange(analysis.lineIndex, l.from, l.to) }));
+    return getReferences(analysis, document.offsetAt(params.position)).map((l) => ({
+      uri: document.uri,
+      range: toRange(analysis.lineIndex, l.from, l.to),
+    }));
   });
 
   connection.onDocumentLinks((params) => {
@@ -236,15 +288,20 @@ export function startServer(connection: Connection): void {
     const analysis = analyze(document);
     const from = document.offsetAt(params.range.start);
     const to = document.offsetAt(params.range.end);
-    return getCodeActions(analysis, from, to).map(
-      (action): CodeAction => ({
-        title: action.title,
-        kind: CodeActionKind.QuickFix,
-        isPreferred: action.preferred,
-        diagnostics: [toDiagnostic(action.diagnostic, document.uri)],
-        edit: { changes: { [document.uri]: action.edits.map((e) => ({ range: fromRange(e.range), newText: e.newText })) } },
-      }),
-    );
+    return getCodeActions(analysis, from, to).map((action): CodeAction => ({
+      title: action.title,
+      kind: CodeActionKind.QuickFix,
+      isPreferred: action.preferred,
+      diagnostics: [toDiagnostic(action.diagnostic, document.uri)],
+      edit: {
+        changes: {
+          [document.uri]: action.edits.map((e) => ({
+            range: fromRange(e.range),
+            newText: e.newText,
+          })),
+        },
+      },
+    }));
   });
 
   connection.languages.semanticTokens.on((params) => {

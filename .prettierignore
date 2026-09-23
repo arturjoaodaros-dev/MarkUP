@@ -12,3 +12,4 @@ packages/desktop/src-tauri/gen
 *.mkup
 
 packages/vscode/syntaxes/markup.tmLanguage.json
+*.md

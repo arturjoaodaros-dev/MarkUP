@@ -83,7 +83,9 @@ describe('chart data', () => {
 
   it('reports unknown keys on the key', () => {
     const d = diagnostics(':::chart\ndata:\n  a: 1\ncolour: red\n:::');
-    expect(d.map((x) => `${x.code} ${x.range.start.line}:${x.range.start.column}`)).toEqual(['MU2010 4:1']);
+    expect(d.map((x) => `${x.code} ${x.range.start.line}:${x.range.start.column}`)).toEqual([
+      'MU2010 4:1',
+    ]);
   });
 
   it('requires data or series', () => {
@@ -91,12 +93,16 @@ describe('chart data', () => {
   });
 
   it('checks series lengths against labels', () => {
-    const d = diagnostics(':::chart\nlabels: [a, b, c]\nseries:\n  - name: s\n    values: [1, 2]\n:::');
+    const d = diagnostics(
+      ':::chart\nlabels: [a, b, c]\nseries:\n  - name: s\n    values: [1, 2]\n:::',
+    );
     expect(d.map((x) => [x.code, x.severity])).toEqual([['MU2010', 'warning']]);
   });
 
   it('warns when a setting is given both as attribute and in the body', () => {
-    expect(diagnostics(':::chart{type=line}\ntype: bar\ndata:\n  a: 1\n:::').map((x) => x.severity)).toEqual(['warning']);
+    expect(
+      diagnostics(':::chart{type=line}\ntype: bar\ndata:\n  a: 1\n:::').map((x) => x.severity),
+    ).toEqual(['warning']);
   });
 });
 
@@ -106,7 +112,9 @@ describe('document-level rules', () => {
   });
 
   it('warns about fragment links without a target, with suggestions', () => {
-    const d = diagnostics('# Getting Started\n\nSee [setup](#getting-startd) and [ok](#getting-started).');
+    const d = diagnostics(
+      '# Getting Started\n\nSee [setup](#getting-startd) and [ok](#getting-started).',
+    );
     expect(d.map((x) => x.code)).toEqual(['MU2025']);
     expect(d[0]!.message).toMatch(/#getting-started/);
   });

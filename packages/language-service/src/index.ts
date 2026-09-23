@@ -1,7 +1,18 @@
 export { Analysis, LanguageService, type LanguageServiceOptions } from './analysis.ts';
-export { getCompletions, snippetFor, type CompletionItem, type CompletionKind, type CompletionResult } from './completion.ts';
+export {
+  getCompletions,
+  snippetFor,
+  type CompletionItem,
+  type CompletionKind,
+  type CompletionResult,
+} from './completion.ts';
 export { getHover, type Hover } from './hover.ts';
-export { getFoldingRanges, getSymbols, type DocumentSymbol, type FoldingRange } from './structure.ts';
+export {
+  getFoldingRanges,
+  getSymbols,
+  type DocumentSymbol,
+  type FoldingRange,
+} from './structure.ts';
 export {
   encodeSemanticTokens,
   getHighlights,

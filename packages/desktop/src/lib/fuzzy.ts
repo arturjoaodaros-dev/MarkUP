@@ -17,7 +17,10 @@ export function fuzzyMatch(query: string, candidate: string): FuzzyMatch | null 
   if (at !== -1 && q.trim().length > 0) {
     const length = q.trim().length;
     const boundary = at === 0 || /[\s/_.\-:[\]]/.test(candidate[at - 1]!);
-    return { score: 100 + (boundary ? 20 : 0) - at * 0.1 - candidate.length * 0.01, indices: Array.from({ length }, (_, i) => at + i) };
+    return {
+      score: 100 + (boundary ? 20 : 0) - at * 0.1 - candidate.length * 0.01,
+      indices: Array.from({ length }, (_, i) => at + i),
+    };
   }
   const indices: number[] = [];
   let score = 0;
@@ -27,7 +30,11 @@ export function fuzzyMatch(query: string, candidate: string): FuzzyMatch | null 
     if (ch === ' ') continue;
     const at = c.indexOf(ch, from);
     if (at === -1) return null;
-    const boundary = at === 0 || /[\s/_.\-:[\]]/.test(candidate[at - 1]!) || (candidate[at - 1] === candidate[at - 1]!.toLowerCase() && candidate[at] !== candidate[at]!.toLowerCase());
+    const boundary =
+      at === 0 ||
+      /[\s/_.\-:[\]]/.test(candidate[at - 1]!) ||
+      (candidate[at - 1] === candidate[at - 1]!.toLowerCase() &&
+        candidate[at] !== candidate[at]!.toLowerCase());
     score += 1;
     if (at === previous + 1) score += 3;
     if (boundary) score += 4;
@@ -41,7 +48,12 @@ export function fuzzyMatch(query: string, candidate: string): FuzzyMatch | null 
   return { score, indices };
 }
 
-export function fuzzyFilter<T>(query: string, items: readonly T[], text: (item: T) => string, limit = 200): { item: T; match: FuzzyMatch }[] {
+export function fuzzyFilter<T>(
+  query: string,
+  items: readonly T[],
+  text: (item: T) => string,
+  limit = 200,
+): { item: T; match: FuzzyMatch }[] {
   const out: { item: T; match: FuzzyMatch }[] = [];
   for (const item of items) {
     const match = fuzzyMatch(query, text(item));

@@ -1,4 +1,11 @@
-import { ChevronRight, ChevronsDownUp, FilePlus, FileText, FolderPlus, RefreshCw } from 'lucide-react';
+import {
+  ChevronRight,
+  ChevronsDownUp,
+  FilePlus,
+  FileText,
+  FolderPlus,
+  RefreshCw,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useAppState, useWorkbench } from '../context.ts';
 import { MARKUP_FILE, type FileEntry } from '../fs/types.ts';
@@ -23,7 +30,11 @@ export function Explorer() {
   };
 
   const menuItems = (entry: FileEntry | null): MenuItem[] => {
-    const folder = entry ? (entry.kind === 'directory' ? entry.path : entry.path.slice(0, entry.path.lastIndexOf('/'))) : workspace.root;
+    const folder = entry
+      ? entry.kind === 'directory'
+        ? entry.path
+        : entry.path.slice(0, entry.path.lastIndexOf('/'))
+      : workspace.root;
     const items: MenuItem[] = [
       { label: 'New File', action: () => wb.startCreate('new-file', folder) },
       { label: 'New Folder', action: () => wb.startCreate('new-folder', folder) },
@@ -63,12 +74,27 @@ export function Explorer() {
         ))}
         {tree.length === 0 && !rootEditing && <p className="panel-empty">This folder is empty.</p>}
       </div>
-      {menu && <ContextMenu x={menu.x} y={menu.y} items={menuItems(menu.entry)} onClose={() => setMenu(null)} />}
+      {menu && (
+        <ContextMenu
+          x={menu.x}
+          y={menu.y}
+          items={menuItems(menu.entry)}
+          onClose={() => setMenu(null)}
+        />
+      )}
     </section>
   );
 }
 
-function TreeNode({ entry, depth, onMenu }: { entry: FileEntry; depth: number; onMenu: (e: React.MouseEvent, entry: FileEntry) => void }) {
+function TreeNode({
+  entry,
+  depth,
+  onMenu,
+}: {
+  entry: FileEntry;
+  depth: number;
+  onMenu: (e: React.MouseEvent, entry: FileEntry) => void;
+}) {
   const { wb } = useWorkbench();
   const expanded = useAppState((s) => !!s.expanded[entry.path]);
   const active = useAppState((s) => s.active === entry.path);
@@ -109,12 +135,18 @@ function TreeNode({ entry, depth, onMenu }: { entry: FileEntry; depth: number; o
           <FileIcon name={entry.name} />
         )}
         <span className="tree-label">{entry.name}</span>
-        {status && <span className={`tree-count is-${status}`}>{problems!.errors || problems!.warnings}</span>}
+        {status && (
+          <span className={`tree-count is-${status}`}>
+            {problems!.errors || problems!.warnings}
+          </span>
+        )}
         {dirty && <span className="dirty-dot" aria-label="Unsaved changes" />}
       </div>
       {isDir && expanded && (
         <div role="group">
-          {editing && editing.kind !== 'rename' && editing.parent === entry.path && <InlineInput depth={depth + 1} kind={editing.kind} />}
+          {editing && editing.kind !== 'rename' && editing.parent === entry.path && (
+            <InlineInput depth={depth + 1} kind={editing.kind} />
+          )}
           {entry.children?.map((child) => (
             <TreeNode key={child.path} entry={child} depth={depth + 1} onMenu={onMenu} />
           ))}
@@ -135,7 +167,15 @@ export function FileIcon({ name }: { name: string }) {
   return <FileText size={14} className="file-icon" aria-hidden="true" />;
 }
 
-function InlineInput({ depth, kind, initial = '' }: { depth: number; kind: 'new-file' | 'new-folder' | 'rename'; initial?: string }) {
+function InlineInput({
+  depth,
+  kind,
+  initial = '',
+}: {
+  depth: number;
+  kind: 'new-file' | 'new-folder' | 'rename';
+  initial?: string;
+}) {
   const { wb } = useWorkbench();
   const ref = useRef<HTMLInputElement>(null);
   const done = useRef(false);
@@ -154,13 +194,21 @@ function InlineInput({ depth, kind, initial = '' }: { depth: number; kind: 'new-
   };
   return (
     <div className="tree-row is-editing" style={{ paddingLeft: 8 + depth * 14 }}>
-      {kind === 'new-folder' ? <ChevronRight size={14} className="tree-chevron" /> : <FileIcon name={kind === 'new-file' ? 'x.markup' : initial} />}
+      {kind === 'new-folder' ? (
+        <ChevronRight size={14} className="tree-chevron" />
+      ) : (
+        <FileIcon name={kind === 'new-file' ? 'x.markup' : initial} />
+      )}
       <input
         ref={ref}
         className="tree-input"
         defaultValue={initial}
-        placeholder={kind === 'new-folder' ? 'Folder name' : kind === 'new-file' ? 'name.markup' : ''}
-        aria-label={kind === 'rename' ? 'New name' : kind === 'new-folder' ? 'Folder name' : 'File name'}
+        placeholder={
+          kind === 'new-folder' ? 'Folder name' : kind === 'new-file' ? 'name.markup' : ''
+        }
+        aria-label={
+          kind === 'rename' ? 'New name' : kind === 'new-folder' ? 'Folder name' : 'File name'
+        }
         onKeyDown={(event) => {
           if (event.key === 'Enter') commit();
           if (event.key === 'Escape') {
@@ -174,9 +222,25 @@ function InlineInput({ depth, kind, initial = '' }: { depth: number; kind: 'new-
   );
 }
 
-export function IconButton({ label, onClick, children, active }: { label: string; onClick: () => void; children: React.ReactNode; active?: boolean }) {
+export function IconButton({
+  label,
+  onClick,
+  children,
+  active,
+}: {
+  label: string;
+  onClick: () => void;
+  children: React.ReactNode;
+  active?: boolean;
+}) {
   return (
-    <button type="button" className={`icon-button${active ? ' is-active' : ''}`} aria-label={label} title={label} onClick={onClick}>
+    <button
+      type="button"
+      className={`icon-button${active ? ' is-active' : ''}`}
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+    >
       {children}
     </button>
   );

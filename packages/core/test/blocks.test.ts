@@ -19,7 +19,9 @@ describe('paragraphs', () => {
 
 describe('ATX headings', () => {
   it('parses levels 1 to 6', () => {
-    expect(tree('# a\n## b\n### c\n#### d\n##### e\n###### f')).toBe('h1("a") h2("b") h3("c") h4("d") h5("e") h6("f")');
+    expect(tree('# a\n## b\n### c\n#### d\n##### e\n###### f')).toBe(
+      'h1("a") h2("b") h3("c") h4("d") h5("e") h6("f")',
+    );
   });
 
   it('requires a space after the hashes and at most six of them', () => {
@@ -89,7 +91,9 @@ describe('blockquotes', () => {
   });
 
   it('may contain any block', () => {
-    expect(tree('> # H\n> - x\n> ```\n> code\n> ```')).toBe('quote(h1("H"), ul(li(p("x"))), pre("code"))');
+    expect(tree('> # H\n> - x\n> ```\n> code\n> ```')).toBe(
+      'quote(h1("H"), ul(li(p("x"))), pre("code"))',
+    );
   });
 });
 
@@ -111,7 +115,9 @@ describe('lists', () => {
   });
 
   it('nests by indentation', () => {
-    expect(tree('- a\n  - b\n    - c\n- d')).toBe('ul(li(p("a"), ul(li(p("b"), ul(li(p("c")))))), li(p("d")))');
+    expect(tree('- a\n  - b\n    - c\n- d')).toBe(
+      'ul(li(p("a"), ul(li(p("b"), ul(li(p("c")))))), li(p("d")))',
+    );
   });
 
   it('indents continuation paragraphs to the content column', () => {
@@ -124,15 +130,21 @@ describe('lists', () => {
   });
 
   it('stays tight when the blank line is inside a nested list', () => {
-    expect(tree('- a\n  - b\n\n  - c\n- d')).toBe('ul(li(p("a"), ul*(li(p("b")), li(p("c")))), li(p("d")))');
+    expect(tree('- a\n  - b\n\n  - c\n- d')).toBe(
+      'ul(li(p("a"), ul*(li(p("b")), li(p("c")))), li(p("d")))',
+    );
   });
 
   it('stays tight when the blank line is inside a fenced code block', () => {
-    expect(tree('- a\n  ```\n  x\n\n  y\n  ```\n- b')).toBe('ul(li(p("a"), pre("x\\n\\ny")), li(p("b")))');
+    expect(tree('- a\n  ```\n  x\n\n  y\n  ```\n- b')).toBe(
+      'ul(li(p("a"), pre("x\\n\\ny")), li(p("b")))',
+    );
   });
 
   it('parses task items', () => {
-    expect(tree('- [ ] todo\n- [x] done\n- [X] also')).toBe('ul(li[ ](p("todo")), li[x](p("done")), li[x](p("also")))');
+    expect(tree('- [ ] todo\n- [x] done\n- [X] also')).toBe(
+      'ul(li[ ](p("todo")), li[x](p("done")), li[x](p("also")))',
+    );
   });
 
   it('only lets a list interrupt a paragraph with a non-empty item, and an ordered list only from 1', () => {
@@ -170,7 +182,9 @@ describe('fenced code', () => {
 
   it('separates language, meta and attributes', () => {
     expect(tree('```js title.js\nx\n```')).toBe('pre[js]{meta=title.js}("x")');
-    expect(tree('```js {title="app.js" .numbered}\nx\n```')).toBe('pre[js]{.numbered title=app.js}("x")');
+    expect(tree('```js {title="app.js" .numbered}\nx\n```')).toBe(
+      'pre[js]{.numbered title=app.js}("x")',
+    );
     expect(tree('```{title=x}\ny\n```')).toBe('pre{title=x}("y")');
   });
 
@@ -210,16 +224,22 @@ describe('tables', () => {
   });
 
   it('accepts tables without outer pipes', () => {
-    expect(tree('a | b\n--|--\n1 | 2')).toBe('table[-,-](th(td("a"), td("b")), tr(td("1"), td("2")))');
+    expect(tree('a | b\n--|--\n1 | 2')).toBe(
+      'table[-,-](th(td("a"), td("b")), tr(td("1"), td("2")))',
+    );
   });
 
   it('pads short rows and reports long ones', () => {
-    expect(tree('| a | b |\n|---|---|\n| 1 |')).toBe('table[-,-](th(td("a"), td("b")), tr(td("1"), td()))');
+    expect(tree('| a | b |\n|---|---|\n| 1 |')).toBe(
+      'table[-,-](th(td("a"), td("b")), tr(td("1"), td()))',
+    );
     expect(codeList('| a |\n|---|\n| 1 | 2 |')).toEqual(['MU1014']);
   });
 
   it('keeps escaped pipes in cells, including code spans', () => {
-    expect(tree('| a |\n|---|\n| x \\| y |\n| `a\\|b` |')).toBe('table[-](th(td("a")), tr(td("x | y")), tr(td(code("a|b"))))');
+    expect(tree('| a |\n|---|\n| x \\| y |\n| `a\\|b` |')).toBe(
+      'table[-](th(td("a")), tr(td("x | y")), tr(td(code("a|b"))))',
+    );
   });
 
   it('requires the header and delimiter rows to have the same number of cells', () => {
@@ -227,16 +247,22 @@ describe('tables', () => {
   });
 
   it('keeps earlier paragraph lines as a paragraph', () => {
-    expect(tree('intro\n| a |\n|---|\n| 1 |')).toBe('p("intro") table[-](th(td("a")), tr(td("1")))');
+    expect(tree('intro\n| a |\n|---|\n| 1 |')).toBe(
+      'p("intro") table[-](th(td("a")), tr(td("1")))',
+    );
   });
 
   it('ends at a blank line or another block', () => {
-    expect(tree('| a |\n|---|\n| 1 |\n\nafter')).toBe('table[-](th(td("a")), tr(td("1"))) p("after")');
+    expect(tree('| a |\n|---|\n| 1 |\n\nafter')).toBe(
+      'table[-](th(td("a")), tr(td("1"))) p("after")',
+    );
     expect(tree('| a |\n|---|\n# H')).toBe('table[-](th(td("a"))) h1("H")');
   });
 
   it('parses inline content in cells', () => {
-    expect(tree('| **b** | [l](u) |\n|---|---|')).toBe('table[-,-](th(td(strong("b")), td(link[u]("l"))))');
+    expect(tree('| **b** | [l](u) |\n|---|---|')).toBe(
+      'table[-,-](th(td(strong("b")), td(link[u]("l"))))',
+    );
   });
 });
 
@@ -261,7 +287,9 @@ describe('comments', () => {
 
 describe('link reference definitions', () => {
   it('are extracted from the start of paragraphs', () => {
-    expect(tree('[a]: /url "Title"\n[B]: <other url>\ntext')).toBe('def[a -> /url "Title"] def[B -> other url] p("text")');
+    expect(tree('[a]: /url "Title"\n[B]: <other url>\ntext')).toBe(
+      'def[a -> /url "Title"] def[B -> other url] p("text")',
+    );
   });
 
   it('may put the title on the next line', () => {
@@ -286,7 +314,9 @@ describe('link reference definitions', () => {
 
 describe('footnote definitions', () => {
   it('holds indented continuation content', () => {
-    expect(tree('[^1]: First\n  second\n\n  para\n\n[^1] ref')).toBe('fn[1](p("First\\nsecond"), p("para")) p(fnref[1], " ref")');
+    expect(tree('[^1]: First\n  second\n\n  para\n\n[^1] ref')).toBe(
+      'fn[1](p("First\\nsecond"), p("para")) p(fnref[1], " ref")',
+    );
   });
 
   it('cannot interrupt a paragraph', () => {
@@ -338,7 +368,9 @@ describe('line endings and special characters', () => {
 
 describe('definitions followed by footnotes', () => {
   it('lets a footnote definition follow link reference definitions directly', () => {
-    expect(tree('[r]: /u\n[^n]: Note.\n\ntext[^n]')).toBe('def[r -> /u] fn[n](p("Note.")) p("text", fnref[n])');
+    expect(tree('[r]: /u\n[^n]: Note.\n\ntext[^n]')).toBe(
+      'def[r -> /u] fn[n](p("Note.")) p("text", fnref[n])',
+    );
   });
 
   it('still does not let a footnote definition interrupt real text', () => {

@@ -46,7 +46,10 @@ export function SearchView() {
       let pattern: RegExp;
       try {
         const source = options.regex ? query : query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        pattern = new RegExp(options.wholeWord ? `\\b(?:${source})\\b` : source, options.caseSensitive ? 'g' : 'gi');
+        pattern = new RegExp(
+          options.wholeWord ? `\\b(?:${source})\\b` : source,
+          options.caseSensitive ? 'g' : 'gi',
+        );
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e));
         return;
@@ -114,13 +117,25 @@ export function SearchView() {
           onChange={(e) => wb.store.set({ searchQuery: e.target.value })}
         />
         <div className="search-options">
-          <IconButton label="Match case" active={options.caseSensitive} onClick={() => toggle('caseSensitive')}>
+          <IconButton
+            label="Match case"
+            active={options.caseSensitive}
+            onClick={() => toggle('caseSensitive')}
+          >
             <CaseSensitive size={15} />
           </IconButton>
-          <IconButton label="Whole word" active={options.wholeWord} onClick={() => toggle('wholeWord')}>
+          <IconButton
+            label="Whole word"
+            active={options.wholeWord}
+            onClick={() => toggle('wholeWord')}
+          >
             <WholeWord size={15} />
           </IconButton>
-          <IconButton label="Regular expression" active={options.regex} onClick={() => toggle('regex')}>
+          <IconButton
+            label="Regular expression"
+            active={options.regex}
+            onClick={() => toggle('regex')}
+          >
             <Regex size={15} />
           </IconButton>
         </div>
@@ -128,14 +143,23 @@ export function SearchView() {
       {error && <p className="panel-note is-error">{error}</p>}
       {query && !error && (
         <p className="panel-note">
-          {count === 0 ? 'No results.' : `${count}${count >= MAX_RESULTS ? '+' : ''} result${count === 1 ? '' : 's'} in ${results.length} file${results.length === 1 ? '' : 's'}`}
+          {count === 0
+            ? 'No results.'
+            : `${count}${count >= MAX_RESULTS ? '+' : ''} result${count === 1 ? '' : 's'} in ${results.length} file${results.length === 1 ? '' : 's'}`}
         </p>
       )}
       <div className="results">
         {results.map(({ path, hits }) => (
           <div key={path}>
-            <button type="button" className="result-file" onClick={() => setCollapsed((c) => ({ ...c, [path]: !c[path] }))}>
-              <ChevronRight size={14} className={`tree-chevron${collapsed[path] ? '' : ' is-open'}`} />
+            <button
+              type="button"
+              className="result-file"
+              onClick={() => setCollapsed((c) => ({ ...c, [path]: !c[path] }))}
+            >
+              <ChevronRight
+                size={14}
+                className={`tree-chevron${collapsed[path] ? '' : ' is-open'}`}
+              />
               <FileIcon name={path} />
               <span className="tree-label">{relative(root, path)}</span>
               <span className="result-count">{hits.length}</span>

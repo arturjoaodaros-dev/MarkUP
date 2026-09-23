@@ -32,7 +32,11 @@ export function isSafeUrl(url: string, kind: 'link' | 'image' = 'link'): boolean
   return !HAS_SCHEME.test(normalized);
 }
 
-export function validateDocument(document: Document, registry: DirectiveRegistry, diagnostics: DiagnosticBag): void {
+export function validateDocument(
+  document: Document,
+  registry: DirectiveRegistry,
+  diagnostics: DiagnosticBag,
+): void {
   new Validator(document, registry, diagnostics).run();
 }
 
@@ -66,9 +70,14 @@ class Validator {
         case 'definition': {
           const url = node.url;
           if (!isSafeUrl(url, node.type === 'image' ? 'image' : 'link')) {
-            this.diagnostics.report('MU2023', node.position, `The URL \`${truncate(url)}\` uses a scheme that is not allowed; renderers drop it.`);
+            this.diagnostics.report(
+              'MU2023',
+              node.position,
+              `The URL \`${truncate(url)}\` uses a scheme that is not allowed; renderers drop it.`,
+            );
           }
-          if (url.startsWith('#') && url.length > 1) anchorLinks.push({ url, range: node.position });
+          if (url.startsWith('#') && url.length > 1)
+            anchorLinks.push({ url, range: node.position });
           break;
         }
         default:
@@ -88,9 +97,14 @@ class Validator {
       if (!anchor.explicit) continue;
       const first = seen.get(anchor.id);
       if (first) {
-        this.diagnostics.report('MU2020', anchor.range, `The id \`${anchor.id}\` is already used; links to \`#${anchor.id}\` go to the first element.`, {
-          related: [{ range: first.range, message: 'First used here.' }],
-        });
+        this.diagnostics.report(
+          'MU2020',
+          anchor.range,
+          `The id \`${anchor.id}\` is already used; links to \`#${anchor.id}\` go to the first element.`,
+          {
+            related: [{ range: first.range, message: 'First used here.' }],
+          },
+        );
       } else {
         seen.set(anchor.id, anchor);
       }
@@ -100,7 +114,11 @@ class Validator {
   private checkFrontMatter(): void {
     const fm = this.document.frontMatter;
     if (fm?.value && fm.value.kind !== 'map') {
-      this.diagnostics.report('MU2010', fm.value.range, 'Front matter must be a mapping of `key: value` pairs.');
+      this.diagnostics.report(
+        'MU2010',
+        fm.value.range,
+        'Front matter must be a mapping of `key: value` pairs.',
+      );
     }
   }
 
@@ -113,7 +131,13 @@ class Validator {
     if (!spec) {
       const suggestion = this.registry.suggest(node.name, form);
       const fixes: DiagnosticFix[] = suggestion
-        ? [{ title: `Change to \`${suggestion}\``, edits: [{ range: node.nameRange, newText: suggestion }], preferred: true }]
+        ? [
+            {
+              title: `Change to \`${suggestion}\``,
+              edits: [{ range: node.nameRange, newText: suggestion }],
+              preferred: true,
+            },
+          ]
         : [];
       this.diagnostics.report(
         'MU2001',
@@ -126,7 +150,11 @@ class Validator {
 
     if (!spec.forms.includes(form)) {
       const allowed = spec.forms.map((f) => `\`${formSyntax(f)}${spec.name}\``).join(' or ');
-      this.diagnostics.report('MU2002', node.nameRange, `\`${spec.name}\` cannot be used as ${article(form)} ${form} directive; use ${allowed}.`);
+      this.diagnostics.report(
+        'MU2002',
+        node.nameRange,
+        `\`${spec.name}\` cannot be used as ${article(form)} ${form} directive; use ${allowed}.`,
+      );
     }
 
     this.checkLabel(node, spec);
@@ -140,10 +168,15 @@ class Validator {
         spec.validate(node, {
           document: this.document,
           parent,
-          report: (code, range, message, options) => this.diagnostics.report(code, range, message, options),
+          report: (code, range, message, options) =>
+            this.diagnostics.report(code, range, message, options),
         });
       } catch (error) {
-        this.diagnostics.report('MU9001', node.nameRange, `The \`${spec.name}\` validator failed: ${error instanceof Error ? error.message : String(error)}`);
+        this.diagnostics.report(
+          'MU9001',
+          node.nameRange,
+          `The \`${spec.name}\` validator failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
   }
@@ -153,16 +186,37 @@ class Validator {
     const hasLabel = node.rawLabel !== null && node.rawLabel.trim().length > 0;
     if (label.use === 'required' && !hasLabel) {
       const insertAt = node.nameRange.end;
-      this.diagnostics.report('MU2006', node.nameRange, `\`${spec.name}\` needs a label: \`${formSyntax(directiveForm(node))}${spec.name}[${label.description ?? 'text'}]\`.`, {
-        fixes:
-          node.labelRange === null
-            ? [{ title: 'Add a label', edits: [{ range: { start: insertAt, end: insertAt }, newText: '[]' }] }]
-            : [],
-      });
+      this.diagnostics.report(
+        'MU2006',
+        node.nameRange,
+        `\`${spec.name}\` needs a label: \`${formSyntax(directiveForm(node))}${spec.name}[${label.description ?? 'text'}]\`.`,
+        {
+          fixes:
+            node.labelRange === null
+              ? [
+                  {
+                    title: 'Add a label',
+                    edits: [{ range: { start: insertAt, end: insertAt }, newText: '[]' }],
+                  },
+                ]
+              : [],
+        },
+      );
     } else if (label.use === 'none' && node.labelRange) {
-      this.diagnostics.report('MU2007', node.labelRange, `\`${spec.name}\` does not use a label; it is ignored.`, {
-        fixes: [{ title: 'Remove the label', edits: [{ range: node.labelRange, newText: '' }], preferred: true }],
-      });
+      this.diagnostics.report(
+        'MU2007',
+        node.labelRange,
+        `\`${spec.name}\` does not use a label; it is ignored.`,
+        {
+          fixes: [
+            {
+              title: 'Remove the label',
+              edits: [{ range: node.labelRange, newText: '' }],
+              preferred: true,
+            },
+          ],
+        },
+      );
     }
   }
 
@@ -181,11 +235,19 @@ class Validator {
           'MU2003',
           item.nameRange ?? item.range,
           `\`${spec.name}\` has no attribute \`${item.name}\`${suggestion ? ` — did you mean \`${suggestion}\`?` : '.'}${
-            known.length && !suggestion ? ` Known attributes: ${known.map((k) => `\`${k}\``).join(', ')}.` : ''
+            known.length && !suggestion
+              ? ` Known attributes: ${known.map((k) => `\`${k}\``).join(', ')}.`
+              : ''
           }`,
           {
             fixes: suggestion
-              ? [{ title: `Change to \`${suggestion}\``, edits: [{ range: item.nameRange ?? item.range, newText: suggestion }], preferred: true }]
+              ? [
+                  {
+                    title: `Change to \`${suggestion}\``,
+                    edits: [{ range: item.nameRange ?? item.range, newText: suggestion }],
+                    preferred: true,
+                  },
+                ]
               : [],
           },
         );
@@ -196,15 +258,29 @@ class Validator {
         const fixes: DiagnosticFix[] = [];
         if (schema.kind === 'enum' && typeof item.value === 'string' && item.valueRange) {
           const suggestion = closest(item.value, schema.values);
-          if (suggestion) fixes.push({ title: `Change to \`${suggestion}\``, edits: [{ range: item.valueRange, newText: suggestion }], preferred: true });
+          if (suggestion)
+            fixes.push({
+              title: `Change to \`${suggestion}\``,
+              edits: [{ range: item.valueRange, newText: suggestion }],
+              preferred: true,
+            });
         }
-        this.diagnostics.report('MU2004', item.valueRange ?? item.range, `\`${item.name}\`: ${result.message}`, { fixes });
+        this.diagnostics.report(
+          'MU2004',
+          item.valueRange ?? item.range,
+          `\`${item.name}\`: ${result.message}`,
+          { fixes },
+        );
       }
     }
     for (const [key, schema] of Object.entries(declared)) {
       // In data components, required values may be given in the body instead.
       if (isRequired(schema) && !present.has(key) && spec.content !== 'data') {
-        this.diagnostics.report('MU2005', node.nameRange, `\`${spec.name}\` requires the attribute \`${key}\`${schema.description ? ` (${schema.description.replace(/\.$/, '')})` : ''}.`);
+        this.diagnostics.report(
+          'MU2005',
+          node.nameRange,
+          `\`${spec.name}\` requires the attribute \`${key}\`${schema.description ? ` (${schema.description.replace(/\.$/, '')})` : ''}.`,
+        );
       }
     }
   }
@@ -213,20 +289,25 @@ class Validator {
     const body = node.body;
     if (body.kind === 'data') {
       if (body.value === null) {
-        if (spec.bodyRequired) this.diagnostics.report('MU2011', node.openRange, `\`${spec.name}\` needs a data body.`);
+        if (spec.bodyRequired)
+          this.diagnostics.report('MU2011', node.openRange, `\`${spec.name}\` needs a data body.`);
         return;
       }
       if (spec.data) {
         for (const issue of validateData(body.value, spec.data)) {
-          const range = issue.onKey ? keyRangeFor(body.value, issue.node) ?? issue.node.range : issue.node.range;
+          const range = issue.onKey
+            ? (keyRangeFor(body.value, issue.node) ?? issue.node.range)
+            : issue.node.range;
           this.diagnostics.report('MU2010', range, issue.message);
         }
       }
       return;
     }
     if (spec.bodyRequired) {
-      const empty = body.kind === 'raw' ? body.value.trim().length === 0 : body.children.length === 0;
-      if (empty) this.diagnostics.report('MU2011', node.openRange, `\`${spec.name}\` needs content.`);
+      const empty =
+        body.kind === 'raw' ? body.value.trim().length === 0 : body.children.length === 0;
+      if (empty)
+        this.diagnostics.report('MU2011', node.openRange, `\`${spec.name}\` needs content.`);
     }
   }
 
@@ -235,16 +316,26 @@ class Validator {
       const parent = directParentDirective(node, ancestors);
       if (!parent || !spec.allowedParents.includes(parent.name)) {
         const names = spec.allowedParents.map((n) => `\`${n}\``).join(' or ');
-        this.diagnostics.report('MU2008', node.nameRange, `\`${spec.name}\` must be placed directly inside ${names}.`);
+        this.diagnostics.report(
+          'MU2008',
+          node.nameRange,
+          `\`${spec.name}\` must be placed directly inside ${names}.`,
+        );
       }
     }
     if (spec.allowedChildren && node.type === 'containerDirective' && node.body.kind === 'flow') {
       for (const child of node.body.children) {
         if (child.type === 'comment' || child.type === 'definition') continue;
-        const ok = (child.type === 'containerDirective' || child.type === 'leafDirective') && spec.allowedChildren.includes(child.name);
+        const ok =
+          (child.type === 'containerDirective' || child.type === 'leafDirective') &&
+          spec.allowedChildren.includes(child.name);
         if (!ok) {
           const names = spec.allowedChildren.map((n) => `\`${n}\``).join(', ');
-          this.diagnostics.report('MU2009', childRange(child), `\`${spec.name}\` may only contain ${names}; this ${describeBlock(child)} is not allowed here.`);
+          this.diagnostics.report(
+            'MU2009',
+            childRange(child),
+            `\`${spec.name}\` may only contain ${names}; this ${describeBlock(child)} is not allowed here.`,
+          );
         }
       }
     }
@@ -276,11 +367,18 @@ class Validator {
       const { start } = definition.range;
       const width = definition.label.length + 3;
       const end = { line: start.line, column: start.column + width, offset: start.offset + width };
-      this.diagnostics.report('MU2022', { start, end }, `Footnote \`[^${definition.label}]\` is never referenced.`);
+      this.diagnostics.report(
+        'MU2022',
+        { start, end },
+        `Footnote \`[^${definition.label}]\` is never referenced.`,
+      );
     }
   }
 
-  private checkAnchors(links: { url: string; range: Range }[], byId: ReadonlyMap<string, Anchor>): void {
+  private checkAnchors(
+    links: { url: string; range: Range }[],
+    byId: ReadonlyMap<string, Anchor>,
+  ): void {
     if (links.length === 0) return;
     const ids = [...byId.keys()];
     for (const link of links) {
@@ -332,7 +430,10 @@ function keyRangeFor(root: DataNode, target: DataNode): Range | null {
 function childRange(block: Block): Range {
   if (block.type === 'containerDirective') return block.openRange;
   const { start } = block.position;
-  const end = block.position.end.line === start.line ? block.position.end : { line: start.line, column: start.column + 1, offset: start.offset + 1 };
+  const end =
+    block.position.end.line === start.line
+      ? block.position.end
+      : { line: start.line, column: start.column + 1, offset: start.offset + 1 };
   return { start, end };
 }
 
@@ -363,4 +464,3 @@ function article(word: string): string {
 function truncate(value: string): string {
   return value.length > 60 ? `${value.slice(0, 57)}...` : value;
 }
-

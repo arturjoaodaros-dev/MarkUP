@@ -69,7 +69,10 @@ export class Store {
   };
 }
 
-export function initialState(settings: Settings = DEFAULT_SETTINGS, persisted: Partial<State> = {}): State {
+export function initialState(
+  settings: Settings = DEFAULT_SETTINGS,
+  persisted: Partial<State> = {},
+): State {
   return {
     workspace: null,
     tree: [],

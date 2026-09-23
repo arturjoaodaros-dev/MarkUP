@@ -27,7 +27,11 @@ export function toCodeMirrorSnippet(snippet: string): string {
           const choice = /^(\d+)\|([^|]*)\|$/.exec(body);
           const placeholder = /^(\d+)(?::(.*))?$/s.exec(body);
           if (choice) out += `\${${choice[1]}:${escapeBraces(choice[2]!.split(',')[0] ?? '')}}`;
-          else if (placeholder) out += placeholder[2] === undefined ? `\${${placeholder[1]}}` : `\${${placeholder[1]}:${escapeBraces(placeholder[2])}}`;
+          else if (placeholder)
+            out +=
+              placeholder[2] === undefined
+                ? `\${${placeholder[1]}}`
+                : `\${${placeholder[1]}:${escapeBraces(placeholder[2])}}`;
           else out += `\${${escapeBraces(body)}}`;
           i = end + 1;
           continue;

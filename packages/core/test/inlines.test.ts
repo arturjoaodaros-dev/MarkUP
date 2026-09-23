@@ -3,7 +3,9 @@ import { codeList, inline } from './helpers.ts';
 
 describe('emphasis and strong', () => {
   it('parses the basic forms', () => {
-    expect(inline('*a* _b_ **c** __d__')).toBe('em("a") " " em("b") " " strong("c") " " strong("d")');
+    expect(inline('*a* _b_ **c** __d__')).toBe(
+      'em("a") " " em("b") " " strong("c") " " strong("d")',
+    );
   });
 
   it('nests', () => {
@@ -130,7 +132,9 @@ describe('links', () => {
 
   it('resolves full, collapsed and shortcut references case-insensitively', () => {
     const defs = '\n\n[Foo]: /f "T"';
-    expect(inline(`[x][foo] [Foo][] [FOO]${defs}`)).toBe('link[/f "T"]("x") " " link[/f "T"]("Foo") " " link[/f "T"]("FOO")');
+    expect(inline(`[x][foo] [Foo][] [FOO]${defs}`)).toBe(
+      'link[/f "T"]("x") " " link[/f "T"]("Foo") " " link[/f "T"]("FOO")',
+    );
   });
 
   it('leaves undefined references as text', () => {
@@ -152,8 +156,12 @@ describe('links', () => {
   });
 
   it('links bare URLs, trimming trailing punctuation', () => {
-    expect(inline('Visit https://example.com/path.')).toBe('"Visit " link[https://example.com/path]("https://example.com/path") "."');
-    expect(inline('(see www.example.com)')).toBe('"(see " link[http://www.example.com]("www.example.com") ")"');
+    expect(inline('Visit https://example.com/path.')).toBe(
+      '"Visit " link[https://example.com/path]("https://example.com/path") "."',
+    );
+    expect(inline('(see www.example.com)')).toBe(
+      '"(see " link[http://www.example.com]("www.example.com") ")"',
+    );
     expect(inline('https://en.wikipedia.org/wiki/Foo_(bar)')).toBe(
       'link[https://en.wikipedia.org/wiki/Foo_(bar)]("https://en.wikipedia.org/wiki/Foo_(bar)")',
     );
@@ -181,7 +189,9 @@ describe('images', () => {
 
 describe('footnote references and comments', () => {
   it('parses footnote references', () => {
-    expect(inline('Claim[^1] and[^note-2].\n\n[^1]: a\n[^note-2]: b')).toBe('"Claim" fnref[1] " and" fnref[note-2] "."');
+    expect(inline('Claim[^1] and[^note-2].\n\n[^1]: a\n[^note-2]: b')).toBe(
+      '"Claim" fnref[1] " and" fnref[note-2] "."',
+    );
   });
 
   it('parses inline comments', () => {
@@ -192,8 +202,12 @@ describe('footnote references and comments', () => {
 describe('inline directives', () => {
   it('parses name, label and attributes', () => {
     expect(inline('Press :kbd[Ctrl+S] now')).toBe('"Press " :kbd["Ctrl+S"] " now"');
-    expect(inline(':badge[**new**]{variant=success}')).toBe(':badge[strong("new")]{variant=success}');
-    expect(inline(':abbr[AST]{title="Abstract syntax tree"}')).toBe(':abbr["AST"]{title=Abstract syntax tree}');
+    expect(inline(':badge[**new**]{variant=success}')).toBe(
+      ':badge[strong("new")]{variant=success}',
+    );
+    expect(inline(':abbr[AST]{title="Abstract syntax tree"}')).toBe(
+      ':abbr["AST"]{title=Abstract syntax tree}',
+    );
   });
 
   it('keeps raw labels raw', () => {

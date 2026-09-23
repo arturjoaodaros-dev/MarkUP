@@ -20,7 +20,10 @@ export function definePlugin<T extends MarkupPlugin>(plugin: T): T {
 }
 
 /** The built-in registry extended with every plugin's directives (later plugins win). */
-export function createRegistry(plugins: readonly MarkupPlugin[] = [], base: DirectiveRegistry = builtinRegistry): DirectiveRegistry {
+export function createRegistry(
+  plugins: readonly MarkupPlugin[] = [],
+  base: DirectiveRegistry = builtinRegistry,
+): DirectiveRegistry {
   if (plugins.length === 0) return base;
   return base.extend(plugins.flatMap((plugin) => plugin.directives ?? []));
 }

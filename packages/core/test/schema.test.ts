@@ -37,7 +37,9 @@ describe('validateData', () => {
   });
 
   it('reports each problem with a path', () => {
-    expect(check('name: ""\ncount: -1\ntags: [a, b, c]\nmode: c\nextra:\n  k: no\nunknown: 1', schema)).toEqual([
+    expect(
+      check('name: ""\ncount: -1\ntags: [a, b, c]\nmode: c\nextra:\n  k: no\nunknown: 1', schema),
+    ).toEqual([
       'name: Expected a non-empty string.',
       'count: Expected a number ≥ 0, found -1.',
       'tags: Expected at most 2 items, found 3.',
@@ -52,7 +54,9 @@ describe('validateData', () => {
   });
 
   it('suggests close keys', () => {
-    expect(check('name: x\ncuont: 1', schema)).toEqual(['Unknown key `cuont` — did you mean `count`?']);
+    expect(check('name: x\ncuont: 1', schema)).toEqual([
+      'Unknown key `cuont` — did you mean `count`?',
+    ]);
   });
 
   it('accepts plain numbers and booleans where strings are expected', () => {
@@ -64,7 +68,9 @@ describe('validateData', () => {
     const union = s.union([s.array(s.number()), s.record(s.number())]);
     expect(check('- 1\n- x', union)).toEqual(['[1]: Expected a number, found the string "x".']);
     expect(check('a: x', union)).toEqual(['a: Expected a number, found the string "x".']);
-    expect(check('plain', union)).toEqual(['Expected number[] | map of number, found the string "plain".']);
+    expect(check('plain', union)).toEqual([
+      'Expected number[] | map of number, found the string "plain".',
+    ]);
   });
 });
 
@@ -78,10 +84,16 @@ describe('coerceAttribute', () => {
   });
 
   it('explains failures', () => {
-    expect(coerceAttribute('x', s.number())).toMatchObject({ ok: false, message: 'Expected a number, found `x`.' });
+    expect(coerceAttribute('x', s.number())).toMatchObject({
+      ok: false,
+      message: 'Expected a number, found `x`.',
+    });
     expect(coerceAttribute('', s.number())).toMatchObject({ ok: false });
     expect(coerceAttribute(true, s.string())).toMatchObject({ ok: false });
-    expect(coerceAttribute('7', s.number({ max: 5 }))).toMatchObject({ ok: false, message: 'Expected a number ≤ 5, found 7.' });
+    expect(coerceAttribute('7', s.number({ max: 5 }))).toMatchObject({
+      ok: false,
+      message: 'Expected a number ≤ 5, found 7.',
+    });
     expect(coerceAttribute('bb', s.enum(['aa', 'bx']))).toMatchObject({ ok: false });
   });
 });

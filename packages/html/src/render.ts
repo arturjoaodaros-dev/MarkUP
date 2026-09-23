@@ -58,7 +58,11 @@ export interface HtmlContext {
   /** Plain data of a `data` body merged over the typed attributes. */
   data(node: Directive): Record<string, PlainData | unknown>;
   /** Common attributes for the root element: id, classes, data-line. */
-  rootAttributes(node: Node, classes: string[], extra?: Record<string, string | number | boolean | null | undefined>): string;
+  rootAttributes(
+    node: Node,
+    classes: string[],
+    extra?: Record<string, string | number | boolean | null | undefined>,
+  ): string;
   /** A document-unique id with the given prefix. */
   uniqueId(prefix: string): string;
   /** Headings with their ids, in document order. */
@@ -88,11 +92,16 @@ class HtmlRenderer implements HtmlContext {
     const plugins = options.plugins ?? [];
     this.registry = options.registry ?? createRegistry(plugins);
     this.components = { ...BUILTIN_COMPONENTS };
-    for (const plugin of plugins) Object.assign(this.components, (plugin.renderers?.html ?? {}) as Record<string, HtmlComponent>);
+    for (const plugin of plugins)
+      Object.assign(
+        this.components,
+        (plugin.renderers?.html ?? {}) as Record<string, HtmlComponent>,
+      );
     Object.assign(this.components, options.components ?? {});
     this.headingIds = collectAnchors(document).headingIds;
     visit(document, (node) => {
-      if (node.type === 'footnoteDefinition' && !this.footnoteDefs.has(node.identifier)) this.footnoteDefs.set(node.identifier, node);
+      if (node.type === 'footnoteDefinition' && !this.footnoteDefs.has(node.identifier))
+        this.footnoteDefs.set(node.identifier, node);
     });
   }
 
@@ -130,7 +139,8 @@ class HtmlRenderer implements HtmlContext {
         return `<blockquote${line}>\n${this.blocks(node.children)}</blockquote>\n`;
       case 'list': {
         const tag = node.ordered ? 'ol' : 'ul';
-        const start = node.ordered && node.start !== null && node.start !== 1 ? ` start="${node.start}"` : '';
+        const start =
+          node.ordered && node.start !== null && node.start !== 1 ? ` start="${node.start}"` : '';
         const tasks = node.children.some((item) => item.checked !== null);
         return `<${tag}${start}${tasks ? ' class="mu-tasks"' : ''}${line}>\n${node.children.map((item) => this.listItem(item, node.spread)).join('')}</${tag}>\n`;
       }
@@ -152,11 +162,16 @@ class HtmlRenderer implements HtmlContext {
     let content = '';
     for (const child of item.children) {
       // Tight lists render paragraph content without <p>.
-      content += !spread && child.type === 'paragraph' ? this.inlines(child.children) : this.block(child).replace(/\n$/, '');
+      content +=
+        !spread && child.type === 'paragraph'
+          ? this.inlines(child.children)
+          : this.block(child).replace(/\n$/, '');
       if (spread || child.type !== 'paragraph') content += '\n';
     }
     const checkbox =
-      item.checked === null ? '' : `<input type="checkbox" disabled${item.checked ? ' checked' : ''}> `;
+      item.checked === null
+        ? ''
+        : `<input type="checkbox" disabled${item.checked ? ' checked' : ''}> `;
     const cls = item.checked === null ? '' : ' class="mu-task"';
     return `<li${cls}${this.lineAttr(item)}>${checkbox}${content.replace(/\n$/, '')}</li>\n`;
   }
@@ -193,7 +208,9 @@ class HtmlRenderer implements HtmlContext {
   }
 
   private directive(node: Directive): string {
-    const component = Object.hasOwn(this.components, node.name) ? this.components[node.name] : undefined;
+    const component = Object.hasOwn(this.components, node.name)
+      ? this.components[node.name]
+      : undefined;
     if (component && this.registry.get(node.name)?.forms.includes(formOf(node)) !== false) {
       try {
         return component(node, this);
@@ -268,7 +285,8 @@ class HtmlRenderer implements HtmlContext {
           this.footnoteOrder.set(node.identifier, entry);
         }
         entry.refs++;
-        const refId = entry.refs === 1 ? `fnref-${entry.number}` : `fnref-${entry.number}-${entry.refs}`;
+        const refId =
+          entry.refs === 1 ? `fnref-${entry.number}` : `fnref-${entry.number}-${entry.refs}`;
         return `<sup class="mu-fnref"><a href="#fn-${entry.number}" id="${refId}">${entry.number}</a></sup>`;
       }
       case 'inlineDirective':
@@ -287,7 +305,9 @@ class HtmlRenderer implements HtmlContext {
         return ` <a href="#${id}" class="mu-backref" aria-label="Back to reference">↩</a>`;
       }).join('');
       let content = this.blocks(def.children).trim();
-      content = content.endsWith('</p>') ? `${content.slice(0, -4)}${backrefs}</p>` : `${content}${backrefs}`;
+      content = content.endsWith('</p>')
+        ? `${content.slice(0, -4)}${backrefs}</p>`
+        : `${content}${backrefs}`;
       out += `<li id="fn-${entry.number}">${content}</li>\n`;
     }
     return `${out}</ol>\n</section>\n`;
@@ -305,7 +325,9 @@ class HtmlRenderer implements HtmlContext {
   }
 
   body(node: Directive): string {
-    return node.type === 'containerDirective' && node.body.kind === 'flow' ? this.blocks(node.body.children) : '';
+    return node.type === 'containerDirective' && node.body.kind === 'flow'
+      ? this.blocks(node.body.children)
+      : '';
   }
 
   props(node: Directive): Record<string, unknown> {
@@ -335,10 +357,16 @@ class HtmlRenderer implements HtmlContext {
     return out;
   }
 
-  rootAttributes(node: Node, classes: string[], extra: Record<string, string | number | boolean | null | undefined> = {}): string {
+  rootAttributes(
+    node: Node,
+    classes: string[],
+    extra: Record<string, string | number | boolean | null | undefined> = {},
+  ): string {
     const a = 'attributes' in node ? (node.attributes as Attributes | null) : null;
     const allClasses = [...classes, ...(a?.classes ?? [])].join(' ');
-    return attributes({ id: a?.id ?? null, class: allClasses || null, ...extra }) + this.lineAttr(node);
+    return (
+      attributes({ id: a?.id ?? null, class: allClasses || null, ...extra }) + this.lineAttr(node)
+    );
   }
 
   uniqueId(prefix: string): string {
@@ -351,7 +379,12 @@ class HtmlRenderer implements HtmlContext {
     const out: { id: string; depth: number; text: string; html: string }[] = [];
     visit(this.document, (node) => {
       if (node.type === 'heading') {
-        out.push({ id: this.headingIds.get(node) ?? '', depth: node.depth, text: inlineText(node.children), html: this.inlines(stripLinks(node.children)) });
+        out.push({
+          id: this.headingIds.get(node) ?? '',
+          depth: node.depth,
+          text: inlineText(node.children),
+          html: this.inlines(stripLinks(node.children)),
+        });
         return 'skip';
       }
       return undefined;
@@ -376,7 +409,11 @@ class HtmlRenderer implements HtmlContext {
 }
 
 function formOf(node: Directive): 'container' | 'leaf' | 'inline' {
-  return node.type === 'containerDirective' ? 'container' : node.type === 'leafDirective' ? 'leaf' : 'inline';
+  return node.type === 'containerDirective'
+    ? 'container'
+    : node.type === 'leafDirective'
+      ? 'leaf'
+      : 'inline';
 }
 
 function stringValue(value: string | true | undefined): string | null {
@@ -386,7 +423,8 @@ function stringValue(value: string | true | undefined): string | null {
 /** Extra heading attributes become `data-*` attributes. */
 function extraData(attrs: Attributes | null): Record<string, string | true> {
   const out: Record<string, string | true> = {};
-  for (const [key, value] of Object.entries(attrs?.values ?? {})) out[`data-${key.replace(/^data-/, '')}`] = value;
+  for (const [key, value] of Object.entries(attrs?.values ?? {}))
+    out[`data-${key.replace(/^data-/, '')}`] = value;
   return out;
 }
 

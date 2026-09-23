@@ -30,21 +30,35 @@ const HEX = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
 const TYPES: readonly ChartType[] = ['bar', 'line', 'area', 'pie', 'donut'];
 
 /** Normalises chart props and body into a model, or null when there is nothing to draw. */
-export function chartModel(props: Record<string, unknown>, fallbackTitle: string): ChartModel | null {
+export function chartModel(
+  props: Record<string, unknown>,
+  fallbackTitle: string,
+): ChartModel | null {
   const type = TYPES.includes(props.type as ChartType) ? (props.type as ChartType) : 'bar';
   let labels: string[] = [];
   let series: Series[] = [];
   const data = props.data;
   if (data && typeof data === 'object' && !Array.isArray(data)) {
-    const entries = Object.entries(data as Record<string, unknown>).filter(([, v]) => typeof v === 'number' && Number.isFinite(v));
+    const entries = Object.entries(data as Record<string, unknown>).filter(
+      ([, v]) => typeof v === 'number' && Number.isFinite(v),
+    );
     labels = entries.map(([k]) => k);
-    series = [{ name: typeof props.title === 'string' ? props.title : fallbackTitle || 'Value', values: entries.map(([, v]) => v as number), color: null }];
+    series = [
+      {
+        name: typeof props.title === 'string' ? props.title : fallbackTitle || 'Value',
+        values: entries.map(([, v]) => v as number),
+        color: null,
+      },
+    ];
   } else if (Array.isArray(props.series) && Array.isArray(props.labels)) {
     labels = props.labels.map((l) => String(l));
     series = props.series
       .filter((s): s is Record<string, unknown> => !!s && typeof s === 'object')
       .map((s, i) => ({
-        name: typeof s.name === 'string' || typeof s.name === 'number' ? String(s.name) : `Series ${i + 1}`,
+        name:
+          typeof s.name === 'string' || typeof s.name === 'number'
+            ? String(s.name)
+            : `Series ${i + 1}`,
         values: labels.map((_, j) => {
           const v = Array.isArray(s.values) ? s.values[j] : undefined;
           return typeof v === 'number' && Number.isFinite(v) ? v : 0;
@@ -54,14 +68,20 @@ export function chartModel(props: Record<string, unknown>, fallbackTitle: string
   }
   if (labels.length === 0 || series.length === 0) return null;
   if (type === 'pie' || type === 'donut') series = series.slice(0, 1);
-  const height = typeof props.height === 'number' && props.height >= 120 && props.height <= 1200 ? props.height : 280;
+  const height =
+    typeof props.height === 'number' && props.height >= 120 && props.height <= 1200
+      ? props.height
+      : 280;
   return {
     type,
     title: typeof props.title === 'string' ? props.title : fallbackTitle,
     unit: typeof props.unit === 'string' ? props.unit : '',
     height,
     stacked: props.stacked === true,
-    legend: typeof props.legend === 'boolean' ? props.legend : series.length > 1 || type === 'pie' || type === 'donut',
+    legend:
+      typeof props.legend === 'boolean'
+        ? props.legend
+        : series.length > 1 || type === 'pie' || type === 'donut',
     labels,
     series,
   };
@@ -72,15 +92,20 @@ export function renderChart(node: Directive, ctx: HtmlContext): string {
   const attrs = ctx.rootAttributes(node, ['mu-chart'], { 'data-type': model?.type ?? null });
   if (!model) return `<figure${attrs}><p class="mu-error">This chart has no data.</p></figure>\n`;
   const titleId = ctx.uniqueId('mu-chart');
-  const svg = model.type === 'pie' || model.type === 'donut' ? pieSvg(model, titleId) : xySvg(model, titleId);
-  const caption = model.title ? `<figcaption class="mu-chart-title">${escapeHtml(model.title)}</figcaption>` : '';
+  const svg =
+    model.type === 'pie' || model.type === 'donut' ? pieSvg(model, titleId) : xySvg(model, titleId);
+  const caption = model.title
+    ? `<figcaption class="mu-chart-title">${escapeHtml(model.title)}</figcaption>`
+    : '';
   return `<figure${attrs}>${caption}${svg}${model.legend ? legend(model) : ''}${dataTable(model)}</figure>\n`;
 }
 
 // ---------------------------------------------------------------------------
 
 function format(value: number, unit: string): string {
-  const text = Number.isInteger(value) ? value.toLocaleString('en-US') : value.toLocaleString('en-US', { maximumFractionDigits: 2 });
+  const text = Number.isInteger(value)
+    ? value.toLocaleString('en-US')
+    : value.toLocaleString('en-US', { maximumFractionDigits: 2 });
   return `${text}${unit}`;
 }
 
@@ -90,7 +115,8 @@ export function niceTicks(min: number, max: number, count = 5): number[] {
   const span = max - min;
   const rough = span / count;
   const magnitude = 10 ** Math.floor(Math.log10(rough));
-  const step = [1, 2, 2.5, 5, 10].map((m) => m * magnitude).find((s) => span / s <= count) ?? 10 * magnitude;
+  const step =
+    [1, 2, 2.5, 5, 10].map((m) => m * magnitude).find((s) => span / s <= count) ?? 10 * magnitude;
   const start = Math.floor(min / step) * step;
   const end = Math.ceil(max / step) * step;
   const ticks: number[] = [];
@@ -156,7 +182,8 @@ function xySvg(model: ChartModel, titleId: string): string {
     out += `<text class="mu-chart-label" x="${x(j).toFixed(1)}" y="${height - 10}" text-anchor="middle">${escapeHtml(text)}</text>`;
   });
 
-  const tip = (j: number, s: Series) => `<title>${escapeHtml(`${labels[j]} — ${s.name}: ${format(s.values[j]!, unit)}`)}</title>`;
+  const tip = (j: number, s: Series) =>
+    `<title>${escapeHtml(`${labels[j]} — ${s.name}: ${format(s.values[j]!, unit)}`)}</title>`;
 
   if (model.type === 'bar') {
     const inner = band * 0.72;
@@ -193,12 +220,19 @@ function xySvg(model: ChartModel, titleId: string): string {
       });
       const lower = stacked ? labels.map((_, j) => [x(j), y(cumulative[j]!)] as const) : null;
       if (stacked) s.values.forEach((v, j) => (cumulative[j] = cumulative[j]! + v));
-      const line = points.map(([px, py], k) => `${k === 0 ? 'M' : 'L'}${px.toFixed(1)} ${py.toFixed(1)}`).join(' ');
+      const line = points
+        .map(([px, py], k) => `${k === 0 ? 'M' : 'L'}${px.toFixed(1)} ${py.toFixed(1)}`)
+        .join(' ');
       if (model.type === 'area') {
         const back = lower
-          ? [...lower].reverse().map(([px, py]) => `L${px.toFixed(1)} ${py.toFixed(1)}`).join(' ')
+          ? [...lower]
+              .reverse()
+              .map(([px, py]) => `L${px.toFixed(1)} ${py.toFixed(1)}`)
+              .join(' ')
           : `L${points[points.length - 1]![0].toFixed(1)} ${base.toFixed(1)} L${points[0]![0].toFixed(1)} ${base.toFixed(1)}`;
-        const fill = s.color ? ` class="mu-chart-area" style="fill:${s.color}"` : ` class="mu-chart-area mu-f${(i % 8) + 1}"`;
+        const fill = s.color
+          ? ` class="mu-chart-area" style="fill:${s.color}"`
+          : ` class="mu-chart-area mu-f${(i % 8) + 1}"`;
         out += `<path${fill} d="${line} ${back} Z"/>`;
       }
       out += `<path${strokeClass(i, s.color)} fill="none" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" d="${line}"/>`;
@@ -219,7 +253,8 @@ function pieSvg(model: ChartModel, titleId: string): string {
   const values = model.series[0]!.values.map((v) => Math.max(0, v));
   const total = values.reduce((a, b) => a + b, 0);
   let out = `<svg class="mu-chart-svg mu-chart-pie" viewBox="0 0 ${size} ${size}" width="${size}" role="img" aria-labelledby="${titleId}"><title id="${titleId}">${escapeHtml(model.title || `${model.type} chart`)}</title>`;
-  if (total <= 0) return `${out}<circle class="mu-chart-grid" cx="${cx}" cy="${cy}" r="${r}" fill="none"/></svg>`;
+  if (total <= 0)
+    return `${out}<circle class="mu-chart-grid" cx="${cx}" cy="${cy}" r="${r}" fill="none"/></svg>`;
   let angle = -Math.PI / 2;
   values.forEach((v, i) => {
     if (v === 0) return;
@@ -232,7 +267,8 @@ function pieSvg(model: ChartModel, titleId: string): string {
     }
     const end = angle + share * Math.PI * 2;
     const large = share > 0.5 ? 1 : 0;
-    const p = (a: number, rad: number) => `${(cx + rad * Math.cos(a)).toFixed(2)} ${(cy + rad * Math.sin(a)).toFixed(2)}`;
+    const p = (a: number, rad: number) =>
+      `${(cx + rad * Math.cos(a)).toFixed(2)} ${(cy + rad * Math.sin(a)).toFixed(2)}`;
     const d = inner
       ? `M${p(angle, r)} A${r} ${r} 0 ${large} 1 ${p(end, r)} L${p(end, inner)} A${inner} ${inner} 0 ${large} 0 ${p(angle, inner)} Z`
       : `M${cx} ${cy} L${p(angle, r)} A${r} ${r} 0 ${large} 1 ${p(end, r)} Z`;
@@ -248,14 +284,20 @@ function legend(model: ChartModel): string {
     ? model.labels.map((label, i) => ({ label, i, color: null as string | null }))
     : model.series.map((s, i) => ({ label: s.name, i, color: s.color }));
   return `<ul class="mu-chart-legend">${items
-    .map(({ label, i, color }) => `<li><svg width="10" height="10" aria-hidden="true"><rect width="10" height="10" rx="2"${fillClass(i, color)}/></svg>${escapeHtml(label)}</li>`)
+    .map(
+      ({ label, i, color }) =>
+        `<li><svg width="10" height="10" aria-hidden="true"><rect width="10" height="10" rx="2"${fillClass(i, color)}/></svg>${escapeHtml(label)}</li>`,
+    )
     .join('')}</ul>`;
 }
 
 function dataTable(model: ChartModel): string {
   const head = `<tr><th scope="col"></th>${model.series.map((s) => `<th scope="col">${escapeHtml(s.name)}</th>`).join('')}</tr>`;
   const rows = model.labels
-    .map((label, j) => `<tr><th scope="row">${escapeHtml(label)}</th>${model.series.map((s) => `<td>${escapeHtml(format(s.values[j]!, model.unit))}</td>`).join('')}</tr>`)
+    .map(
+      (label, j) =>
+        `<tr><th scope="row">${escapeHtml(label)}</th>${model.series.map((s) => `<td>${escapeHtml(format(s.values[j]!, model.unit))}</td>`).join('')}</tr>`,
+    )
     .join('');
   return `<table class="mu-sr-only">${head}${rows}</table>`;
 }

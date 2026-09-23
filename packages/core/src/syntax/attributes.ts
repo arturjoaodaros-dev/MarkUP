@@ -35,14 +35,23 @@ export function parseAttributes(
   stopAt = text.length,
 ): AttributeParseResult {
   const items: Attribute[] = [];
-  const values: Record<string, string | true> = Object.create(null) as Record<string, string | true>;
+  const values: Record<string, string | true> = Object.create(null) as Record<
+    string,
+    string | true
+  >;
   const classes: string[] = [];
   let id: string | null = null;
   const seenKeys = new Map<string, Attribute>();
   let idItem: Attribute | null = null;
 
   const range = (from: number, to: number) => ctx.index.range(ctx.toOffset(from), ctx.toOffset(to));
-  const report = (code: 'MU1008' | 'MU1009' | 'MU1010', from: number, to: number, message: string, related?: Attribute) => {
+  const report = (
+    code: 'MU1008' | 'MU1009' | 'MU1010',
+    from: number,
+    to: number,
+    message: string,
+    related?: Attribute,
+  ) => {
     ctx.diagnostics?.report(code, range(from, Math.max(from, to)), message, {
       related: related ? [{ range: related.range, message: 'Previously set here.' }] : undefined,
     });
@@ -68,7 +77,12 @@ export function parseAttributes(
       while (pos < stopAt && isIdentChar(text[pos]!)) pos++;
       const name = text.slice(nameStart, pos);
       if (name.length === 0) {
-        report('MU1009', itemStart, pos + 1, c === '#' ? 'Expected an id after `#`.' : 'Expected a class name after `.`.');
+        report(
+          'MU1009',
+          itemStart,
+          pos + 1,
+          c === '#' ? 'Expected an id after `#`.' : 'Expected a class name after `.`.',
+        );
         pos = skipJunk(text, pos, stopAt);
         continue;
       }
@@ -82,7 +96,14 @@ export function parseAttributes(
       };
       items.push(item);
       if (item.kind === 'id') {
-        if (idItem) report('MU1010', itemStart, pos, `The id is set more than once; \`#${name}\` wins.`, idItem);
+        if (idItem)
+          report(
+            'MU1010',
+            itemStart,
+            pos,
+            `The id is set more than once; \`#${name}\` wins.`,
+            idItem,
+          );
         id = name;
         idItem = item;
       } else {
@@ -92,7 +113,12 @@ export function parseAttributes(
     }
     if (!KEY_START.test(c)) {
       const end = skipJunk(text, pos, stopAt);
-      report('MU1009', pos, end, `Unexpected \`${text.slice(pos, end)}\` in attributes. Expected \`#id\`, \`.class\` or \`key=value\`.`);
+      report(
+        'MU1009',
+        pos,
+        end,
+        `Unexpected \`${text.slice(pos, end)}\` in attributes. Expected \`#id\`, \`.class\` or \`key=value\`.`,
+      );
       pos = end;
       continue;
     }
@@ -141,7 +167,12 @@ export function parseAttributes(
       kind = 'pair';
     } else if (pos < stopAt && !isSeparator(text[pos]!)) {
       const end = skipJunk(text, pos, stopAt);
-      report('MU1009', keyStart, end, `Unexpected \`${text.slice(pos, end)}\` after \`${key}\`. Attribute keys may contain letters, digits, \`_\`, \`-\`, \`:\` and \`.\`.`);
+      report(
+        'MU1009',
+        keyStart,
+        end,
+        `Unexpected \`${text.slice(pos, end)}\` after \`${key}\`. Attribute keys may contain letters, digits, \`_\`, \`-\`, \`:\` and \`.\`.`,
+      );
       pos = end;
     }
     const item: Attribute = {
@@ -154,12 +185,24 @@ export function parseAttributes(
     };
     items.push(item);
     const previous = seenKeys.get(key);
-    if (previous) report('MU1010', itemStart, pos, `Attribute \`${key}\` is set more than once; the last value wins.`, previous);
+    if (previous)
+      report(
+        'MU1010',
+        itemStart,
+        pos,
+        `Attribute \`${key}\` is set more than once; the last value wins.`,
+        previous,
+      );
     seenKeys.set(key, item);
     values[key] = value;
   }
   if (!closed) {
-    report('MU1008', start, Math.max(start + 1, Math.min(pos, stopAt)), 'Unterminated attribute block: expected `}`.');
+    report(
+      'MU1008',
+      start,
+      Math.max(start + 1, Math.min(pos, stopAt)),
+      'Unterminated attribute block: expected `}`.',
+    );
   }
   return {
     attributes: { id, classes, values, items, range: range(start, pos) },
@@ -173,7 +216,15 @@ function isSeparator(c: string): boolean {
 }
 
 function isIdentChar(c: string): boolean {
-  return !(isSeparator(c) || c === '{' || c === '"' || c === "'" || c === '=' || c === '#' || c === '.');
+  return !(
+    isSeparator(c) ||
+    c === '{' ||
+    c === '"' ||
+    c === "'" ||
+    c === '=' ||
+    c === '#' ||
+    c === '.'
+  );
 }
 
 function isUnquotedChar(c: string): boolean {

@@ -37,7 +37,8 @@ export interface DataScalar {
   range: Range;
 }
 
-export type PlainData = string | number | boolean | null | PlainData[] | { [key: string]: PlainData };
+export type PlainData =
+  string | number | boolean | null | PlainData[] | { [key: string]: PlainData };
 
 /** Converts a positioned data tree to plain JavaScript values. */
 export function toPlainData(node: DataNode | null): PlainData {

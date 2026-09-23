@@ -1,4 +1,10 @@
-import { describeType, isRequired, labelSpec, type DirectiveRegistry, type DirectiveSpec } from '@markup-lang/core';
+import {
+  describeType,
+  isRequired,
+  labelSpec,
+  type DirectiveRegistry,
+  type DirectiveSpec,
+} from '@markup-lang/core';
 
 const FORM = { container: ':::', leaf: '::', inline: ':' } as const;
 const CATEGORY_TITLES: Record<string, string> = {
@@ -17,7 +23,10 @@ const CATEGORY_TITLES: Record<string, string> = {
  * With `live: true` every example is followed by its rendered result (MarkUP
  * output); otherwise the result is plain Markdown that GitHub can display.
  */
-export function componentReference(registry: DirectiveRegistry, options: { live?: boolean; title?: string } = {}): string {
+export function componentReference(
+  registry: DirectiveRegistry,
+  options: { live?: boolean; title?: string } = {},
+): string {
   const groups = new Map<string, DirectiveSpec[]>();
   for (const spec of registry.list()) {
     const key = spec.category ?? 'other';
@@ -35,7 +44,8 @@ export function componentReference(registry: DirectiveRegistry, options: { live?
 function section(spec: DirectiveSpec, live: boolean): string {
   const forms = spec.forms.map((f) => `\`${FORM[f]}${spec.name}\``).join(', ');
   let out = `### ${spec.name}\n\n${spec.description}\n\n**Syntax:** ${forms}`;
-  if (spec.content && spec.content !== 'flow') out += ` · body: ${spec.content === 'data' ? 'MarkUP Data' : 'raw text'}`;
+  if (spec.content && spec.content !== 'flow')
+    out += ` · body: ${spec.content === 'data' ? 'MarkUP Data' : 'raw text'}`;
   out += '\n\n';
   const label = labelSpec(spec);
   if (label.use !== 'none') out += `**Label** (${label.use}): ${label.description ?? 'text'}\n\n`;
@@ -43,13 +53,20 @@ function section(spec: DirectiveSpec, live: boolean): string {
   if (attrs.length) {
     out += '| Attribute | Type | Default | Description |\n|---|---|---|---|\n';
     for (const [key, schema] of attrs) {
-      const def = schema.default !== undefined ? `\`${String(schema.default)}\`` : isRequired(schema) ? 'required' : '—';
+      const def =
+        schema.default !== undefined
+          ? `\`${String(schema.default)}\``
+          : isRequired(schema)
+            ? 'required'
+            : '—';
       out += `| \`${key}\` | ${describeType(schema).replace(/\|/g, '\\|')} | ${def} | ${schema.description ?? ''} |\n`;
     }
     out += '\n';
   }
-  if (spec.allowedParents) out += `Must be placed directly inside ${spec.allowedParents.map((p) => `\`${p}\``).join(' or ')}.\n\n`;
-  if (spec.allowedChildren) out += `May only contain ${spec.allowedChildren.map((p) => `\`${p}\``).join(', ')}.\n\n`;
+  if (spec.allowedParents)
+    out += `Must be placed directly inside ${spec.allowedParents.map((p) => `\`${p}\``).join(' or ')}.\n\n`;
+  if (spec.allowedChildren)
+    out += `May only contain ${spec.allowedChildren.map((p) => `\`${p}\``).join(', ')}.\n\n`;
   for (const example of spec.examples ?? []) {
     if (example.title) out += `**${example.title}**\n\n`;
     const fence = example.source.includes('```') ? '~~~~' : '```';

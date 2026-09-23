@@ -10,7 +10,8 @@ import {
 import type { Analysis } from './analysis.ts';
 import { attributeDocs, directiveDocs, schemaDocs } from './docs.ts';
 
-export type CompletionKind = 'component' | 'attribute' | 'value' | 'key' | 'anchor' | 'language' | 'footnote' | 'snippet';
+export type CompletionKind =
+  'component' | 'attribute' | 'value' | 'key' | 'anchor' | 'language' | 'footnote' | 'snippet';
 
 export interface CompletionItem {
   label: string;
@@ -31,8 +32,37 @@ export interface CompletionResult {
 }
 
 const LANGUAGES = [
-  'markup', 'sh', 'bash', 'powershell', 'js', 'ts', 'jsx', 'tsx', 'json', 'html', 'css', 'scss', 'python', 'rust', 'go',
-  'java', 'kotlin', 'swift', 'c', 'cpp', 'csharp', 'php', 'ruby', 'sql', 'yaml', 'toml', 'xml', 'diff', 'dockerfile', 'md', 'text',
+  'markup',
+  'sh',
+  'bash',
+  'powershell',
+  'js',
+  'ts',
+  'jsx',
+  'tsx',
+  'json',
+  'html',
+  'css',
+  'scss',
+  'python',
+  'rust',
+  'go',
+  'java',
+  'kotlin',
+  'swift',
+  'c',
+  'cpp',
+  'csharp',
+  'php',
+  'ruby',
+  'sql',
+  'yaml',
+  'toml',
+  'xml',
+  'diff',
+  'dockerfile',
+  'md',
+  'text',
 ];
 
 export function getCompletions(analysis: Analysis, offset: number): CompletionResult | null {
@@ -53,7 +83,11 @@ export function getCompletions(analysis: Analysis, offset: number): CompletionRe
 // Components
 
 /** `:::na|` or `::na|` at the start of a line (after container prefixes). */
-function blockDirectiveCompletions(analysis: Analysis, offset: number, before: string): CompletionResult | null {
+function blockDirectiveCompletions(
+  analysis: Analysis,
+  offset: number,
+  before: string,
+): CompletionResult | null {
   const m = /^((?:[ \t]*(?:>|[-*+]|\d{1,9}[.)])?[ \t]*)*?)(:{2,})([A-Za-z][\w-]*)?$/.exec(before);
   if (!m) return null;
   const colons = m[2]!;
@@ -69,7 +103,11 @@ function blockDirectiveCompletions(analysis: Analysis, offset: number, before: s
 }
 
 /** `:na|` inside text. */
-function inlineDirectiveCompletions(analysis: Analysis, offset: number, before: string): CompletionResult | null {
+function inlineDirectiveCompletions(
+  analysis: Analysis,
+  offset: number,
+  before: string,
+): CompletionResult | null {
   const m = /(?:^|[^\w:]):([A-Za-z][\w-]*)?$/.exec(before);
   if (!m) return null;
   const typed = m[1] ?? '';
@@ -81,7 +119,12 @@ function inlineDirectiveCompletions(analysis: Analysis, offset: number, before: 
   return items.length ? { from, to: offset, items } : null;
 }
 
-function componentItem(spec: DirectiveSpec, form: DirectiveForm, colons: string, indent: string): CompletionItem {
+function componentItem(
+  spec: DirectiveSpec,
+  form: DirectiveForm,
+  colons: string,
+  indent: string,
+): CompletionItem {
   return {
     label: spec.name,
     kind: 'component',
@@ -94,7 +137,12 @@ function componentItem(spec: DirectiveSpec, form: DirectiveForm, colons: string,
 }
 
 /** A snippet for the given form, honouring the typed number of colons and indentation. */
-export function snippetFor(spec: DirectiveSpec, form: DirectiveForm, colons: string, indent: string): string {
+export function snippetFor(
+  spec: DirectiveSpec,
+  form: DirectiveForm,
+  colons: string,
+  indent: string,
+): string {
   const preferred = spec.forms[0];
   if (spec.snippet && preferred === form) {
     const fence = /^:+/.exec(spec.snippet)?.[0] ?? '';
@@ -108,7 +156,9 @@ export function snippetFor(spec: DirectiveSpec, form: DirectiveForm, colons: str
   const label = labelSpec(spec);
   const labelPart = label.use === 'required' ? '[${1:label}]' : '';
   const required = Object.entries(spec.attributes ?? {}).filter(([, schema]) => isRequired(schema));
-  const attrs = required.length ? `{${required.map(([key], i) => `${key}=\${${i + 2}}`).join(' ')}}` : '';
+  const attrs = required.length
+    ? `{${required.map(([key], i) => `${key}=\${${i + 2}}`).join(' ')}}`
+    : '';
   const head = `${colons}${spec.name}${labelPart}${attrs}`;
   if (form !== 'container') return head;
   return `${head}\n${indent}$0\n${indent}${colons}`;
@@ -117,9 +167,15 @@ export function snippetFor(spec: DirectiveSpec, form: DirectiveForm, colons: str
 // ---------------------------------------------------------------------------
 // Attributes
 
-function attributeCompletions(analysis: Analysis, offset: number, before: string): CompletionResult | null {
+function attributeCompletions(
+  analysis: Analysis,
+  offset: number,
+  before: string,
+): CompletionResult | null {
   // The name of the directive whose `{` is open before the cursor.
-  const m = /(?:^|[^\w:])(:{1,})([A-Za-z][\w-]*)(\[(?:[^\]\\]|\\.)*\])?\{([^{}]*)$/.exec(before) ?? /^[ \t>]*(:{2,})([A-Za-z][\w-]*)(\[(?:[^\]\\]|\\.)*\])?\{([^{}]*)$/.exec(before);
+  const m =
+    /(?:^|[^\w:])(:{1,})([A-Za-z][\w-]*)(\[(?:[^\]\\]|\\.)*\])?\{([^{}]*)$/.exec(before) ??
+    /^[ \t>]*(:{2,})([A-Za-z][\w-]*)(\[(?:[^\]\\]|\\.)*\])?\{([^{}]*)$/.exec(before);
   if (!m) return null;
   const spec = analysis.registry.get(m[2]!);
   if (!spec) return null;
@@ -135,13 +191,23 @@ function attributeCompletions(analysis: Analysis, offset: number, before: string
     return {
       from: offset - value[3]!.length,
       to: offset,
-      items: values.map((v) => ({ label: v.label, kind: 'value', detail: describeType(schema), documentation: v.doc, insertText: v.label })),
+      items: values.map((v) => ({
+        label: v.label,
+        kind: 'value',
+        detail: describeType(schema),
+        documentation: v.doc,
+        insertText: v.label,
+      })),
     };
   }
   const token = /(?:^|[\s,])([A-Za-z_][\w:.-]*)?$/.exec(inside);
   if (!token) return null;
   const typed = token[1] ?? '';
-  const used = new Set([...inside.matchAll(/([A-Za-z_][\w:.-]*)(?==|\s|,|$)/g)].map((x) => x[1]!).filter((k) => k !== typed));
+  const used = new Set(
+    [...inside.matchAll(/([A-Za-z_][\w:.-]*)(?==|\s|,|$)/g)]
+      .map((x) => x[1]!)
+      .filter((k) => k !== typed),
+  );
   const items: CompletionItem[] = Object.entries(declared)
     .filter(([key]) => !used.has(key))
     .map(([key, schema]) => ({
@@ -149,7 +215,12 @@ function attributeCompletions(analysis: Analysis, offset: number, before: string
       kind: 'attribute' as const,
       detail: describeType(schema),
       documentation: attributeDocs(key, schema),
-      insertText: schema.kind === 'boolean' ? key : schema.kind === 'enum' ? `${key}=\${1|${schema.values.join(',')}|}` : `${key}=\${1}`,
+      insertText:
+        schema.kind === 'boolean'
+          ? key
+          : schema.kind === 'enum'
+            ? `${key}=\${1|${schema.values.join(',')}|}`
+            : `${key}=\${1}`,
       snippet: schema.kind !== 'boolean',
     }));
   return items.length ? { from: offset - typed.length, to: offset, items } : null;
@@ -171,13 +242,20 @@ function valuesOf(schema: Schema): { label: string; doc?: string }[] {
 // ---------------------------------------------------------------------------
 // Data bodies
 
-function dataCompletions(analysis: Analysis, offset: number, before: string): CompletionResult | null {
+function dataCompletions(
+  analysis: Analysis,
+  offset: number,
+  before: string,
+): CompletionResult | null {
   const node = dataDirectiveAt(analysis, offset);
   if (!node) return null;
   const spec = analysis.registry.get(node.name);
   if (!spec?.data) return null;
   const line = analysis.lineAt(offset);
-  const lines = analysis.text.slice(node.openRange.end.offset, line.start).split(/\r\n|\r|\n/).slice(1);
+  const lines = analysis.text
+    .slice(node.openRange.end.offset, line.start)
+    .split(/\r\n|\r|\n/)
+    .slice(1);
   const indent = /^ */.exec(before)![0].length;
   const path = keyPath(lines, indent);
   const schema = resolve(spec.data, path);
@@ -193,7 +271,12 @@ function dataCompletions(analysis: Analysis, offset: number, before: string): Co
     return {
       from: offset - value[2]!.length,
       to: offset,
-      items: values.map((v) => ({ label: v.label, kind: 'value', documentation: v.doc, insertText: v.label })),
+      items: values.map((v) => ({
+        label: v.label,
+        kind: 'value',
+        documentation: v.doc,
+        insertText: v.label,
+      })),
     };
   }
   const key = /^\s*(?:-\s+)?([A-Za-z_][\w-]*)?$/.exec(before);
@@ -207,7 +290,12 @@ function dataCompletions(analysis: Analysis, offset: number, before: string): Co
       kind: 'key' as const,
       detail: describeType(s),
       documentation: schemaDocs(k, s),
-      insertText: s.kind === 'object' || s.kind === 'record' || (s.kind === 'array' && s.items.kind === 'object') ? `${k}:\n${' '.repeat(indent + 2)}` : `${k}: `,
+      insertText:
+        s.kind === 'object' ||
+        s.kind === 'record' ||
+        (s.kind === 'array' && s.items.kind === 'object')
+          ? `${k}:\n${' '.repeat(indent + 2)}`
+          : `${k}: `,
     }));
   return items.length ? { from: offset - typed.length, to: offset, items } : null;
 }
@@ -288,7 +376,11 @@ function step(schema: Schema | null, key: string): Schema | null {
 // ---------------------------------------------------------------------------
 // Links, footnotes, code fences
 
-function anchorCompletions(analysis: Analysis, offset: number, before: string): CompletionResult | null {
+function anchorCompletions(
+  analysis: Analysis,
+  offset: number,
+  before: string,
+): CompletionResult | null {
   const m = /\]\(#([^\s)]*)$/.exec(before);
   if (!m) return null;
   const typed = m[1]!;
@@ -304,7 +396,11 @@ function anchorCompletions(analysis: Analysis, offset: number, before: string): 
   };
 }
 
-function footnoteCompletions(analysis: Analysis, offset: number, before: string): CompletionResult | null {
+function footnoteCompletions(
+  analysis: Analysis,
+  offset: number,
+  before: string,
+): CompletionResult | null {
   const m = /\[\^([^\]\s]*)$/.exec(before);
   if (!m) return null;
   const typed = m[1]!;
@@ -321,5 +417,9 @@ function languageCompletions(offset: number, before: string): CompletionResult |
   const m = /^[ \t>]*(?:```|~~~)([\w+#-]*)$/.exec(before);
   if (!m) return null;
   const typed = m[1]!;
-  return { from: offset - typed.length, to: offset, items: LANGUAGES.map((l) => ({ label: l, kind: 'language', insertText: l })) };
+  return {
+    from: offset - typed.length,
+    to: offset,
+    items: LANGUAGES.map((l) => ({ label: l, kind: 'language', insertText: l })),
+  };
 }

@@ -40,7 +40,13 @@ export function parse(source: string, options: ParseOptions = {}): ParseResult {
     } else if (registry.labelModel(job.node.name) === 'raw') {
       const text = job.source.text;
       job.node.label = text.length
-        ? [{ type: 'text', value: job.node.rawLabel ?? text, position: lineIndex.range(job.source.toOffset(0), job.source.endOffset()) }]
+        ? [
+            {
+              type: 'text',
+              value: job.node.rawLabel ?? text,
+              position: lineIndex.range(job.source.toOffset(0), job.source.endOffset()),
+            },
+          ]
         : [];
     } else {
       job.node.label = parseInlines(job.source, ctx, { depth: 1 });
@@ -48,5 +54,10 @@ export function parse(source: string, options: ParseOptions = {}): ParseResult {
   }
 
   if (options.validate !== false) validateDocument(blocks.document, registry, diagnostics);
-  return { document: blocks.document, diagnostics: sortDiagnostics(diagnostics.items), lineIndex, registry };
+  return {
+    document: blocks.document,
+    diagnostics: sortDiagnostics(diagnostics.items),
+    lineIndex,
+    registry,
+  };
 }

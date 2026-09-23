@@ -24,7 +24,10 @@ export function createTauriFs(): WorkspaceFs {
       return listen<string[]>('fs-change', (event) => onChange(event.payload));
     },
     async exportHtml(suggestedName, html) {
-      const path = await save({ defaultPath: suggestedName, filters: [{ name: 'HTML', extensions: ['html'] }] });
+      const path = await save({
+        defaultPath: suggestedName,
+        filters: [{ name: 'HTML', extensions: ['html'] }],
+      });
       if (!path) return null;
       await invoke('save_export', { path, contents: html });
       return path.replace(/\\/g, '/');
@@ -32,6 +35,11 @@ export function createTauriFs(): WorkspaceFs {
     openExternal: (url) => openUrl(url),
     fileUrl: (path) => convertFileSrc(path),
     launchFiles: () => invoke<string[]>('launch_files'),
-    confirm: (message, options) => ask(message, { title: options?.title ?? 'MarkUP', kind: 'warning', okLabel: options?.okLabel }),
+    confirm: (message, options) =>
+      ask(message, {
+        title: options?.title ?? 'MarkUP',
+        kind: 'warning',
+        okLabel: options?.okLabel,
+      }),
   };
 }

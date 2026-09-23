@@ -35,7 +35,11 @@ export function EditorArea() {
   return (
     <main className="editor-area">
       <div className="editor-toolbar">
-        <div className="tabs" role="tablist" onWheel={(e) => (e.currentTarget.scrollLeft += e.deltaY)}>
+        <div
+          className="tabs"
+          role="tablist"
+          onWheel={(e) => (e.currentTarget.scrollLeft += e.deltaY)}
+        >
           {tabs.map((path) => (
             <Tab key={path} path={path} active={path === active} />
           ))}
@@ -55,13 +59,20 @@ export function EditorArea() {
               </button>
             ))}
           </div>
-          <IconButton label={`Export to HTML (${formatShortcut('mod+shift+s')})`} onClick={() => void wb.exportHtml()}>
+          <IconButton
+            label={`Export to HTML (${formatShortcut('mod+shift+s')})`}
+            onClick={() => void wb.exportHtml()}
+          >
             <Download size={15} />
           </IconButton>
         </div>
       </div>
       <div ref={body} className={`editor-body is-${view}`}>
-        <div className="pane pane-editor" style={view === 'split' ? { flexBasis: `${split * 100}%` } : undefined} hidden={view === 'preview'}>
+        <div
+          className="pane pane-editor"
+          style={view === 'split' ? { flexBasis: `${split * 100}%` } : undefined}
+          hidden={view === 'preview'}
+        >
           <EditorPane />
         </div>
         {view === 'split' && (
@@ -91,7 +102,9 @@ function Tab({ path, active }: { path: string; active: boolean }) {
   const conflict = useAppState((s) => s.docs[path]?.conflict ?? false);
   const problems = useAppState((s) => s.problems[path]);
   // Same file name in two folders: show the folder too.
-  const duplicate = useAppState((s) => s.tabs.filter((t) => basename(t) === basename(path)).length > 1);
+  const duplicate = useAppState(
+    (s) => s.tabs.filter((t) => basename(t) === basename(path)).length > 1,
+  );
   const name = basename(path);
   const folder = path.slice(0, path.lastIndexOf('/'));
   return (

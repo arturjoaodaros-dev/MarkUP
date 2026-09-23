@@ -42,7 +42,8 @@ const attributeBlock = {
     { match: '#[^\\s{}"\'=#.,]+', name: 'entity.other.attribute-name.id.markup' },
     { match: '\\.[^\\s{}"\'=#.,]+', name: 'entity.other.attribute-name.class.markup' },
     {
-      match: '([A-Za-z_][\\w:.-]*)(=)("(?:[^"\\\\]|\\\\.)*"?|\'(?:[^\'\\\\]|\\\\.)*\'?|[^\\s"\'=`{},]+)?',
+      match:
+        '([A-Za-z_][\\w:.-]*)(=)("(?:[^"\\\\]|\\\\.)*"?|\'(?:[^\'\\\\]|\\\\.)*\'?|[^\\s"\'=`{},]+)?',
       captures: {
         1: { name: 'entity.other.attribute-name.markup' },
         2: { name: 'punctuation.separator.key-value.markup' },
@@ -105,7 +106,14 @@ export const grammar = {
           },
           endCaptures: { 1: { name: 'punctuation.definition.code.fenced.markup' } },
           name: 'markup.fenced_code.block.markup',
-          patterns: [{ begin: '(^|\\G)(\\s*)(.*)', while: '(^|\\G)(?!\\s*([`~]{3,})\\s*$)', contentName: `meta.embedded.block.${id}`, patterns: [{ include: scope }] }],
+          patterns: [
+            {
+              begin: '(^|\\G)(\\s*)(.*)',
+              while: '(^|\\G)(?!\\s*([`~]{3,})\\s*$)',
+              contentName: `meta.embedded.block.${id}`,
+              patterns: [{ include: scope }],
+            },
+          ],
         })),
         {
           begin: '^(\\s*)(`{3,}|~{3,})(.*)$',
@@ -208,7 +216,10 @@ export const grammar = {
       ],
     },
     escape: { match: '\\\\[!-/:-@\\[-`{-~]', name: 'constant.character.escape.markup' },
-    entity: { match: '&(?:[A-Za-z][A-Za-z0-9]{1,31}|#\\d{1,7}|#[xX][0-9A-Fa-f]{1,6});', name: 'constant.character.entity.markup' },
+    entity: {
+      match: '&(?:[A-Za-z][A-Za-z0-9]{1,31}|#\\d{1,7}|#[xX][0-9A-Fa-f]{1,6});',
+      name: 'constant.character.entity.markup',
+    },
     codeSpan: {
       match: '(`+)(?!`)(.+?)(?<!`)(\\1)(?!`)',
       captures: {
@@ -218,7 +229,8 @@ export const grammar = {
       },
     },
     inlineDirective: {
-      match: '(?<![\\w:])(:)([A-Za-z][\\w-]*)(?=[\\[{])(\\[(?:[^\\[\\]\\\\]|\\\\.|\\[[^\\]]*\\])*\\])?(\\{[^{}]*\\})?',
+      match:
+        '(?<![\\w:])(:)([A-Za-z][\\w-]*)(?=[\\[{])(\\[(?:[^\\[\\]\\\\]|\\\\.|\\[[^\\]]*\\])*\\])?(\\{[^{}]*\\})?',
       captures: {
         1: { name: 'punctuation.definition.directive.markup' },
         2: { name: 'entity.name.tag.directive.inline.markup' },
@@ -242,7 +254,8 @@ export const grammar = {
     link: {
       patterns: [
         {
-          match: '(\\[)((?:[^\\[\\]]|\\[[^\\]]*\\])*)(\\])(\\()([^)\\s]*)(?:\\s+("[^"]*"|\'[^\']*\'))?(\\))',
+          match:
+            '(\\[)((?:[^\\[\\]]|\\[[^\\]]*\\])*)(\\])(\\()([^)\\s]*)(?:\\s+("[^"]*"|\'[^\']*\'))?(\\))',
           captures: {
             1: { name: 'punctuation.definition.link.title.begin.markup' },
             2: { name: 'string.other.link.title.markup', patterns: [{ include: '#inline' }] },
@@ -272,8 +285,14 @@ export const grammar = {
     },
     autolink: {
       patterns: [
-        { match: '<([A-Za-z][A-Za-z0-9+.-]{1,31}:[^\\s<>]*)>', captures: { 1: { name: 'markup.underline.link.markup' } } },
-        { match: '(?<![\\w/])(?:https?://|www\\.)[^\\s<]*[^\\s<?!.,:*_~\'")]', name: 'markup.underline.link.markup' },
+        {
+          match: '<([A-Za-z][A-Za-z0-9+.-]{1,31}:[^\\s<>]*)>',
+          captures: { 1: { name: 'markup.underline.link.markup' } },
+        },
+        {
+          match: '(?<![\\w/])(?:https?://|www\\.)[^\\s<]*[^\\s<?!.,:*_~\'")]',
+          name: 'markup.underline.link.markup',
+        },
       ],
     },
     bold: {

@@ -1,8 +1,20 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-export type MenuItem = { separator: true } | { label: string; action: () => void; shortcut?: string; danger?: boolean; separator?: false };
+export type MenuItem =
+  | { separator: true }
+  | { label: string; action: () => void; shortcut?: string; danger?: boolean; separator?: false };
 
-export function ContextMenu({ x, y, items, onClose }: { x: number; y: number; items: MenuItem[]; onClose: () => void }) {
+export function ContextMenu({
+  x,
+  y,
+  items,
+  onClose,
+}: {
+  x: number;
+  y: number;
+  items: MenuItem[];
+  onClose: () => void;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ x, y });
 
@@ -11,7 +23,10 @@ export function ContextMenu({ x, y, items, onClose }: { x: number; y: number; it
     const el = ref.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    setPosition({ x: Math.min(x, window.innerWidth - rect.width - 8), y: Math.min(y, window.innerHeight - rect.height - 8) });
+    setPosition({
+      x: Math.min(x, window.innerWidth - rect.width - 8),
+      y: Math.min(y, window.innerHeight - rect.height - 8),
+    });
     el.querySelector<HTMLButtonElement>('button')?.focus();
   }, [x, y]);
 
@@ -41,7 +56,8 @@ export function ContextMenu({ x, y, items, onClose }: { x: number; y: number; it
         const buttons = [...(ref.current?.querySelectorAll<HTMLButtonElement>('button') ?? [])];
         const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
         if (event.key === 'ArrowDown') buttons[(index + 1) % buttons.length]?.focus();
-        if (event.key === 'ArrowUp') buttons[(index - 1 + buttons.length) % buttons.length]?.focus();
+        if (event.key === 'ArrowUp')
+          buttons[(index - 1 + buttons.length) % buttons.length]?.focus();
       }}
     >
       {items.map((item, i) =>

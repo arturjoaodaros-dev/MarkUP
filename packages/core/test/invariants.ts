@@ -1,4 +1,12 @@
-import { childrenOf, LineIndex, parse, visit, type Node, type ParseResult, type Range } from '@markup-lang/core';
+import {
+  childrenOf,
+  LineIndex,
+  parse,
+  visit,
+  type Node,
+  type ParseResult,
+  type Range,
+} from '@markup-lang/core';
 
 /**
  * Structural invariants every parse result must satisfy, for any input:
@@ -16,13 +24,17 @@ export function checkInvariants(source: string, result: ParseResult = parse(sour
   const checkRange = (range: Range, what: string) => {
     const { start, end } = range;
     if (!(start.offset >= 0 && start.offset <= end.offset && end.offset <= source.length)) {
-      problems.push(`${what}: bad offsets ${start.offset}..${end.offset} (length ${source.length})`);
+      problems.push(
+        `${what}: bad offsets ${start.offset}..${end.offset} (length ${source.length})`,
+      );
       return;
     }
     for (const point of [start, end]) {
       const expected = index.pointAt(point.offset);
       if (expected.line !== point.line || expected.column !== point.column) {
-        problems.push(`${what}: point ${point.line}:${point.column} does not match offset ${point.offset} (${expected.line}:${expected.column})`);
+        problems.push(
+          `${what}: point ${point.line}:${point.column} does not match offset ${point.offset} (${expected.line}:${expected.column})`,
+        );
       }
     }
   };
@@ -32,8 +44,13 @@ export function checkInvariants(source: string, result: ParseResult = parse(sour
     checkRange(node.position, what);
     const parent = ancestors[ancestors.length - 1];
     if (parent && parent.type !== 'document') {
-      if (node.position.start.offset < parent.position.start.offset || node.position.end.offset > parent.position.end.offset) {
-        problems.push(`${what} is outside its parent ${parent.type} ${parent.position.start.offset}..${parent.position.end.offset}`);
+      if (
+        node.position.start.offset < parent.position.start.offset ||
+        node.position.end.offset > parent.position.end.offset
+      ) {
+        problems.push(
+          `${what} is outside its parent ${parent.type} ${parent.position.start.offset}..${parent.position.end.offset}`,
+        );
       }
     }
     const kids = childrenOf(node) as Node[];
@@ -54,7 +71,8 @@ export function checkInvariants(source: string, result: ParseResult = parse(sour
     checkRange(d.range, `diagnostic ${d.code}`);
     if (!d.message) problems.push(`diagnostic ${d.code} has no message`);
     for (const r of d.related ?? []) checkRange(r.range, `diagnostic ${d.code} related`);
-    for (const fix of d.fixes ?? []) for (const edit of fix.edits) checkRange(edit.range, `diagnostic ${d.code} fix`);
+    for (const fix of d.fixes ?? [])
+      for (const edit of fix.edits) checkRange(edit.range, `diagnostic ${d.code} fix`);
   }
   return problems;
 }

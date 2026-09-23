@@ -50,7 +50,8 @@ function inRoundedSquare(x, y) {
 }
 
 function inGlyph(x, y) {
-  for (let i = 0; i < M.length - 1; i++) if (segmentDistance(x, y, M[i], M[i + 1]) <= STROKE / 2) return true;
+  for (let i = 0; i < M.length - 1; i++)
+    if (segmentDistance(x, y, M[i], M[i + 1]) <= STROKE / 2) return true;
   return DOTS.some(([cx, cy]) => Math.hypot(x - cx, y - cy) <= DOT_R);
 }
 
@@ -74,7 +75,8 @@ export function png(size) {
       const total = samples * samples;
       const alpha = (bg + fg) / total;
       const o = py * (size * 4 + 1) + 1 + px * 4;
-      for (let c = 0; c < 3; c++) raw[o + c] = alpha ? Math.round((BG[c] * bg + FG[c] * fg) / (bg + fg)) : 0;
+      for (let c = 0; c < 3; c++)
+        raw[o + c] = alpha ? Math.round((BG[c] * bg + FG[c] * fg) / (bg + fg)) : 0;
       raw[o + 3] = Math.round(alpha * 255);
     }
   }

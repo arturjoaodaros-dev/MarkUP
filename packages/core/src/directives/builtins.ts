@@ -31,7 +31,10 @@ function callout(type: CalloutType): DirectiveSpec {
     description: `${title} callout — ${CALLOUT_DESCRIPTIONS[type][0]!.toLowerCase()}${CALLOUT_DESCRIPTIONS[type].slice(1)}`,
     label: { use: 'optional', description: `Custom title. Defaults to “${title}”.` },
     attributes: {
-      collapsible: s.boolean({ optional: true, description: 'Render the callout collapsed behind its title.' }),
+      collapsible: s.boolean({
+        optional: true,
+        description: 'Render the callout collapsed behind its title.',
+      }),
     },
     examples: [{ source: `:::${type}\nThe body is regular **MarkUP**.\n:::` }],
     snippet: `:::${type}\n\${1:Text}\n:::`,
@@ -45,11 +48,16 @@ const card = defineDirective({
   name: 'card',
   forms: ['container'],
   category: 'layout',
-  description: 'A bordered surface that groups related content. Several cards in a row inside `columns` make a grid.',
+  description:
+    'A bordered surface that groups related content. Several cards in a row inside `columns` make a grid.',
   label: { use: 'optional', description: 'Card title.' },
   attributes: {
     href: s.string({ optional: true, description: 'Makes the title a link.', example: '/guide' }),
-    icon: s.string({ optional: true, description: 'An emoji or short symbol shown before the title.', example: '🚀' }),
+    icon: s.string({
+      optional: true,
+      description: 'An emoji or short symbol shown before the title.',
+      example: '🚀',
+    }),
   },
   examples: [{ source: ':::card[Fast]{icon=⚡}\nParses a 1 MB document in milliseconds.\n:::' }],
   snippet: ':::card[${1:Title}]\n${2:Content}\n:::',
@@ -62,8 +70,14 @@ const columns = defineDirective({
   description: 'Lays out its `column` children side by side. Columns stack on narrow screens.',
   label: { use: 'none' },
   attributes: {
-    gap: s.enum(['none', 'small', 'medium', 'large'], { default: 'medium', description: 'Space between columns.' }),
-    align: s.enum(['start', 'center', 'end', 'stretch'], { default: 'stretch', description: 'Vertical alignment of the columns.' }),
+    gap: s.enum(['none', 'small', 'medium', 'large'], {
+      default: 'medium',
+      description: 'Space between columns.',
+    }),
+    align: s.enum(['start', 'center', 'end', 'stretch'], {
+      default: 'stretch',
+      description: 'Vertical alignment of the columns.',
+    }),
   },
   allowedChildren: ['column'],
   examples: [
@@ -81,7 +95,13 @@ const column = defineDirective({
   description: 'One column of a `columns` layout.',
   label: { use: 'none' },
   attributes: {
-    span: s.number({ integer: true, min: 1, max: 12, default: 1, description: 'Relative width compared to sibling columns.' }),
+    span: s.number({
+      integer: true,
+      min: 1,
+      max: 12,
+      default: 1,
+      description: 'Relative width compared to sibling columns.',
+    }),
   },
   allowedParents: ['columns'],
   snippet: ':::column\n$0\n:::',
@@ -96,7 +116,8 @@ const tabs = defineDirective({
   allowedChildren: ['tab'],
   examples: [
     {
-      source: '::::tabs\n:::tab[npm]\n```sh\nnpm install @markup-lang/cli\n```\n:::\n:::tab[pnpm]\n```sh\npnpm add @markup-lang/cli\n```\n:::\n::::',
+      source:
+        '::::tabs\n:::tab[npm]\n```sh\nnpm install @markup-lang/cli\n```\n:::\n:::tab[pnpm]\n```sh\npnpm add @markup-lang/cli\n```\n:::\n::::',
     },
   ],
   snippet: '::::tabs\n:::tab[${1:First}]\n${2}\n:::\n:::tab[${3:Second}]\n${4}\n:::\n::::',
@@ -109,7 +130,10 @@ const tab = defineDirective({
   description: 'One panel of a `tabs` group. The label is the tab title.',
   label: { use: 'required', description: 'Tab title.' },
   attributes: {
-    selected: s.boolean({ optional: true, description: 'Select this tab initially instead of the first one.' }),
+    selected: s.boolean({
+      optional: true,
+      description: 'Select this tab initially instead of the first one.',
+    }),
   },
   allowedParents: ['tabs'],
   snippet: ':::tab[${1:Title}]\n$0\n:::',
@@ -124,7 +148,11 @@ const details = defineDirective({
   attributes: {
     open: s.boolean({ optional: true, description: 'Start expanded.' }),
   },
-  examples: [{ source: ':::details[How does it work?]\nThe body is hidden until the reader expands it.\n:::' }],
+  examples: [
+    {
+      source: ':::details[How does it work?]\nThe body is hidden until the reader expands it.\n:::',
+    },
+  ],
   snippet: ':::details[${1:Summary}]\n${2:Content}\n:::',
 });
 
@@ -132,10 +160,14 @@ const figure = defineDirective({
   name: 'figure',
   forms: ['container'],
   category: 'content',
-  description: 'Self-contained content — usually an image, diagram or code — with an optional caption.',
+  description:
+    'Self-contained content — usually an image, diagram or code — with an optional caption.',
   label: { use: 'optional', description: 'Caption.' },
   attributes: {
-    align: s.enum(['left', 'center', 'right'], { default: 'center', description: 'Horizontal alignment.' }),
+    align: s.enum(['left', 'center', 'right'], {
+      default: 'center',
+      description: 'Horizontal alignment.',
+    }),
   },
   examples: [{ source: ':::figure[The MarkUP pipeline]\n![Diagram](pipeline.svg)\n:::' }],
   snippet: ':::figure[${1:Caption}]\n![${2:Alt text}](${3:image.png})\n:::',
@@ -161,10 +193,20 @@ const chartTypeSchema = s.enum(CHART_TYPES, {
 const chartCommon: Record<string, Schema> = {
   type: chartTypeSchema,
   title: s.string({ optional: true, description: 'Title shown above the chart.' }),
-  unit: s.string({ optional: true, description: 'Unit appended to values, e.g. `%` or ` ms`.', example: '%' }),
+  unit: s.string({
+    optional: true,
+    description: 'Unit appended to values, e.g. `%` or ` ms`.',
+    example: '%',
+  }),
   height: s.number({ min: 120, max: 1200, default: 280, description: 'Height in pixels.' }),
-  stacked: s.boolean({ optional: true, description: 'Stack series instead of grouping them (bar and area).' }),
-  legend: s.boolean({ optional: true, description: 'Show the legend. Defaults to true when there are several series.' }),
+  stacked: s.boolean({
+    optional: true,
+    description: 'Stack series instead of grouping them (bar and area).',
+  }),
+  legend: s.boolean({
+    optional: true,
+    description: 'Show the legend. Defaults to true when there are several series.',
+  }),
 };
 
 const chartData = s.object(
@@ -191,7 +233,11 @@ const chartData = s.object(
           description: 'Override the series colour.',
         }),
       }),
-      { optional: true, minItems: 1, description: 'Several named series; use together with `labels`.' },
+      {
+        optional: true,
+        minItems: 1,
+        description: 'Several named series; use together with `labels`.',
+      },
     ),
   },
   { description: 'Chart configuration and data.' },
@@ -211,7 +257,8 @@ const chart = defineDirective({
   examples: [
     {
       title: 'Single series',
-      source: ':::chart\ntype: bar\ntitle: Favourite languages\ndata:\n  Python: 80\n  JavaScript: 60\n  Rust: 40\n:::',
+      source:
+        ':::chart\ntype: bar\ntitle: Favourite languages\ndata:\n  Python: 80\n  JavaScript: 60\n  Rust: 40\n:::',
     },
     {
       title: 'Several series',
@@ -219,7 +266,8 @@ const chart = defineDirective({
         ':::chart{type=line unit=k}\nlabels: [Q1, Q2, Q3, Q4]\nseries:\n  - name: 2025\n    values: [12, 18, 15, 24]\n  - name: 2026\n    values: [16, 22, 27, 31]\n:::',
     },
   ],
-  snippet: ':::chart\ntype: ${1|bar,line,area,pie,donut|}\ndata:\n  ${2:A}: ${3:10}\n  ${4:B}: ${5:20}\n:::',
+  snippet:
+    ':::chart\ntype: ${1|bar,line,area,pie,donut|}\ndata:\n  ${2:A}: ${3:10}\n  ${4:B}: ${5:20}\n:::',
   validate(node, ctx) {
     if (node.type !== 'containerDirective' || node.body.kind !== 'data') return;
     const body = node.body.value;
@@ -228,11 +276,19 @@ const chart = defineDirective({
     const labels = getEntry(body, 'labels');
     const series = getEntry(body, 'series');
     if (!data && !series) {
-      ctx.report('MU2010', node.body.range, 'A chart needs either `data` (one series) or `labels` and `series`.');
+      ctx.report(
+        'MU2010',
+        node.body.range,
+        'A chart needs either `data` (one series) or `labels` and `series`.',
+      );
       return;
     }
     if (data && series) {
-      ctx.report('MU2010', series.keyRange, 'Use either `data` or `series`, not both; `series` is ignored.');
+      ctx.report(
+        'MU2010',
+        series.keyRange,
+        'Use either `data` or `series`, not both; `series` is ignored.',
+      );
     }
     if (series && !data) {
       if (!labels) {
@@ -254,7 +310,12 @@ const chart = defineDirective({
         }
         const type = effectiveString(body, node.attributes?.values.type, 'type');
         if ((type === 'pie' || type === 'donut') && series.value.items.length > 1) {
-          ctx.report('MU2010', series.keyRange, `A ${type} chart shows one series; only the first is used.`, { severity: 'warning' });
+          ctx.report(
+            'MU2010',
+            series.keyRange,
+            `A ${type} chart shows one series; only the first is used.`,
+            { severity: 'warning' },
+          );
         }
       }
     }
@@ -262,18 +323,28 @@ const chart = defineDirective({
       const entry = getEntry(body, key);
       const attribute = node.attributes?.items.find((item) => item.name === key);
       if (entry && attribute) {
-        ctx.report('MU2010', attribute.range, `\`${key}\` is set both as an attribute and in the body; the body wins.`, {
-          severity: 'warning',
-          related: [{ range: entry.keyRange, message: 'Body value.' }],
-        });
+        ctx.report(
+          'MU2010',
+          attribute.range,
+          `\`${key}\` is set both as an attribute and in the body; the body wins.`,
+          {
+            severity: 'warning',
+            related: [{ range: entry.keyRange, message: 'Body value.' }],
+          },
+        );
       }
     }
   },
 });
 
-function effectiveString(body: DataNode, attribute: string | true | undefined, key: string): string | undefined {
+function effectiveString(
+  body: DataNode,
+  attribute: string | true | undefined,
+  key: string,
+): string | undefined {
   const entry = getEntry(body, key);
-  if (entry?.value.kind === 'scalar' && typeof entry.value.value === 'string') return entry.value.value;
+  if (entry?.value.kind === 'scalar' && typeof entry.value.value === 'string')
+    return entry.value.value;
   return typeof attribute === 'string' ? attribute : undefined;
 }
 
@@ -287,8 +358,20 @@ const toc = defineDirective({
   description: 'A table of contents generated from the document’s headings.',
   label: { use: 'optional', description: 'Title shown above the list.' },
   attributes: {
-    depth: s.number({ integer: true, min: 1, max: 6, default: 3, description: 'Deepest heading level to include.' }),
-    from: s.number({ integer: true, min: 1, max: 6, default: 2, description: 'Shallowest heading level to include.' }),
+    depth: s.number({
+      integer: true,
+      min: 1,
+      max: 6,
+      default: 3,
+      description: 'Deepest heading level to include.',
+    }),
+    from: s.number({
+      integer: true,
+      min: 1,
+      max: 6,
+      default: 2,
+      description: 'Shallowest heading level to include.',
+    }),
   },
   examples: [{ source: '::toc[On this page]{depth=3}' }],
   snippet: '::toc{depth=${1:3}}',
@@ -296,7 +379,11 @@ const toc = defineDirective({
     const from = Number(node.attributes?.values.from ?? 2);
     const depth = Number(node.attributes?.values.depth ?? 3);
     if (Number.isFinite(from) && Number.isFinite(depth) && from > depth) {
-      ctx.report('MU2004', node.attributes?.range ?? node.position, `\`from\` (${from}) is greater than \`depth\` (${depth}); the table of contents would be empty.`);
+      ctx.report(
+        'MU2004',
+        node.attributes?.range ?? node.position,
+        `\`from\` (${from}) is greater than \`depth\` (${depth}); the table of contents would be empty.`,
+      );
     }
   },
 });
@@ -310,7 +397,10 @@ const progress = defineDirective({
   attributes: {
     value: s.number({ description: 'Current value.' }),
     max: s.number({ min: 0, default: 100, description: 'Value that represents completion.' }),
-    variant: s.enum(['default', 'success', 'warning', 'danger'], { default: 'default', description: 'Colour.' }),
+    variant: s.enum(['default', 'success', 'warning', 'danger'], {
+      default: 'default',
+      description: 'Colour.',
+    }),
   },
   examples: [{ source: '::progress[Translation]{value=72}' }],
   snippet: '::progress[${1:Label}]{value=${2:50}}',
@@ -318,9 +408,14 @@ const progress = defineDirective({
     const value = Number(node.attributes?.values.value);
     const max = Number(node.attributes?.values.max ?? 100);
     if (Number.isFinite(value) && Number.isFinite(max) && (value < 0 || value > max)) {
-      ctx.report('MU2004', node.attributes?.range ?? node.position, `\`value\` (${value}) should be between 0 and \`max\` (${max}).`, {
-        severity: 'warning',
-      });
+      ctx.report(
+        'MU2004',
+        node.attributes?.range ?? node.position,
+        `\`value\` (${value}) should be between 0 and \`max\` (${max}).`,
+        {
+          severity: 'warning',
+        },
+      );
     }
   },
 });
@@ -335,7 +430,10 @@ const badge = defineDirective({
   description: 'A small status label.',
   label: { use: 'required', description: 'Badge text.' },
   attributes: {
-    variant: s.enum(['neutral', 'info', 'success', 'warning', 'danger'], { default: 'neutral', description: 'Colour.' }),
+    variant: s.enum(['neutral', 'info', 'success', 'warning', 'danger'], {
+      default: 'neutral',
+      description: 'Colour.',
+    }),
   },
   examples: [{ source: 'Status: :badge[stable]{variant=success}' }],
   snippet: ':badge[${1:Text}]{variant=${2|neutral,info,success,warning,danger|}}',

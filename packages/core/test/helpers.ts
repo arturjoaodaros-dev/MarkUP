@@ -71,7 +71,11 @@ export function show(node: Node): string {
     case 'containerDirective': {
       const head = `${':'.repeat(node.fence)}${node.name}${node.label ? `[${kids(node.label)}]` : ''}${node.attributes ? attrs(node.attributes.values, node.attributes.id, node.attributes.classes) : ''}`;
       const body =
-        node.body.kind === 'flow' ? kids(node.body.children) : node.body.kind === 'raw' ? `raw ${JSON.stringify(node.body.value)}` : `data ${JSON.stringify(node.body.raw)}`;
+        node.body.kind === 'flow'
+          ? kids(node.body.children)
+          : node.body.kind === 'raw'
+            ? `raw ${JSON.stringify(node.body.value)}`
+            : `data ${JSON.stringify(node.body.raw)}`;
       return `${head}(${body})`;
     }
     case 'document':
@@ -81,7 +85,11 @@ export function show(node: Node): string {
   }
 }
 
-function attrs(values: Record<string, string | true>, id: string | null, classes: string[]): string {
+function attrs(
+  values: Record<string, string | true>,
+  id: string | null,
+  classes: string[],
+): string {
   const parts: string[] = [];
   if (id) parts.push(`#${id}`);
   for (const c of classes) parts.push(`.${c}`);
@@ -95,7 +103,9 @@ export function diagnostics(source: string, options?: ParseOptions): Diagnostic[
 
 /** Diagnostics as `CODE line:col` strings. */
 export function codes(source: string, options?: ParseOptions): string[] {
-  return diagnostics(source, options).map((d) => `${d.code} ${d.range.start.line}:${d.range.start.column}`);
+  return diagnostics(source, options).map(
+    (d) => `${d.code} ${d.range.start.line}:${d.range.start.column}`,
+  );
 }
 
 export function codeList(source: string, options?: ParseOptions): string[] {

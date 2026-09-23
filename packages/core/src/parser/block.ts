@@ -50,7 +50,11 @@ import type { DiagnosticBag, DiagnosticFix, RelatedInformation } from '../diagno
 import type { ContentModel, DirectiveRegistry } from '../directives/spec.ts';
 import { isBlank, scanLines, TAB_SIZE, type SourceLine } from '../source/lines.ts';
 import type { LineIndex, Range } from '../source/position.ts';
-import { findAttributeBlockEnd, looksLikeAttributes, parseAttributes } from '../syntax/attributes.ts';
+import {
+  findAttributeBlockEnd,
+  looksLikeAttributes,
+  parseAttributes,
+} from '../syntax/attributes.ts';
 import { readName } from '../syntax/chars.ts';
 import { normalizeLabel, parseDefinition } from './links.ts';
 import { SegmentText, type Segment } from './segments.ts';
@@ -118,7 +122,8 @@ interface OpenFootnote extends ContainerBase {
   node: FootnoteDefinition;
 }
 
-type OpenContainer = OpenDocument | OpenBlockquote | OpenList | OpenListItem | OpenDirective | OpenFootnote;
+type OpenContainer =
+  OpenDocument | OpenBlockquote | OpenList | OpenListItem | OpenDirective | OpenFootnote;
 
 interface LeafBase {
   parent: OpenContainer;
@@ -229,14 +234,33 @@ class BlockParser {
   /** Code block left open at the end of input (to explain unclosed directives). */
   private unclosedCodeAtEof: Code | null = null;
 
-  constructor(source: string, index: LineIndex, diagnostics: DiagnosticBag, registry: DirectiveRegistry) {
+  constructor(
+    source: string,
+    index: LineIndex,
+    diagnostics: DiagnosticBag,
+    registry: DirectiveRegistry,
+  ) {
     this.source = source;
     this.index = index;
     this.diagnostics = diagnostics;
     this.registry = registry;
     this.lines = scanLines(source);
-    const document: Document = { type: 'document', frontMatter: null, children: [], position: index.range(0, source.length) };
-    this.root = { kind: 'document', node: document, parent: null, child: null, start: 0, end: 0, depth: 0, sawBlank: false };
+    const document: Document = {
+      type: 'document',
+      frontMatter: null,
+      children: [],
+      position: index.range(0, source.length),
+    };
+    this.root = {
+      kind: 'document',
+      node: document,
+      parent: null,
+      child: null,
+      start: 0,
+      end: 0,
+      depth: 0,
+      sawBlank: false,
+    };
     this.tip = this.root;
     this.matched = this.root;
     this.matchedBlock = this.root;
@@ -251,7 +275,12 @@ class BlockParser {
     }
     for (let i = first; i < this.lines.length; i++) this.processLine(this.lines[i]!);
     while (this.tip !== this.root) this.close(this.tip, { kind: 'eof' });
-    return { document: this.root.node, jobs: this.jobs, definitions: this.definitions, footnotes: this.footnotes };
+    return {
+      document: this.root.node,
+      jobs: this.jobs,
+      definitions: this.definitions,
+      footnotes: this.footnotes,
+    };
   }
 
   // -------------------------------------------------------------------------
@@ -338,13 +367,18 @@ class BlockParser {
 
     // 2. Raw-line leaves.
     const tip = this.tip;
-    if (allMatched && leafMatched && (tip.kind === 'code' || tip.kind === 'raw' || tip.kind === 'comment')) {
+    if (
+      allMatched &&
+      leafMatched &&
+      (tip.kind === 'code' || tip.kind === 'raw' || tip.kind === 'comment')
+    ) {
       this.addRawLine(tip);
       return;
     }
 
     // 3. Block starts.
-    const paragraph = allMatched && tip.kind === 'paragraph' && tip.parent === container ? tip : null;
+    const paragraph =
+      allMatched && tip.kind === 'paragraph' && tip.parent === container ? tip : null;
     let current: OpenContainer = container;
     let started = false;
     while (!this.blank) {
@@ -447,7 +481,10 @@ class BlockParser {
    * keep matching in, `'done'` when the line was fully consumed, or null.
    * `paragraph` is the open paragraph this line would interrupt, if any.
    */
-  private tryBlockStart(container: OpenContainer, paragraph: OpenParagraph | null): OpenContainer | 'done' | null {
+  private tryBlockStart(
+    container: OpenContainer,
+    paragraph: OpenParagraph | null,
+  ): OpenContainer | 'done' | null {
     const base = this.column;
     const indent = this.peekIndent();
     const p = indent.pos;
@@ -460,9 +497,20 @@ class BlockParser {
         if (!this.checkDepth(container, 1)) return null;
         this.advanceTo(p, indent.column);
         this.consumeBlockquoteMarker();
-        const node: Blockquote = { type: 'blockquote', children: [], position: this.index.range(lineStart + p, lineStart + p) };
+        const node: Blockquote = {
+          type: 'blockquote',
+          children: [],
+          position: this.index.range(lineStart + p, lineStart + p),
+        };
         return this.addContainer(container, {
-          kind: 'blockquote', node, parent: null, child: null, start: lineStart + p, end: this.line.end, depth: 0, sawBlank: false,
+          kind: 'blockquote',
+          node,
+          parent: null,
+          child: null,
+          start: lineStart + p,
+          end: this.line.end,
+          depth: 0,
+          sawBlank: false,
         });
       }
       case '`':
@@ -516,7 +564,14 @@ class BlockParser {
               position: this.index.range(start, start),
             };
             const block = this.addContainer(container, {
-              kind: 'footnote', node, parent: null, child: null, start, end: this.line.end, depth: 0, sawBlank: false,
+              kind: 'footnote',
+              node,
+              parent: null,
+              child: null,
+              start,
+              end: this.line.end,
+              depth: 0,
+              sawBlank: false,
             });
             this.advanceTo(p + match[0].length, indent.column + match[0].length);
             this.skipSpaces();
@@ -531,10 +586,14 @@ class BlockParser {
     if (paragraph && (c === '=' || c === '-') && /^(=+|-+)[ \t]*$/.test(this.text.slice(p))) {
       if (this.convertToSetext(paragraph, c === '=' ? 1 : 2)) return 'done';
     }
-    if (paragraph && (c === '|' || c === ':' || c === '-') && this.tryTable(paragraph, p)) return 'done';
+    if (paragraph && (c === '|' || c === ':' || c === '-') && this.tryTable(paragraph, p))
+      return 'done';
 
     if ((c === '*' || c === '-' || c === '_') && isThematicBreak(this.text, p)) {
-      const node: ThematicBreak = { type: 'thematicBreak', position: this.index.range(lineStart + p, this.line.end) };
+      const node: ThematicBreak = {
+        type: 'thematicBreak',
+        position: this.index.range(lineStart + p, this.line.end),
+      };
       this.addBlock(container, node);
       return 'done';
     }
@@ -544,7 +603,8 @@ class BlockParser {
       const restBlank = isBlank(this.text, marker.end);
       // A list may interrupt a paragraph only with a non-empty item, and an ordered one only from 1.
       if (!paragraph || (!restBlank && (!marker.ordered || marker.number === 1))) {
-        if (this.checkDepth(container, 2)) return this.startListItem(container, marker, p, base, indent.column);
+        if (this.checkDepth(container, 2))
+          return this.startListItem(container, marker, p, base, indent.column);
       }
     }
     return null;
@@ -553,7 +613,11 @@ class BlockParser {
   // -------------------------------------------------------------------------
   // Directives
 
-  private tryDirective(container: OpenContainer, p: number, relIndent: number): OpenContainer | 'done' | null {
+  private tryDirective(
+    container: OpenContainer,
+    p: number,
+    relIndent: number,
+  ): OpenContainer | 'done' | null {
     const text = this.text;
     const colons = countRun(text, p, ':');
     const afterColons = p + colons;
@@ -587,7 +651,12 @@ class BlockParser {
           fixes: [
             {
               title: `Remove the space: ${fixed}`,
-              edits: [{ range: this.index.range(lineStart + afterColons, lineStart + nameStart), newText: '' }],
+              edits: [
+                {
+                  range: this.index.range(lineStart + afterColons, lineStart + nameStart),
+                  newText: '',
+                },
+              ],
               preferred: true,
             },
           ],
@@ -639,11 +708,27 @@ class BlockParser {
     this.queueLabel(node, header.labelSegment);
     if (model === 'flow') {
       this.addContainer(container, {
-        kind: 'directive', node, parent: null, child: null, start, end: this.line.end, depth: 0, sawBlank: false, fence: colons,
+        kind: 'directive',
+        node,
+        parent: null,
+        child: null,
+        start,
+        end: this.line.end,
+        depth: 0,
+        sawBlank: false,
+        fence: colons,
       });
     } else {
       this.addLeaf(container, {
-        kind: 'raw', node, model, parent: container, start, end: this.line.end, fence: colons, fenceIndent: relIndent, lines: [],
+        kind: 'raw',
+        node,
+        model,
+        parent: container,
+        start,
+        end: this.line.end,
+        fence: colons,
+        fenceIndent: relIndent,
+        lines: [],
       });
     }
     return 'done';
@@ -667,11 +752,21 @@ class BlockParser {
           'MU1007',
           this.index.range(lineStart + pos, this.line.end),
           'Unterminated directive label: expected `]` on the same line.',
-          { fixes: [{ title: 'Insert ]', edits: [{ range: this.index.range(this.line.end, this.line.end), newText: ']' }] }] },
+          {
+            fixes: [
+              {
+                title: 'Insert ]',
+                edits: [{ range: this.index.range(this.line.end, this.line.end), newText: ']' }],
+              },
+            ],
+          },
         );
       }
       rawLabel = unescapeLabel(text.slice(pos + 1, labelEnd));
-      labelRange = this.index.range(lineStart + pos, lineStart + Math.min(text.length, labelEnd + 1));
+      labelRange = this.index.range(
+        lineStart + pos,
+        lineStart + Math.min(text.length, labelEnd + 1),
+      );
       labelSegment = { text: text.slice(pos + 1, labelEnd), offset: lineStart + pos + 1 };
       pos = close === -1 ? text.length : close + 1;
     }
@@ -692,7 +787,12 @@ class BlockParser {
       const range = this.index.range(lineStart + junkStart, lineStart + junkStart + junk.length);
       const fixes: DiagnosticFix[] = [];
       let message = `Unexpected text after the ${form} directive \`${name}\`.`;
-      if (rawLabel === null && attributes === null && !junk.startsWith('{') && !junk.startsWith('[')) {
+      if (
+        rawLabel === null &&
+        attributes === null &&
+        !junk.startsWith('{') &&
+        !junk.startsWith('[')
+      ) {
         message += ` To give it a label, write \`${form === 'leaf' ? '::' : ':::'}${name}[${junk}]\`.`;
         fixes.push({
           title: `Use “${junk}” as the label`,
@@ -721,7 +821,9 @@ class BlockParser {
 
     if (effective.kind !== 'directive') {
       const open = findOpenDirective(effective);
-      const related: RelatedInformation[] = open ? [{ range: open.node.openRange, message: `\`${open.node.name}\` is opened here.` }] : [];
+      const related: RelatedInformation[] = open
+        ? [{ range: open.node.openRange, message: `\`${open.node.name}\` is opened here.` }]
+        : [];
       this.diagnostics.report(
         'MU1003',
         fenceRange,
@@ -735,9 +837,15 @@ class BlockParser {
 
     // Candidates: the chain of directly nested directives, innermost first.
     const chain: OpenDirective[] = [];
-    for (let block: OpenContainer | null = effective; block?.kind === 'directive'; block = block.parent) chain.push(block);
+    for (
+      let block: OpenContainer | null = effective;
+      block?.kind === 'directive';
+      block = block.parent
+    )
+      chain.push(block);
     const innermost = chain[0]!;
-    const target = chain.find((d) => d.fence === colons) ?? (innermost.fence <= colons ? innermost : null);
+    const target =
+      chain.find((d) => d.fence === colons) ?? (innermost.fence <= colons ? innermost : null);
     if (!target) {
       this.diagnostics.report(
         'MU1004',
@@ -745,7 +853,13 @@ class BlockParser {
         `Closing fence \`${':'.repeat(colons)}\` is shorter than the opening fence of \`${innermost.node.name}\` (\`${':'.repeat(innermost.fence)}\`); it is shown as text.`,
         {
           related: [{ range: innermost.node.openRange, message: 'Opened here.' }],
-          fixes: [{ title: `Use ${':'.repeat(innermost.fence)}`, edits: [{ range: fenceRange, newText: ':'.repeat(innermost.fence) }], preferred: true }],
+          fixes: [
+            {
+              title: `Use ${':'.repeat(innermost.fence)}`,
+              edits: [{ range: fenceRange, newText: ':'.repeat(innermost.fence) }],
+              preferred: true,
+            },
+          ],
         },
       );
       return null;
@@ -767,7 +881,14 @@ class BlockParser {
   // -------------------------------------------------------------------------
   // Leaf starts
 
-  private startCode(container: OpenContainer, fenceChar: string, fenceLength: number, relIndent: number, p: number, info: string): void {
+  private startCode(
+    container: OpenContainer,
+    fenceChar: string,
+    fenceLength: number,
+    relIndent: number,
+    p: number,
+    info: string,
+  ): void {
     const lineStart = this.line.start;
     const infoTrimmed = info.trim();
     let infoOffset = p + fenceLength + (info.length - info.trimStart().length);
@@ -784,7 +905,10 @@ class BlockParser {
       }
       const restTrimmed = rest.trimStart();
       infoOffset += rest.length - restTrimmed.length;
-      if (restTrimmed.startsWith('{') && findAttributeBlockEnd(restTrimmed, 0) === restTrimmed.length - 1) {
+      if (
+        restTrimmed.startsWith('{') &&
+        findAttributeBlockEnd(restTrimmed, 0) === restTrimmed.length - 1
+      ) {
         attributes = parseAttributes(this.text, infoOffset, {
           index: this.index,
           diagnostics: this.diagnostics,
@@ -804,8 +928,15 @@ class BlockParser {
       position: this.index.range(lineStart + p, this.line.end),
     };
     this.addLeaf(container, {
-      kind: 'code', node, parent: container, start: lineStart + p, end: this.line.end,
-      fenceChar, fenceLength, fenceIndent: relIndent, lines: [],
+      kind: 'code',
+      node,
+      parent: container,
+      start: lineStart + p,
+      end: this.line.end,
+      fenceChar,
+      fenceLength,
+      fenceIndent: relIndent,
+      lines: [],
     });
   }
 
@@ -842,7 +973,10 @@ class BlockParser {
     // Optional closing sequence of `#`, preceded by whitespace.
     let closeStart = contentEnd;
     while (closeStart > contentStart && text[closeStart - 1] === '#') closeStart--;
-    if (closeStart < contentEnd && (closeStart === contentStart || text[closeStart - 1] === ' ' || text[closeStart - 1] === '\t')) {
+    if (
+      closeStart < contentEnd &&
+      (closeStart === contentStart || text[closeStart - 1] === ' ' || text[closeStart - 1] === '\t')
+    ) {
       contentEnd = trimEndIndex(text, contentStart, closeStart);
     }
     const node: Heading = {
@@ -853,7 +987,10 @@ class BlockParser {
       children: [],
       position: this.index.range(lineStart + p, this.line.end),
     };
-    const segment = { text: text.slice(contentStart, contentEnd), offset: lineStart + contentStart };
+    const segment = {
+      text: text.slice(contentStart, contentEnd),
+      offset: lineStart + contentStart,
+    };
     this.jobs.push({ kind: 'content', node, source: new SegmentText([segment]), tableCell: false });
     return node;
   }
@@ -900,8 +1037,23 @@ class BlockParser {
       children: [],
       position: this.index.range(header.offset, this.line.end),
     };
-    const table: OpenTable = { kind: 'table', node, parent, start: header.offset, end: this.line.end, columns: align.length };
-    node.children.push(this.makeRow(headerCells, true, header.offset, header.offset + header.text.length, align.length));
+    const table: OpenTable = {
+      kind: 'table',
+      node,
+      parent,
+      start: header.offset,
+      end: this.line.end,
+      columns: align.length,
+    };
+    node.children.push(
+      this.makeRow(
+        headerCells,
+        true,
+        header.offset,
+        header.offset + header.text.length,
+        align.length,
+      ),
+    );
     this.addLeaf(parent, table);
     return true;
   }
@@ -915,7 +1067,13 @@ class BlockParser {
     this.touch(table.parent);
   }
 
-  private makeRow(cells: Segment[], head: boolean, start: number, end: number, columns: number): TableRow {
+  private makeRow(
+    cells: Segment[],
+    head: boolean,
+    start: number,
+    end: number,
+    columns: number,
+  ): TableRow {
     if (cells.length > columns) {
       const extra = cells[columns]!;
       const last = cells[cells.length - 1]!;
@@ -931,15 +1089,24 @@ class BlockParser {
       const node: TableCell = {
         type: 'tableCell',
         children: [],
-        position: cell ? this.index.range(cell.offset, cell.offset + cell.text.length) : this.index.range(end, end),
+        position: cell
+          ? this.index.range(cell.offset, cell.offset + cell.text.length)
+          : this.index.range(end, end),
       };
-      if (cell && cell.text.length > 0) this.jobs.push({ kind: 'content', node, source: new SegmentText([cell]), tableCell: true });
+      if (cell && cell.text.length > 0)
+        this.jobs.push({ kind: 'content', node, source: new SegmentText([cell]), tableCell: true });
       children.push(node);
     }
     return { type: 'tableRow', head, children, position: this.index.range(start, end) };
   }
 
-  private startListItem(container: OpenContainer, marker: ListMarker, p: number, base: number, markerColumn: number): OpenContainer {
+  private startListItem(
+    container: OpenContainer,
+    marker: ListMarker,
+    p: number,
+    base: number,
+    markerColumn: number,
+  ): OpenContainer {
     const lineStart = this.line.start;
     const markerWidth = marker.end - p;
     this.advanceTo(marker.end, markerColumn + markerWidth);
@@ -968,7 +1135,11 @@ class BlockParser {
     }
 
     let list: OpenList;
-    if (container.kind === 'list' && container.bullet === marker.bullet && container.delimiter === marker.delimiter) {
+    if (
+      container.kind === 'list' &&
+      container.bullet === marker.bullet &&
+      container.delimiter === marker.delimiter
+    ) {
       list = container;
       const blankBetweenItems = list.sawBlank;
       this.closeUnmatched();
@@ -984,8 +1155,16 @@ class BlockParser {
         position: this.index.range(lineStart + p, lineStart + p),
       };
       list = this.addContainer(container, {
-        kind: 'list', node, parent: null, child: null, start: lineStart + p, end: this.line.end, depth: 0, sawBlank: false,
-        bullet: marker.bullet, delimiter: marker.delimiter,
+        kind: 'list',
+        node,
+        parent: null,
+        child: null,
+        start: lineStart + p,
+        end: this.line.end,
+        depth: 0,
+        sawBlank: false,
+        bullet: marker.bullet,
+        delimiter: marker.delimiter,
       });
     }
     const node: ListItem = {
@@ -997,13 +1176,28 @@ class BlockParser {
       position: this.index.range(lineStart + p, lineStart + p),
     };
     return this.addContainer(list, {
-      kind: 'listItem', node, parent: null, child: null, start: lineStart + p, end: this.line.end, depth: 0, sawBlank: false, contentIndent,
+      kind: 'listItem',
+      node,
+      parent: null,
+      child: null,
+      start: lineStart + p,
+      end: this.line.end,
+      depth: 0,
+      sawBlank: false,
+      contentIndent,
     });
   }
 
   private startComment(container: OpenContainer, p: number, endMarker: number): void {
     const lineStart = this.line.start;
-    const block: OpenComment = { kind: 'comment', parent: container, start: lineStart + p, end: this.line.end, lines: [], closed: false };
+    const block: OpenComment = {
+      kind: 'comment',
+      parent: container,
+      start: lineStart + p,
+      end: this.line.end,
+      lines: [],
+      closed: false,
+    };
     this.addLeaf(container, block);
     if (endMarker !== -1) {
       block.lines.push(this.text.slice(p + 4, endMarker));
@@ -1017,7 +1211,13 @@ class BlockParser {
 
   private startParagraph(container: OpenContainer): void {
     this.skipSpaces();
-    const block: OpenParagraph = { kind: 'paragraph', parent: container, start: this.line.start + this.pos, end: this.line.end, lines: [] };
+    const block: OpenParagraph = {
+      kind: 'paragraph',
+      parent: container,
+      start: this.line.start + this.pos,
+      end: this.line.end,
+      lines: [],
+    };
     this.addLeaf(container, block);
     this.addParagraphLine(block);
   }
@@ -1109,7 +1309,8 @@ class BlockParser {
 
   /** A new child is about to be added: a blank line since the previous child makes an item loose. */
   private noteNewChild(target: OpenContainer): void {
-    if (target.kind === 'listItem' && target.sawBlank && target.node.children.length > 0) target.node.spread = true;
+    if (target.kind === 'listItem' && target.sawBlank && target.node.children.length > 0)
+      target.node.spread = true;
   }
 
   /** Removes a leaf without producing a node (its content moved elsewhere). */
@@ -1146,7 +1347,10 @@ class BlockParser {
     this.unmatchedClosed = true;
     const deepest = this.matchedBlock;
     const first = isContainer(deepest) ? deepest.child : null;
-    const reason: CloseReason = { kind: 'parent', parent: first && isContainer(first) ? first : this.matched };
+    const reason: CloseReason = {
+      kind: 'parent',
+      parent: first && isContainer(first) ? first : this.matched,
+    };
     this.closeBelow(deepest, reason);
   }
 
@@ -1244,9 +1448,14 @@ class BlockParser {
       };
       const previous = this.definitions.get(node.identifier);
       if (previous) {
-        this.diagnostics.report('MU2024', node.position, `Link reference \`[${def.label}]\` is already defined; the first definition wins.`, {
-          related: [{ range: previous.position, message: 'First defined here.' }],
-        });
+        this.diagnostics.report(
+          'MU2024',
+          node.position,
+          `Link reference \`[${def.label}]\` is already defined; the first definition wins.`,
+          {
+            related: [{ range: previous.position, message: 'First defined here.' }],
+          },
+        );
       } else {
         this.definitions.set(node.identifier, node);
       }
@@ -1254,7 +1463,8 @@ class BlockParser {
       pos = def.end;
     }
     if (pos === 0) return;
-    const consumed = pos >= joined.text.length ? block.lines.length : countNewlines(joined.text, pos);
+    const consumed =
+      pos >= joined.text.length ? block.lines.length : countNewlines(joined.text, pos);
     block.lines = block.lines.slice(consumed);
     if (block.lines.length > 0) block.start = block.lines[0]!.offset;
   }
@@ -1273,7 +1483,13 @@ class BlockParser {
         this.index.range(block.start, block.start + block.fenceLength),
         `Code block is never closed; it runs to ${where}. Add a \`${fence}\` line after the code.`,
         {
-          fixes: [{ title: `Insert closing ${fence}`, edits: [{ range: this.index.range(block.end, block.end), newText: `\n${fence}` }], preferred: true }],
+          fixes: [
+            {
+              title: `Insert closing ${fence}`,
+              edits: [{ range: this.index.range(block.end, block.end), newText: `\n${fence}` }],
+              preferred: true,
+            },
+          ],
         },
       );
       if (reason.kind === 'eof') this.unclosedCodeAtEof = node;
@@ -1294,7 +1510,12 @@ class BlockParser {
         : this.index.range(node.openRange.end.offset, node.openRange.end.offset);
     node.body =
       block.model === 'data'
-        ? { kind: 'data', value: parseData(lines, this.index, this.diagnostics), raw, range: bodyRange }
+        ? {
+            kind: 'data',
+            value: parseData(lines, this.index, this.diagnostics),
+            raw,
+            range: bodyRange,
+          }
         : { kind: 'raw', value: raw, range: bodyRange };
     node.position = this.index.range(block.start, Math.max(block.end, bodyRange.end.offset));
     if (!node.closed) this.reportUnclosed(node, block.fence, reason);
@@ -1309,9 +1530,20 @@ class BlockParser {
       position: this.index.range(block.start, block.end),
     };
     if (!block.closed) {
-      this.diagnostics.report('MU1012', this.index.range(block.start, block.start + 4), 'Comment is never closed with `-->`; everything after it is hidden.', {
-        fixes: [{ title: 'Insert -->', edits: [{ range: this.index.range(block.end, block.end), newText: ' -->' }], preferred: true }],
-      });
+      this.diagnostics.report(
+        'MU1012',
+        this.index.range(block.start, block.start + 4),
+        'Comment is never closed with `-->`; everything after it is hidden.',
+        {
+          fixes: [
+            {
+              title: 'Insert -->',
+              edits: [{ range: this.index.range(block.end, block.end), newText: ' -->' }],
+              preferred: true,
+            },
+          ],
+        },
+      );
     }
     this.pushChild(block.parent, node);
   }
@@ -1320,7 +1552,11 @@ class BlockParser {
     const parent = block.parent!;
     let end = block.end;
     const children: readonly { position: Range }[] =
-      block.kind === 'directive' ? (block.node.body.kind === 'flow' ? block.node.body.children : []) : block.node.children;
+      block.kind === 'directive'
+        ? block.node.body.kind === 'flow'
+          ? block.node.body.children
+          : []
+        : block.node.children;
     const lastChild = children[children.length - 1];
     if (lastChild && lastChild.position.end.offset > end) end = lastChild.position.end.offset;
     block.node.position = this.index.range(block.start, Math.max(block.start, end));
@@ -1364,22 +1600,39 @@ class BlockParser {
       const related: RelatedInformation[] = [];
       const code = this.unclosedCodeAtEof;
       if (code && code.position.start.offset > node.position.start.offset) {
-        related.push({ range: code.position, message: 'This code block is never closed, so it swallows the rest of the document — including any `:::`.' });
+        related.push({
+          range: code.position,
+          message:
+            'This code block is never closed, so it swallows the rest of the document — including any `:::`.',
+        });
       }
-      this.diagnostics.report('MU1001', node.openRange, `Directive \`${node.name}\` is never closed. Add a \`${fenceText}\` line after its content.`, {
-        related,
-        fixes: [fix],
-      });
+      this.diagnostics.report(
+        'MU1001',
+        node.openRange,
+        `Directive \`${node.name}\` is never closed. Add a \`${fenceText}\` line after its content.`,
+        {
+          related,
+          fixes: [fix],
+        },
+      );
     } else if (reason.kind === 'fence') {
       this.diagnostics.report(
         'MU1002',
         node.openRange,
         `Directive \`${node.name}\` is not closed; the fence on line ${reason.fence.start.line} closes the enclosing \`${reason.target.node.name}\` and ends it too.`,
-        { related: [{ range: reason.fence, message: `Closes \`${reason.target.node.name}\`.` }], fixes: [fix] },
+        {
+          related: [{ range: reason.fence, message: `Closes \`${reason.target.node.name}\`.` }],
+          fixes: [fix],
+        },
       );
     } else {
       const what = reason.kind === 'parent' ? describeContainer(reason.parent) : 'its parent';
-      this.diagnostics.report('MU1002', node.openRange, `Directive \`${node.name}\` is not closed; it ends where ${what} ends.`, { fixes: [fix] });
+      this.diagnostics.report(
+        'MU1002',
+        node.openRange,
+        `Directive \`${node.name}\` is not closed; it ends where ${what} ends.`,
+        { fixes: [fix] },
+      );
     }
   }
 
@@ -1489,7 +1742,9 @@ function trimEndIndex(text: string, start: number, end: number): number {
 }
 
 function trimLastSegment(lines: readonly Segment[]): Segment[] {
-  return lines.map((l, i) => (i === lines.length - 1 ? { text: l.text.trimEnd(), offset: l.offset } : l));
+  return lines.map((l, i) =>
+    i === lines.length - 1 ? { text: l.text.trimEnd(), offset: l.offset } : l,
+  );
 }
 
 function isThematicBreak(text: string, pos: number): boolean {
@@ -1521,7 +1776,13 @@ function parseListMarker(text: string, pos: number): ListMarker | null {
   }
   const m = /^([0-9]{1,9})([.)])(?=[ \t]|$)/.exec(text.slice(pos, pos + 12));
   if (!m) return null;
-  return { ordered: true, bullet: '', delimiter: m[2]!, number: parseInt(m[1]!, 10), end: pos + m[0].length };
+  return {
+    ordered: true,
+    bullet: '',
+    delimiter: m[2]!,
+    number: parseInt(m[1]!, 10),
+    end: pos + m[0].length,
+  };
 }
 
 /** Parses a GFM delimiter row into column alignments. */

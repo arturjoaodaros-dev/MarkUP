@@ -22,10 +22,19 @@ function write(path: string, content: string): string {
   return full;
 }
 
-async function run(args: string[], stdin = ''): Promise<{ code: number; out: string; err: string }> {
+async function run(
+  args: string[],
+  stdin = '',
+): Promise<{ code: number; out: string; err: string }> {
   let out = '';
   let err = '';
-  const io: Io = { stdout: (t) => (out += t), stderr: (t) => (err += t), readStdin: async () => stdin, cwd: dir, color: false };
+  const io: Io = {
+    stdout: (t) => (out += t),
+    stderr: (t) => (err += t),
+    readStdin: async () => stdin,
+    cwd: dir,
+    color: false,
+  };
   const code = await main(args, io);
   return { code, out, err };
 }
@@ -50,12 +59,17 @@ describe('markup render', () => {
     expect((await run(['render', 'a.markup'])).out).toContain('<h1 id="hi">Hi');
     expect((await run(['render', 'a.markup', '-f', 'text'])).out).toBe('Hi\n\nx\n');
     expect(JSON.parse((await run(['render', 'a.markup', '-f', 'ast'])).out).type).toBe('document');
-    expect(JSON.parse((await run(['render', 'a.markup', '--format', 'json'])).out)).toHaveProperty('diagnostics');
+    expect(JSON.parse((await run(['render', 'a.markup', '--format', 'json'])).out)).toHaveProperty(
+      'diagnostics',
+    );
   });
 
   it('renders standalone pages to a file', async () => {
     write('a.markup', '# Page');
-    expect((await run(['render', 'a.markup', '--standalone', '--theme', 'dark', '-o', 'out/a.html'])).code).toBe(0);
+    expect(
+      (await run(['render', 'a.markup', '--standalone', '--theme', 'dark', '-o', 'out/a.html']))
+        .code,
+    ).toBe(0);
     const html = readFileSync(join(dir, 'out/a.html'), 'utf8');
     expect(html).toMatch(/^<!doctype html>/);
     expect(html).toContain('data-theme="dark"');
@@ -90,7 +104,10 @@ describe('markup check', () => {
 
   it('succeeds on clean files and honours --max-warnings', async () => {
     write('ok.markup', '# Fine\n\n:::note\nok\n:::');
-    expect(await run(['check', 'ok.markup'])).toMatchObject({ code: 0, out: '✔ 1 file checked, no problems\n' });
+    expect(await run(['check', 'ok.markup'])).toMatchObject({
+      code: 0,
+      out: '✔ 1 file checked, no problems\n',
+    });
     write('warn.markup', ':::nott\nx\n:::');
     expect((await run(['check', 'warn.markup'])).code).toBe(0);
     expect((await run(['check', 'warn.markup', '--max-warnings', '0'])).code).toBe(1);
@@ -112,7 +129,10 @@ describe('markup check', () => {
 
 describe('markup build', () => {
   it('builds a directory into standalone pages, mirroring the structure', async () => {
-    write('site/index.markup', '# Home\n\nSee [the guide](guide/intro.markup#top) and [ext](https://x.dev/a.md).');
+    write(
+      'site/index.markup',
+      '# Home\n\nSee [the guide](guide/intro.markup#top) and [ext](https://x.dev/a.md).',
+    );
     write('site/guide/intro.mkup', '# Intro');
     const result = await run(['build', 'site', '--out', 'public', '--css']);
     expect(result.code).toBe(0);
@@ -171,8 +191,12 @@ export default {
   it('reports bad plugins and configs', async () => {
     write('bad.mjs', 'export default 42;');
     write('a.markup', 'x');
-    expect((await run(['render', 'a.markup', '--plugin', 'bad.mjs'])).err).toContain('does not export a MarkUP plugin');
-    expect((await run(['render', 'a.markup', '--plugin', 'missing.mjs'])).err).toContain('Cannot load plugin');
+    expect((await run(['render', 'a.markup', '--plugin', 'bad.mjs'])).err).toContain(
+      'does not export a MarkUP plugin',
+    );
+    expect((await run(['render', 'a.markup', '--plugin', 'missing.mjs'])).err).toContain(
+      'Cannot load plugin',
+    );
     write('markup.config.json', '{ nope');
     expect((await run(['render', 'a.markup'])).err).toContain('Invalid config');
   });
@@ -211,8 +235,21 @@ describe('preview', () => {
     const file = write('doc/page.markup', '# Live\n\n![x](img.png)');
     write('doc/img.png', 'PNG');
     write('secret.txt', 'no');
-    const io: Io = { stdout: () => {}, stderr: () => {}, readStdin: async () => '', cwd: dir, color: false };
-    const server = await startPreview({ file, port: 0, open: false, theme: 'auto', plugins: [], io });
+    const io: Io = {
+      stdout: () => {},
+      stderr: () => {},
+      readStdin: async () => '',
+      cwd: dir,
+      color: false,
+    };
+    const server = await startPreview({
+      file,
+      port: 0,
+      open: false,
+      theme: 'auto',
+      plugins: [],
+      io,
+    });
     const address = server.address();
     const port = typeof address === 'object' && address ? address.port : 0;
     const fetchText = (path: string) =>
@@ -239,11 +276,23 @@ describe('the markup binary', () => {
   const bin = join(dirname(fileURLToPath(import.meta.url)), '../src/bin.ts');
 
   it('runs from source with process exit codes and stdin', () => {
-    const ok = spawnSync(process.execPath, ['--conditions=source', bin, 'render', '-', '-f', 'text'], { input: '# From stdin', encoding: 'utf8' });
+    const ok = spawnSync(
+      process.execPath,
+      ['--conditions=source', bin, 'render', '-', '-f', 'text'],
+      { input: '# From stdin', encoding: 'utf8' },
+    );
     expect(ok.status).toBe(0);
     expect(ok.stdout).toBe('From stdin\n');
-    const failed = spawnSync(process.execPath, ['--conditions=source', bin, 'check', join(dir, 'nope.markup')], { encoding: 'utf8' });
+    const failed = spawnSync(
+      process.execPath,
+      ['--conditions=source', bin, 'check', join(dir, 'nope.markup')],
+      { encoding: 'utf8' },
+    );
     expect(failed.status).toBe(2);
-    expect(execFileSync(process.execPath, ['--conditions=source', bin, '--version'], { encoding: 'utf8' })).toBe('0.1.0\n');
+    expect(
+      execFileSync(process.execPath, ['--conditions=source', bin, '--version'], {
+        encoding: 'utf8',
+      }),
+    ).toBe('0.1.0\n');
   });
 });

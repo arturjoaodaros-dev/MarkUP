@@ -76,20 +76,24 @@ export class Analysis {
     let best: { node: Node; ancestors: readonly Node[] } | null = null;
     for (const entry of this.nodes()) {
       const { start, end } = entry.node.position;
-      if (start.offset <= offset && offset <= end.offset && entry.node.type !== 'document') best = entry;
+      if (start.offset <= offset && offset <= end.offset && entry.node.type !== 'document')
+        best = entry;
     }
     return best ? [...best.ancestors, best.node] : [this.result.document];
   }
 
   definitions(): Map<string, Definition> {
     const map = new Map<string, Definition>();
-    for (const { node } of this.nodes()) if (node.type === 'definition' && !map.has(node.identifier)) map.set(node.identifier, node);
+    for (const { node } of this.nodes())
+      if (node.type === 'definition' && !map.has(node.identifier)) map.set(node.identifier, node);
     return map;
   }
 
   footnotes(): Map<string, FootnoteDefinition> {
     const map = new Map<string, FootnoteDefinition>();
-    for (const { node } of this.nodes()) if (node.type === 'footnoteDefinition' && !map.has(node.identifier)) map.set(node.identifier, node);
+    for (const { node } of this.nodes())
+      if (node.type === 'footnoteDefinition' && !map.has(node.identifier))
+        map.set(node.identifier, node);
     return map;
   }
 

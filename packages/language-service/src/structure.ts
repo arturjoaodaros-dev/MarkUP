@@ -24,15 +24,27 @@ export function getSymbols(analysis: Analysis): DocumentSymbol[] {
   const text = analysis.text;
   const fm = analysis.document.frontMatter;
   if (fm) {
-    roots.push({ name: 'Front matter', detail: '', kind: 'frontMatter', level: 0, from: fm.position.start.offset, to: fm.position.end.offset, selectionFrom: fm.position.start.offset, selectionTo: fm.position.start.offset + 3, children: [] });
+    roots.push({
+      name: 'Front matter',
+      detail: '',
+      kind: 'frontMatter',
+      level: 0,
+      from: fm.position.start.offset,
+      to: fm.position.end.offset,
+      selectionFrom: fm.position.start.offset,
+      selectionTo: fm.position.start.offset + 3,
+      children: [],
+    });
   }
   const componentStack: { symbol: DocumentSymbol; end: number }[] = [];
 
   const attach = (symbol: DocumentSymbol) => {
-    while (componentStack.length && componentStack[componentStack.length - 1]!.end < symbol.from) componentStack.pop();
+    while (componentStack.length && componentStack[componentStack.length - 1]!.end < symbol.from)
+      componentStack.pop();
     const component = componentStack[componentStack.length - 1];
     const heading = headingStack[headingStack.length - 1];
-    if (component && (!heading || component.symbol.from > heading.from)) component.symbol.children.push(symbol);
+    if (component && (!heading || component.symbol.from > heading.from))
+      component.symbol.children.push(symbol);
     else if (heading) heading.children.push(symbol);
     else roots.push(symbol);
   };
@@ -51,12 +63,15 @@ export function getSymbols(analysis: Analysis): DocumentSymbol[] {
         selectionTo: node.position.end.offset,
         children: [],
       };
-      while (headingStack.length && headingStack[headingStack.length - 1]!.level >= node.depth) headingStack.pop();
+      while (headingStack.length && headingStack[headingStack.length - 1]!.level >= node.depth)
+        headingStack.pop();
       // Headings inside components stay inside them.
-      while (componentStack.length && componentStack[componentStack.length - 1]!.end < symbol.from) componentStack.pop();
+      while (componentStack.length && componentStack[componentStack.length - 1]!.end < symbol.from)
+        componentStack.pop();
       const component = componentStack[componentStack.length - 1];
       const parent = headingStack[headingStack.length - 1];
-      if (component && (!parent || component.symbol.from > parent.from)) component.symbol.children.push(symbol);
+      if (component && (!parent || component.symbol.from > parent.from))
+        component.symbol.children.push(symbol);
       else if (parent) parent.children.push(symbol);
       else roots.push(symbol);
       headingStack.push(symbol);
@@ -102,7 +117,11 @@ export interface FoldingRange {
 
 export function getFoldingRanges(analysis: Analysis): FoldingRange[] {
   const ranges: FoldingRange[] = [];
-  const add = (node: Node | { position: Node['position'] }, kind: FoldingRange['kind'] = 'region', endAdjust = 0) => {
+  const add = (
+    node: Node | { position: Node['position'] },
+    kind: FoldingRange['kind'] = 'region',
+    endAdjust = 0,
+  ) => {
     const startLine = node.position.start.line;
     const endLine = node.position.end.line + endAdjust;
     if (endLine > startLine) ranges.push({ startLine, endLine, kind });

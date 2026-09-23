@@ -3,11 +3,26 @@
  * service, so highlighting, errors, completion, hover and folding match the
  * parser, the CLI and VS Code exactly.
  */
-import { autocompletion, completionKeymap, snippet, type Completion, type CompletionContext, type CompletionResult } from '@codemirror/autocomplete';
+import {
+  autocompletion,
+  completionKeymap,
+  snippet,
+  type Completion,
+  type CompletionContext,
+  type CompletionResult,
+} from '@codemirror/autocomplete';
 import { foldService } from '@codemirror/language';
 import { linter, lintGutter, type Diagnostic as CmDiagnostic } from '@codemirror/lint';
 import { StateEffect, type Extension } from '@codemirror/state';
-import { Decoration, EditorView, hoverTooltip, keymap, ViewPlugin, type DecorationSet, type ViewUpdate } from '@codemirror/view';
+import {
+  Decoration,
+  EditorView,
+  hoverTooltip,
+  keymap,
+  ViewPlugin,
+  type DecorationSet,
+  type ViewUpdate,
+} from '@codemirror/view';
 import { markupToHtml } from '@markup-lang/html';
 import {
   getCompletions,
@@ -54,13 +69,18 @@ function buildDecorations(view: EditorView, options: MarkupEditorOptions): Decor
     if (lineClass) {
       const first = doc.lineAt(h.from).number;
       const last = doc.lineAt(h.to).number;
-      for (let n = first; n <= last; n++) ranges.push(Decoration.line({ class: lineClass }).range(doc.line(n).from));
+      for (let n = first; n <= last; n++)
+        ranges.push(Decoration.line({ class: lineClass }).range(doc.line(n).from));
       continue;
     }
     if (h.kind === 'heading') {
       const node = doc.lineAt(h.from);
       const level = /^\s*(#{1,6})/.exec(node.text)?.[1]?.length;
-      ranges.push(Decoration.line({ class: `cm-mu-heading-line${level ? ` cm-mu-h${level}` : ''}` }).range(node.from));
+      ranges.push(
+        Decoration.line({ class: `cm-mu-heading-line${level ? ` cm-mu-h${level}` : ''}` }).range(
+          node.from,
+        ),
+      );
     }
     ranges.push(Decoration.mark({ class: `cm-mu-${h.kind}` }).range(h.from, h.to));
   }
@@ -107,21 +127,25 @@ function diagnostics(options: MarkupEditorOptions): Extension {
       (view) => {
         const analysis = analyze(view, options);
         const length = view.state.doc.length;
-        return analysis.diagnostics.map(
-          (d): CmDiagnostic => ({
-            from: Math.min(d.range.start.offset, length),
-            to: Math.min(Math.max(d.range.end.offset, d.range.start.offset), length),
-            severity: d.severity === 'hint' ? 'hint' : d.severity,
-            source: d.code,
-            message: d.message,
-            actions: (d.fixes ?? []).map((fix) => ({
-              name: fix.title,
-              apply(v: EditorView) {
-                v.dispatch({ changes: fix.edits.map((e) => ({ from: e.range.start.offset, to: e.range.end.offset, insert: e.newText })) });
-              },
-            })),
-          }),
-        );
+        return analysis.diagnostics.map((d): CmDiagnostic => ({
+          from: Math.min(d.range.start.offset, length),
+          to: Math.min(Math.max(d.range.end.offset, d.range.start.offset), length),
+          severity: d.severity === 'hint' ? 'hint' : d.severity,
+          source: d.code,
+          message: d.message,
+          actions: (d.fixes ?? []).map((fix) => ({
+            name: fix.title,
+            apply(v: EditorView) {
+              v.dispatch({
+                changes: fix.edits.map((e) => ({
+                  from: e.range.start.offset,
+                  to: e.range.end.offset,
+                  insert: e.newText,
+                })),
+              });
+            },
+          })),
+        }));
       },
       { delay: 250 },
     ),
@@ -133,14 +157,22 @@ function diagnostics(options: MarkupEditorOptions): Extension {
 export function quickFix(view: EditorView, options: MarkupEditorOptions): boolean {
   const analysis = analyze(view, options);
   const pos = view.state.selection.main.head;
-  const candidates = analysis.diagnostics.filter((d) => d.fixes?.length && d.range.start.offset <= pos && pos <= d.range.end.offset);
+  const candidates = analysis.diagnostics.filter(
+    (d) => d.fixes?.length && d.range.start.offset <= pos && pos <= d.range.end.offset,
+  );
   const diagnostic = candidates[0];
   if (!diagnostic) {
     options.onMessage?.('No quick fix here.');
     return true;
   }
   const fix = diagnostic.fixes!.find((f) => f.preferred) ?? diagnostic.fixes![0]!;
-  view.dispatch({ changes: fix.edits.map((e) => ({ from: e.range.start.offset, to: e.range.end.offset, insert: e.newText })) });
+  view.dispatch({
+    changes: fix.edits.map((e) => ({
+      from: e.range.start.offset,
+      to: e.range.end.offset,
+      insert: e.newText,
+    })),
+  });
   options.onMessage?.(fix.title);
   return true;
 }
@@ -170,19 +202,22 @@ function completionSource(options: MarkupEditorOptions) {
     return {
       from,
       to: result.to,
-      options: result.items.map(
-        (item): Completion => ({
-          label: item.label,
-          type: COMPLETION_TYPES[item.kind],
-          detail: item.detail,
-          boost: item.sortText?.startsWith('0') ? 1 : 0,
-          info: item.documentation ? () => docElement(item.documentation!) : undefined,
-          apply: (view, completion, _from, to) => {
-            if (item.snippet) snippet(toCodeMirrorSnippet(item.insertText))(view, completion, result.from, to);
-            else view.dispatch({ changes: { from: result.from, to, insert: item.insertText }, selection: { anchor: result.from + item.insertText.length } });
-          },
-        }),
-      ),
+      options: result.items.map((item): Completion => ({
+        label: item.label,
+        type: COMPLETION_TYPES[item.kind],
+        detail: item.detail,
+        boost: item.sortText?.startsWith('0') ? 1 : 0,
+        info: item.documentation ? () => docElement(item.documentation!) : undefined,
+        apply: (view, completion, _from, to) => {
+          if (item.snippet)
+            snippet(toCodeMirrorSnippet(item.insertText))(view, completion, result.from, to);
+          else
+            view.dispatch({
+              changes: { from: result.from, to, insert: item.insertText },
+              selection: { anchor: result.from + item.insertText.length },
+            });
+        },
+      })),
       validFor: /^[\w-]*$/,
     };
   };
@@ -200,11 +235,19 @@ function docElement(markdown: string): HTMLElement {
 // Hover, folding, navigation
 
 function hover(options: MarkupEditorOptions): Extension {
-  return hoverTooltip((view, pos) => {
-    const info = getHover(analyze(view, options), pos);
-    if (!info) return null;
-    return { pos: info.from, end: info.to, above: true, create: () => ({ dom: docElement(info.contents) }) };
-  }, { hoverTime: 350 });
+  return hoverTooltip(
+    (view, pos) => {
+      const info = getHover(analyze(view, options), pos);
+      if (!info) return null;
+      return {
+        pos: info.from,
+        end: info.to,
+        above: true,
+        create: () => ({ dom: docElement(info.contents) }),
+      };
+    },
+    { hoverTime: 350 },
+  );
 }
 
 function folding(options: MarkupEditorOptions): Extension {
@@ -228,7 +271,11 @@ function folding(options: MarkupEditorOptions): Extension {
   });
 }
 
-export function goToDefinition(view: EditorView, options: MarkupEditorOptions, pos = view.state.selection.main.head): boolean {
+export function goToDefinition(
+  view: EditorView,
+  options: MarkupEditorOptions,
+  pos = view.state.selection.main.head,
+): boolean {
   const location = getDefinition(analyze(view, options), pos);
   if (!location) {
     options.onMessage?.('No definition found.');
@@ -257,7 +304,13 @@ export function markupLanguage(options: MarkupEditorOptions): Extension {
   return [
     highlighter(options),
     diagnostics(options),
-    autocompletion({ override: [completionSource(options)], icons: true, activateOnTyping: true, closeOnBlur: true, maxRenderedOptions: 80 }),
+    autocompletion({
+      override: [completionSource(options)],
+      icons: true,
+      activateOnTyping: true,
+      closeOnBlur: true,
+      maxRenderedOptions: 80,
+    }),
     keymap.of([
       ...completionKeymap,
       { key: 'Mod-.', run: (view) => quickFix(view, options) },
