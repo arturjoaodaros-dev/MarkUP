@@ -6,9 +6,21 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
-    ".": { "source": "./src/index.ts", "types": "./dist/index.d.ts", "default": "./dist/index.js" }
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./scroll-sync": {
+      "source": "./src/scroll-sync.ts",
+      "types": "./dist/scroll-sync.d.ts",
+      "default": "./dist/scroll-sync.js"
+    }
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit"

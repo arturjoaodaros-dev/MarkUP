@@ -1,0 +1,292 @@
+{
+  "name": "markup-lang",
+  "displayName": "MarkUP",
+  "description": "MarkUP language support: live preview, diagnostics, completion, outline and quick fixes for .markup and .mkup files.",
+  "version": "0.2.0",
+  "publisher": "markup-lang",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arturjoaodaros-dev/MarkUP"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Snippets",
+    "Formatters"
+  ],
+  "keywords": [
+    "markup",
+    "markdown",
+    "documentation",
+    "preview",
+    "components"
+  ],
+  "main": "./dist/extension.cjs",
+  "activationEvents": [
+    "onLanguage:markup"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Plugins from markup.config.json are only loaded in trusted workspaces."
+    }
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "markup",
+        "aliases": [
+          "MarkUP",
+          "markup"
+        ],
+        "extensions": [
+          ".markup",
+          ".mkup"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./media/file-icon.svg",
+          "dark": "./media/file-icon.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "markup",
+        "scopeName": "text.markup",
+        "path": "./syntaxes/markup.tmLanguage.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.javascript": "javascript",
+          "meta.embedded.block.typescript": "typescript",
+          "meta.embedded.block.tsx": "typescriptreact",
+          "meta.embedded.block.jsx": "javascriptreact",
+          "meta.embedded.block.json": "json",
+          "meta.embedded.block.css": "css",
+          "meta.embedded.block.scss": "scss",
+          "meta.embedded.block.html": "html",
+          "meta.embedded.block.xml": "xml",
+          "meta.embedded.block.python": "python",
+          "meta.embedded.block.rust": "rust",
+          "meta.embedded.block.go": "go",
+          "meta.embedded.block.java": "java",
+          "meta.embedded.block.csharp": "csharp",
+          "meta.embedded.block.cpp": "cpp",
+          "meta.embedded.block.c": "c",
+          "meta.embedded.block.shellscript": "shellscript",
+          "meta.embedded.block.powershell": "powershell",
+          "meta.embedded.block.yaml": "yaml",
+          "meta.embedded.block.sql": "sql",
+          "meta.embedded.block.diff": "diff",
+          "meta.embedded.block.markdown": "markdown",
+          "meta.embedded.block.markup": "markup"
+        }
+      }
+    ],
+    "semanticTokenScopes": [
+      {
+        "language": "markup",
+        "scopes": {
+          "keyword": [
+            "punctuation.definition.directive.markup"
+          ],
+          "class": [
+            "entity.name.tag.directive.markup"
+          ],
+          "class.deprecated": [
+            "invalid.deprecated.directive.markup"
+          ],
+          "property": [
+            "entity.other.attribute-name.markup"
+          ],
+          "string": [
+            "string.unquoted.markup"
+          ],
+          "number": [
+            "constant.numeric.markup"
+          ],
+          "variable": [
+            "entity.other.attribute-name.id.markup"
+          ]
+        }
+      }
+    ],
+    "commands": [
+      {
+        "command": "markup.showPreview",
+        "title": "Open Preview",
+        "category": "MarkUP",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "markup.showPreviewToSide",
+        "title": "Open Preview to the Side",
+        "category": "MarkUP",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "markup.exportHtml",
+        "title": "Export to HTML…",
+        "category": "MarkUP"
+      },
+      {
+        "command": "markup.insertComponent",
+        "title": "Insert Component…",
+        "category": "MarkUP"
+      },
+      {
+        "command": "markup.showComponentReference",
+        "title": "Show Component Reference",
+        "category": "MarkUP"
+      },
+      {
+        "command": "markup.restartServer",
+        "title": "Restart Language Server",
+        "category": "MarkUP"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "markup.showPreviewToSide",
+          "when": "editorLangId == markup && !notebookEditorFocused",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "markup.insertComponent",
+          "when": "editorLangId == markup",
+          "group": "1_modification"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "markup.showPreview",
+          "when": "resourceLangId == markup",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "markup.showPreview",
+          "when": "editorLangId == markup"
+        },
+        {
+          "command": "markup.showPreviewToSide",
+          "when": "editorLangId == markup"
+        },
+        {
+          "command": "markup.exportHtml",
+          "when": "editorLangId == markup"
+        },
+        {
+          "command": "markup.insertComponent",
+          "when": "editorLangId == markup"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "markup.showPreview",
+        "key": "ctrl+shift+v",
+        "mac": "cmd+shift+v",
+        "when": "editorLangId == markup"
+      },
+      {
+        "command": "markup.showPreviewToSide",
+        "key": "ctrl+k v",
+        "mac": "cmd+k v",
+        "when": "editorLangId == markup"
+      },
+      {
+        "command": "markup.insertComponent",
+        "key": "ctrl+alt+i",
+        "mac": "cmd+alt+i",
+        "when": "editorLangId == markup && editorTextFocus"
+      }
+    ],
+    "configuration": {
+      "title": "MarkUP",
+      "properties": {
+        "markup.preview.scrollSync": {
+          "type": "boolean",
+          "default": true,
+          "description": "Keep the preview and the editor scrolled to the same place."
+        },
+        "markup.preview.theme": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "light",
+            "dark"
+          ],
+          "default": "auto",
+          "enumDescriptions": [
+            "Follow the VS Code color theme",
+            "Always light",
+            "Always dark"
+          ],
+          "description": "Color scheme of the preview."
+        },
+        "markup.preview.doubleClickToEdit": {
+          "type": "boolean",
+          "default": true,
+          "description": "Double-click in the preview to jump to that line in the editor."
+        },
+        "markup.plugins.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Load plugins declared in markup.config.json (trusted workspaces only). Restart the language server after changing it."
+        },
+        "markup.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Trace the communication with the MarkUP language server."
+        }
+      }
+    },
+    "configurationDefaults": {
+      "[markup]": {
+        "editor.wordWrap": "on",
+        "editor.quickSuggestions": {
+          "other": "off",
+          "comments": "off",
+          "strings": "off"
+        },
+        "editor.wordBasedSuggestions": "off",
+        "editor.semanticHighlighting.enabled": true,
+        "editor.unicodeHighlight.ambiguousCharacters": false,
+        "editor.trimAutoWhitespace": false
+      }
+    }
+  },
+  "scripts": {
+    "build": "node --conditions=source build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "package": "node --conditions=source build.mjs --minify && vsce package --no-dependencies --out dist/markup.vsix"
+  },
+  "devDependencies": {
+    "@markup-lang/core": "0.1.0",
+    "@markup-lang/html": "0.1.0",
+    "@markup-lang/language-server": "0.1.0",
+    "@markup-lang/language-service": "0.1.0",
+    "@types/vscode": "~1.90.0",
+    "@vscode/vsce": "^4.0.0",
+    "morphdom": "^2.7.8",
+    "vscode-languageclient": "^10.1.1",
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.3.2"
+  }
+}

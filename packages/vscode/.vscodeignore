@@ -1,0 +1,11 @@
+**
+!dist/extension.cjs
+!dist/server.cjs
+!dist/preview.js
+!syntaxes/markup.tmLanguage.json
+!media/**
+!language-configuration.json
+!package.json
+!README.md
+!LICENSE
+!CHANGELOG.md

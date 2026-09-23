@@ -22,3 +22,4 @@ export {
   type Location,
 } from './navigation.ts';
 export { attributeDocs, directiveDocs } from './docs.ts';
+export { componentReference } from './reference.ts';

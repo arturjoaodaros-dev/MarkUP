@@ -10,3 +10,5 @@ packages/desktop/src-tauri/gen
 **/__snapshots__/**
 *.markup
 *.mkup
+
+packages/vscode/syntaxes/markup.tmLanguage.json

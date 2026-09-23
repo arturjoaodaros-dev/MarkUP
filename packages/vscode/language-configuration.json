@@ -1,0 +1,58 @@
+{
+  "comments": {
+    "blockComment": ["<!--", "-->"]
+  },
+  "brackets": [
+    ["[", "]"],
+    ["(", ")"],
+    ["{", "}"]
+  ],
+  "autoClosingPairs": [
+    { "open": "[", "close": "]" },
+    { "open": "(", "close": ")" },
+    { "open": "{", "close": "}" },
+    { "open": "\"", "close": "\"", "notIn": ["string"] },
+    { "open": "<!--", "close": " -->", "notIn": ["comment", "string"] }
+  ],
+  "autoCloseBefore": ";:.,=}])> \n\t",
+  "surroundingPairs": [
+    ["[", "]"],
+    ["(", ")"],
+    ["{", "}"],
+    ["*", "*"],
+    ["_", "_"],
+    ["`", "`"],
+    ["~", "~"],
+    ["\"", "\""]
+  ],
+  "folding": {
+    "offSide": false,
+    "markers": {
+      "start": "^\\s*(:{3,}[A-Za-z]|<!--\\s*#region\\b)",
+      "end": "^\\s*(:{3,}\\s*$|<!--\\s*#endregion\\b)"
+    }
+  },
+  "wordPattern": "(\\p{Alphabetic}|\\p{Number}|\\p{Nonspacing_Mark})(((\\p{Alphabetic}|\\p{Number}|\\p{Nonspacing_Mark})|[_'’-])*(\\p{Alphabetic}|\\p{Number}|\\p{Nonspacing_Mark}))?",
+  "onEnterRules": [
+    {
+      "beforeText": "^\\s*[-*+] \\[[ xX]\\] \\S.*$",
+      "action": { "indent": "none", "appendText": "- [ ] " }
+    },
+    {
+      "beforeText": "^\\s*- \\S.*$",
+      "action": { "indent": "none", "appendText": "- " }
+    },
+    {
+      "beforeText": "^\\s*\\* \\S.*$",
+      "action": { "indent": "none", "appendText": "* " }
+    },
+    {
+      "beforeText": "^\\s*\\+ \\S.*$",
+      "action": { "indent": "none", "appendText": "+ " }
+    },
+    {
+      "beforeText": "^(\\s*)> \\S.*$",
+      "action": { "indent": "none", "appendText": "> " }
+    }
+  ]
+}
