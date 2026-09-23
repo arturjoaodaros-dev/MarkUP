@@ -1,12 +1,24 @@
-node_modules
-dist
-dist-ssr
-*.local
-.DS_Store
+node_modules/
+dist/
+out/
+coverage/
 *.tsbuildinfo
-.tsbuild
 *.vsix
-.vscode-test
-packages/vscode/media
-packages/site/public
-packages/site/.build
+.vitest-cache/
+.DS_Store
+Thumbs.db
+*.log
+
+# Tauri / Rust
+packages/desktop/src-tauri/target/
+packages/desktop/src-tauri/gen/
+
+# Generated site
+site/
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+.idea/

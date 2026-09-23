@@ -1,0 +1,7 @@
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.icns binary
+*.woff2 binary
+# Fixtures that deliberately contain CRLF / CR line endings.
+packages/core/test/fixtures/eol/** -text

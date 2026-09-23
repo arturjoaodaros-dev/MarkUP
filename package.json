@@ -1,27 +1,46 @@
 {
   "name": "markup-monorepo",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.0.0",
+  "description": "MarkUP — a Markdown-compatible markup language with components, plus its parser, renderers, CLI, VS Code extension and desktop editor.",
+  "license": "MIT",
+  "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/core",
+    "packages/html",
+    "packages/text",
+    "packages/language-service",
+    "packages/language-server",
+    "packages/cli",
+    "packages/vscode",
+    "packages/desktop"
   ],
+  "engines": {
+    "node": ">=22.12"
+  },
   "scripts": {
     "build": "npm run build --workspaces --if-present",
-    "desktop:dev": "npm run tauri --workspace @markup/desktop -- dev",
-    "desktop:installer": "npm run build:installer --workspace @markup/desktop",
+    "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "npm run typecheck --workspaces --if-present",
-    "lint": "eslint packages/*/src"
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "docs:generate": "node --conditions=source scripts/generate-docs.ts",
+    "check": "npm run lint && npm run typecheck && npm test"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^7.16.1",
-    "@typescript-eslint/parser": "^7.16.1",
-    "eslint": "^8.57.0",
-    "eslint-plugin-react-hooks": "^4.6.2",
-    "eslint-plugin-react-refresh": "^0.4.7",
-    "prettier": "^3.3.2",
-    "typescript": "^5.5.3",
-    "vitest": "^2.0.2"
+    "@eslint/js": "^10.0.0",
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.11.0",
+    "fast-check": "^4.10.2",
+    "globals": "^17.12.0",
+    "jsdom": "^30.1.1",
+    "prettier": "^3.9.8",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.70.1",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.1"
   }
 }

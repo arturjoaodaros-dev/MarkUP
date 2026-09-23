@@ -1,0 +1,12 @@
+node_modules
+dist
+out
+coverage
+site
+package-lock.json
+packages/desktop/src-tauri/target
+packages/desktop/src-tauri/gen
+**/fixtures/**
+**/__snapshots__/**
+*.markup
+*.mkup
