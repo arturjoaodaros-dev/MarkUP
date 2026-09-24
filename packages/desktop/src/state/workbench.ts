@@ -451,6 +451,12 @@ export class Workbench {
     this.persist();
   }
 
+  /** Shows a sidebar view without toggling it off (sidebar tabs). */
+  selectSidebar(view: SidebarView): void {
+    this.store.set({ sidebar: view });
+    this.persist();
+  }
+
   toggleSidebar(): void {
     this.store.set((s) => ({ sidebar: s.sidebar ? null : 'explorer' }));
     this.persist();

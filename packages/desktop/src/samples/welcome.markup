@@ -4,8 +4,8 @@ title: Welcome to MarkUP
 
 # Welcome to MarkUP
 
-This is a sample workspace. Everything here is stored in your browser, so feel free to edit,
-rename and delete — **Reset samples** in the command palette brings the originals back.
+This sample workspace is stored in the browser. Edit, rename and delete files freely;
+*Reset Samples* in the command palette restores the originals.
 
 ::toc[In this file]{depth=2}
 
@@ -29,5 +29,5 @@ Inside `{…}` you get attribute suggestions, and inside a `chart` you get data 
 ## What to open next
 
 - [The showcase](showcase.markup) — every component on one page.
-- [Getting started](guides/getting-started.markup) — the syntax in five minutes.
+- [Getting started](guides/getting-started.markup) — the syntax, briefly.
 - [A broken document](drafts/broken.markup) — see how errors are reported and fixed.

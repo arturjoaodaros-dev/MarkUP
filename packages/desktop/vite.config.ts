@@ -10,7 +10,8 @@ export default defineConfig({
   envPrefix: ['VITE_', 'TAURI_ENV_'],
   build: {
     target: 'es2022',
-    sourcemap: true,
+    // The app is embedded in the executable; source maps would only add weight.
+    sourcemap: false,
     chunkSizeWarningLimit: 2000,
   },
 });

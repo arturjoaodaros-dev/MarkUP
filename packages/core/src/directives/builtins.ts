@@ -55,11 +55,16 @@ const card = defineDirective({
     href: s.string({ optional: true, description: 'Makes the title a link.', example: '/guide' }),
     icon: s.string({
       optional: true,
-      description: 'An emoji or short symbol shown before the title.',
-      example: '🚀',
+      description: 'A short symbol shown before the title.',
+      example: '1',
     }),
   },
-  examples: [{ source: ':::card[Fast]{icon=⚡}\nParses a 1 MB document in milliseconds.\n:::' }],
+  examples: [
+    {
+      source:
+        ':::card[Installation]{href=installation.md}\nMarkUP needs Node.js 22.12 or newer.\n:::',
+    },
+  ],
   snippet: ':::card[${1:Title}]\n${2:Content}\n:::',
 });
 
@@ -117,7 +122,7 @@ const tabs = defineDirective({
   examples: [
     {
       source:
-        '::::tabs\n:::tab[npm]\n```sh\nnpm install @markup-lang/cli\n```\n:::\n:::tab[pnpm]\n```sh\npnpm add @markup-lang/cli\n```\n:::\n::::',
+        '::::tabs\n:::tab[Command]\n```sh\nmarkup build docs --out site\n```\n:::\n:::tab[Configuration]\n```json\n{ "out": "site" }\n```\n:::\n::::',
     },
   ],
   snippet: '::::tabs\n:::tab[${1:First}]\n${2}\n:::\n:::tab[${3:Second}]\n${4}\n:::\n::::',
@@ -169,7 +174,9 @@ const figure = defineDirective({
       description: 'Horizontal alignment.',
     }),
   },
-  examples: [{ source: ':::figure[The MarkUP pipeline]\n![Diagram](pipeline.svg)\n:::' }],
+  examples: [
+    { source: ':::figure[Building a folder]\n```sh\nmarkup build docs --out site\n```\n:::' },
+  ],
   snippet: ':::figure[${1:Caption}]\n![${2:Alt text}](${3:image.png})\n:::',
 });
 

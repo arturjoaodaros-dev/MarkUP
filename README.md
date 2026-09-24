@@ -1,48 +1,39 @@
-<p align="center"><img src="packages/vscode/media/icon.png" width="72" alt=""></p>
+<img src="packages/vscode/media/icon.png" width="64" alt="MarkUP logo">
 
-<h1 align="center">MarkUP</h1>
+# MarkUP
 
-<p align="center">Markdown with components — a real parser, a VS Code extension, a desktop editor and a CLI, all built on one language core.</p>
+MarkUP is a markup language based on Markdown. It adds **directives** — named components with a label, attributes and a body — so documents can contain callouts, tabs, charts and other structure without raw HTML. This repository contains the parser, the HTML and text renderers, a command-line tool, a VS Code extension and a desktop editor.
 
-<p align="center"><a href="https://markup.rweb.site/">Website</a> · <a href="https://markup.rweb.site/download.html">Download for Windows</a></p>
-
----
+Documentation: **[markup.rweb.site](https://markup.rweb.site/)** · Downloads: [installation](https://markup.rweb.site/installation.html)
 
 ```markup
 ---
-title: Release 0.2
+title: Release checklist
 ---
 
-# Release 0.2
+# Release checklist
 
-Everything you know from **Markdown** still works.
-
-:::tip[New in this release]
-Components add structure where plain Markdown runs out.
+:::warning[Before tagging]
+Run `npm run check` and update `CHANGELOG.md`.
 :::
 
-:::chart
-type: bar
-data:
-  Parser: 98
-  Renderer: 91
-  Editor: 87
-:::
+| Step  | Command         |
+|-------|-----------------|
+| Test  | `npm test`      |
+| Build | `npm run build` |
 
-Press :kbd[Ctrl+Shift+P] to try the command palette. :badge[beta]{variant=warning}
+Press :kbd[Ctrl+S] to save.
 ```
 
-## Why MarkUP
+- **Markdown-compatible.** CommonMark blocks and inlines, GitHub tables, task lists, strikethrough, footnotes and front matter.
+- **One directive syntax** in three forms: `:::name` … `:::` (container), `::name` (leaf), `:name[…]` (inline). Nesting uses more colons on the outside.
+- **Parsing never fails.** Problems are diagnostics with a code, a line and column and, where possible, a fix.
+- **No raw HTML.** `<div>` is text, so documents are renderer-independent and previews are safe.
+- **Declared components.** A component is a specification (forms, label, typed attributes, content model) and a render function; plugins add new ones without changing the parser.
 
-- **Markdown first.** Paragraphs, headings, lists, links, code, tables, footnotes and front matter work as you expect. Typical Markdown files are valid MarkUP.
-- **One syntax for components.** `:::name[label]{attributes}` for blocks, `::name` for single-line components, `:name[…]` inline. Nest by adding colons. No HTML needed — and none allowed, so documents stay portable and previews are safe.
-- **Errors you can act on.** The parser never fails; it reports problems with a code, the exact line and column, and a fix when one is obvious (`:::nott` → *did you mean `note`?*).
-- **Extensible without touching the parser.** A component is a spec (forms, label, typed attributes, content model) plus a render function. Plugins add both.
-- **The same core everywhere.** The CLI, the VS Code extension and the desktop app share the parser, the validator and the language features — highlighting, completion and diagnostics are identical in every tool.
+## Build from source
 
-## Get started
-
-**Requirements:** Node.js 22.12 or newer.
+Requires Node.js 22.12 or newer.
 
 ```sh
 git clone https://github.com/arturjoaodaros-dev/MarkUP.git
@@ -51,48 +42,35 @@ npm install
 npm run build
 ```
 
-Then:
-
 ```sh
-# Check a folder for problems
-node packages/cli/dist/markup.js check examples
-
-# Build HTML pages
-node packages/cli/dist/markup.js build examples --out out
-
-# Live preview in the browser
-node packages/cli/dist/markup.js preview examples/showcase.markup --open
+node packages/cli/dist/markup.js check examples                          # report problems
+node packages/cli/dist/markup.js build examples --out out                # write HTML pages
+node packages/cli/dist/markup.js preview examples/showcase.markup --open # live preview
 ```
 
-To have a `markup` command on your PATH, run `npm link -w @markup-lang/cli`.
+`npm link -w @markup-lang/cli` puts `markup` on your `PATH`.
 
-- **Downloads:** Windows installers for MarkUP Desktop and the VS Code extension are on the [website](https://markup.rweb.site/download.html).
-- **VS Code:** `npm run package -w markup-lang` builds `packages/vscode/dist/markup.vsix`; install it with *Extensions → … → Install from VSIX*. See [docs/vscode.md](docs/vscode.md).
-- **Desktop:** `npm run dev -w @markup-lang/desktop` runs the editor in a browser; `npm run app:build -w @markup-lang/desktop` builds the native app. See [docs/desktop.md](docs/desktop.md).
-
-Read the [getting started guide](docs/getting-started.md) for a tour of the syntax.
+| Tool | Build | Documentation |
+|---|---|---|
+| VS Code extension | `npm run package -w markup-lang` → `packages/vscode/dist/markup.vsix` | [docs/vscode.md](docs/vscode.md) |
+| MarkUP Desktop | `npm run app:build -w @markup-lang/desktop` (Rust and a Windows SDK required); `npm run dev -w @markup-lang/desktop` runs it in a browser | [docs/desktop.md](docs/desktop.md) |
+| Documentation site | `npm run site` → `site/` | [docs/development.md](docs/development.md) |
 
 ## Documentation
 
-| | |
-|---|---|
-| [Getting started](docs/getting-started.md) | Install, first document, the syntax in ten minutes |
-| [Specification](docs/spec.md) | The language, precisely — enough to write another parser |
-| [Components](docs/components.md) | Every built-in component (generated) |
-| [Diagnostics](docs/errors.md) | Every error and warning code (generated) |
-| [CLI](docs/cli.md) | `markup render`, `build`, `check`, `preview`, `components` |
-| [VS Code](docs/vscode.md) | The extension and its settings |
-| [Desktop](docs/desktop.md) | MarkUP Desktop |
-| [Extending MarkUP](docs/extending.md) | Writing components and plugins |
-| [Architecture](docs/architecture.md) | How the pieces fit, and why |
-| [Development](docs/development.md) | Working on this repository |
-| [Decisions](docs/adr) | Architecture decision records |
+The documentation is in [`docs/`](docs) and published at [markup.rweb.site](https://markup.rweb.site/):
+
+- [Quick start](docs/quick-start.md), [Installation](docs/installation.md)
+- Syntax: [Markdown](docs/syntax/markdown.md), [Directives](docs/syntax/directives.md), [Attributes](docs/syntax/attributes.md), [Front matter and data](docs/syntax/data.md)
+- [Components](docs/components.md) and [Diagnostics](docs/errors.md) (generated from the source)
+- [Specification](docs/spec.md) — precise enough to write another parser
+- [Extending MarkUP](docs/extending.md), [Architecture](docs/architecture.md), [design decisions](docs/adr)
 
 ## Repository
 
 ```
 packages/
-  core/              @markup-lang/core              parser, AST, component specs, data syntax, validation
+  core/              @markup-lang/core              parser, syntax tree, component specs, data syntax, validation
   html/              @markup-lang/html              HTML renderer, SVG charts, theme
   text/              @markup-lang/text              plain-text renderer, word counts
   language-service/  @markup-lang/language-service  completion, hover, outline, highlighting, navigation
@@ -102,11 +80,10 @@ packages/
   desktop/           @markup-lang/desktop           Tauri + React editor
 docs/                                               documentation
 examples/                                           sample documents and a sample plugin
+scripts/                                            documentation generators, site builder, icons
 ```
 
-## Contributing
-
-Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). `npm run check` runs lint, type checks and the full test suite.
+`npm run check` runs lint, type checks and the test suite. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

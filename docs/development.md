@@ -34,7 +34,7 @@ Sources use `.ts` extensions in relative imports and only erasable TypeScript sy
 | Desktop native | `npm run app:dev -w @markup-lang/desktop` |
 | VS Code extension | `npm run package -w markup-lang`, or *Run Extension* in VS Code |
 | Regenerate reference docs | `npm run docs:generate` |
-| Documentation website | `npm run site` → `site/` (see `scripts/site.ts`) |
+| Documentation website | `npm run site` → `site/` (see `scripts/site/build.ts`) |
 | Format | `npm run format` |
 
 ## Tests
@@ -74,7 +74,7 @@ When you fix a bug, add the input that triggered it to the tests of the relevant
 - CLI: `npm publish -w @markup-lang/cli` (the bundle has no runtime dependencies).
 - VS Code: `npm run package -w markup-lang`, then `vsce publish` from `packages/vscode`.
 - Desktop: `npm run app:build -w @markup-lang/desktop` on each target platform.
-- Website and downloads: bump the versions named in `docs/download.md` (and `tauri.conf.json` for a new desktop release), then push to `main`.
+- Website and downloads: bump the versions named in `docs/installation.md` (and `tauri.conf.json` for a new desktop release), then push to `main`.
   - Vercel builds the site and the VSIX (`vercel.json`) and serves them at [markup.rweb.site](https://markup.rweb.site).
   - The *Desktop release* workflow builds the Windows installers once per desktop version and publishes them as the latest GitHub release; the site's `downloads/MarkUP-*` links redirect there. Run the workflow by hand to rebuild the current version.
   - Locally, `npm run site -- --require-downloads` builds the whole site with every download after the desktop and VSIX builds.

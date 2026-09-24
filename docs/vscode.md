@@ -1,8 +1,10 @@
 # MarkUP for VS Code
 
-The extension (`packages/vscode`) adds full language support for `.markup` and `.mkup` files. Language features come from the MarkUP language server, which uses the same core as the CLI and the desktop app.
+The extension (`packages/vscode`) adds language support for `.markup` and `.mkup` files. Language features come from the MarkUP language server, which uses the same core as the CLI and the desktop app.
 
 ## Install
+
+Download `markup.vsix` from [Installation](installation.md#vs-code-extension), or build it:
 
 ```sh
 npm install
@@ -55,7 +57,7 @@ Suggestions never pop up while you write prose; they appear after the characters
 | `markup.plugins.enable` | `true` | Load plugins from `markup.config.json` in trusted workspaces. |
 | `markup.trace.server` | `off` | Log language server traffic to the output panel. |
 
-For MarkUP files the extension sets sensible editor defaults: word wrap on, no automatic word suggestions in prose, semantic highlighting on.
+For MarkUP files the extension sets these editor defaults: word wrap on, no automatic word suggestions in prose, semantic highlighting on.
 
 ## Plugins and workspace trust
 

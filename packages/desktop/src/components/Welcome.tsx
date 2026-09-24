@@ -1,85 +1,86 @@
-import { BookOpen, FilePlus, FolderOpen, History } from 'lucide-react';
 import { useAppState, useWorkbench } from '../context.ts';
 import { basename } from '../fs/types.ts';
 import { formatShortcut } from '../lib/keys.ts';
+import { Logo } from './Logo.tsx';
 
+/** Shown when no document is open: how to start, recent folders, the essential shortcuts. */
 export function Welcome() {
-  const { wb } = useWorkbench();
+  const { wb, commands } = useWorkbench();
   const workspace = useAppState((s) => s.workspace);
   const recent = useAppState((s) => s.recent);
+  const byId = new Map(commands.map((c) => [c.id, c]));
+
+  const action = (id: string, label?: string) => {
+    const command = byId.get(id);
+    if (!command || command.available?.() === false) return null;
+    const shortcut = command.shortcuts?.[0];
+    return (
+      <li key={id}>
+        <button type="button" className="start-link" onClick={() => void command.run()}>
+          {label ?? command.title}
+        </button>
+        {shortcut && <kbd>{formatShortcut(shortcut)}</kbd>}
+      </li>
+    );
+  };
 
   return (
     <div className="welcome">
       <div className="welcome-inner">
-        <img className="welcome-logo" src="/icon.svg" alt="" width={56} height={56} />
-        <h1>MarkUP</h1>
-        <p className="welcome-tagline">
-          Markdown with components. Write, check and preview in one place.
+        <h1>
+          {!workspace && <Logo size={24} />}
+          {workspace ? workspace.name : 'MarkUP'}
+        </h1>
+        <p className="welcome-lead">
+          {workspace
+            ? 'Open a file from the sidebar, or:'
+            : 'Open a folder of .markup, .mkup or .md files to start.'}
         </p>
 
-        <div className="welcome-actions">
-          {workspace ? (
-            <button
-              type="button"
-              className="button is-primary"
-              onClick={() => wb.startCreate('new-file')}
-            >
-              <FilePlus size={16} /> New file
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="button is-primary"
-              onClick={() => void wb.pickAndOpenFolder()}
-            >
-              <FolderOpen size={16} /> Open folder
-            </button>
-          )}
-          {wb.fs.kind === 'memory' && (
-            <button type="button" className="button" onClick={() => void wb.openSamples()}>
-              <BookOpen size={16} /> Open samples
-            </button>
-          )}
-          {workspace && (
-            <button type="button" className="button" onClick={() => wb.openPalette('files')}>
-              Go to file… <kbd>{formatShortcut('mod+p')}</kbd>
-            </button>
-          )}
-        </div>
+        <section>
+          <h2>Start</h2>
+          <ul className="start-list">
+            {workspace ? (
+              <>
+                {action('file.new')}
+                {action('palette.files')}
+              </>
+            ) : (
+              action('file.openFolder')
+            )}
+            {action('workspace.samples')}
+          </ul>
+        </section>
 
         {!workspace && recent.length > 0 && (
-          <div className="welcome-section">
-            <h2>
-              <History size={14} /> Recent
-            </h2>
-            <ul className="welcome-recent">
+          <section>
+            <h2>Recent</h2>
+            <ul className="start-list">
               {recent.map((path) => (
                 <li key={path}>
-                  <button type="button" onClick={() => void wb.openWorkspace(path)}>
-                    <span className="recent-name">{basename(path) || path}</span>
-                    <span className="recent-path">{path}</span>
+                  <button
+                    type="button"
+                    className="start-link"
+                    onClick={() => void wb.openWorkspace(path)}
+                  >
+                    {basename(path) || path}
                   </button>
+                  <span className="start-path">{path}</span>
                 </li>
               ))}
             </ul>
-          </div>
+          </section>
         )}
 
-        <dl className="welcome-keys">
-          {[
-            ['Command palette', 'mod+shift+p'],
-            ['Quick open', 'mod+p'],
-            ['Insert component', 'mod+alt+i'],
-            ['Toggle preview', 'mod+\\'],
-          ].map(([label, key]) => (
-            <div key={key}>
-              <dt>{label}</dt>
-              <dd>
-                <kbd>{formatShortcut(key!)}</kbd>
-              </dd>
-            </div>
-          ))}
-        </dl>
+        <section>
+          <h2>Help</h2>
+          <ul className="start-list">
+            {action('palette.commands')}
+            {action('edit.insertComponent')}
+            {action('help.shortcuts')}
+            {action('help.syntax')}
+          </ul>
+        </section>
       </div>
     </div>
   );

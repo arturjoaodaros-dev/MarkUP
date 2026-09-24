@@ -5,7 +5,6 @@ import { useAppState, useWorkbench } from '../context.ts';
 import { editor } from '../editor/controller.ts';
 import { relative } from '../fs/types.ts';
 import { FileIcon } from './Explorer.tsx';
-import { PanelHeader } from './Sidebar.tsx';
 
 export function ProblemsView() {
   const { wb } = useWorkbench();
@@ -46,7 +45,6 @@ export function ProblemsView() {
 
   return (
     <section className="panel" aria-label="Problems">
-      <PanelHeader title="Problems" />
       <div className="results">
         {details.length === 0 && <p className="panel-empty">No problems in this workspace.</p>}
         {details.map(({ path, diagnostics }) => (

@@ -1,6 +1,6 @@
 # Getting started
 
-MarkUP is Markdown with components. If you know Markdown, you already know most of it.
+MarkUP is Markdown with directives: named components with a label, attributes and a body.
 
 ## Text
 
@@ -18,18 +18,18 @@ This is a note. The body is regular MarkUP.
 
 A label in brackets gives it a title, and attributes go in braces:
 
-:::card[Deploy]{icon=🚀}
+:::card[Deploy]{#deploy}
 Push to `main` and the site rebuilds.
 :::
 
 Nest components by using more colons on the outside:
 
 ::::tabs
-:::tab[First]
-One
+:::tab[npm]
+`npm run build`
 :::
-:::tab[Second]
-Two
+:::tab[CLI]
+`markup build docs --out site`
 :::
 ::::
 
@@ -39,7 +39,7 @@ Inline components sit inside text: press :kbd[Ctrl+S] to save, :badge[new]{varia
 
 Some components take data instead of text:
 
-:::chart{type=pie}
+:::chart{type=pie title="Sample data"}
 data:
   Reading: 45
   Writing: 35

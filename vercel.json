@@ -5,6 +5,16 @@
   "outputDirectory": "site",
   "redirects": [
     {
+      "source": "/download.html",
+      "destination": "/installation.html",
+      "permanent": true
+    },
+    {
+      "source": "/getting-started.html",
+      "destination": "/quick-start.html",
+      "permanent": true
+    },
+    {
       "source": "/downloads/:file(MarkUP-.+|SHA256SUMS[.]txt)",
       "destination": "https://github.com/arturjoaodaros-dev/MarkUP/releases/latest/download/:file",
       "permanent": false

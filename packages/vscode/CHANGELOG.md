@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+
+- New MarkUP logo for the extension and for `.markup` / `.mkup` files, with light and dark file icons.
+
 ## 0.2.0
 
 Rebuilt from scratch on the new MarkUP core.

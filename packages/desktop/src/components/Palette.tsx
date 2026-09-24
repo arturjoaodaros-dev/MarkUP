@@ -82,7 +82,10 @@ function PaletteDialog({
             item: {
               key: c.id,
               label: `${c.category}: ${c.title}`,
-              hint: c.shortcuts?.[0] ? formatShortcut(c.shortcuts[0]) : undefined,
+              hint:
+                (c.shortcuts?.[0] ?? c.hint)
+                  ? formatShortcut((c.shortcuts?.[0] ?? c.hint)!)
+                  : undefined,
               run: () => void c.run(),
             },
             indices: match.indices,

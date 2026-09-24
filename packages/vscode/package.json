@@ -2,7 +2,7 @@
   "name": "markup-lang",
   "displayName": "MarkUP",
   "description": "MarkUP language support: live preview, diagnostics, completion, outline and quick fixes for .markup and .mkup files.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "markup-lang",
   "license": "MIT",
   "private": true,
@@ -52,8 +52,8 @@
         ],
         "configuration": "./language-configuration.json",
         "icon": {
-          "light": "./media/file-icon.svg",
-          "dark": "./media/file-icon.svg"
+          "light": "./media/file-icon-light.svg",
+          "dark": "./media/file-icon-dark.svg"
         }
       }
     ],

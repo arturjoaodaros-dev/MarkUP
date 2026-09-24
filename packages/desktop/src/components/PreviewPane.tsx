@@ -10,12 +10,15 @@ import { resolvedTheme } from '../state/settings.ts';
 
 const PREVIEW_CSS = `
 :host { display: block; height: 100%; overflow: auto; }
-:host([data-theme="dark"]) { background: #16181d; }
+:host([data-theme="dark"]) { background: #1f2124; }
 :host([data-theme="light"]) { background: #ffffff; }
 .markup-body { min-height: 100%; box-sizing: border-box; padding: 36px 40px 30vh; }
 .markup-body :where(a) { cursor: pointer; }
-.mu-flash { outline: 2px solid color-mix(in srgb, var(--mu-accent) 45%, transparent); outline-offset: 4px; border-radius: 4px; }
+.mu-flash { outline: 2px solid color-mix(in srgb, var(--mu-accent) 45%, transparent); outline-offset: 4px; }
 ${MARKUP_CSS}
+/* Match the editor surface. */
+.markup-body { font-size: 15px; }
+.markup-body[data-theme="dark"] { --mu-bg: #1f2124; }
 `;
 
 const ABSOLUTE = /^[a-z][a-z0-9+.-]*:/i;

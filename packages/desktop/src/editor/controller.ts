@@ -1,3 +1,4 @@
+import { redo, undo } from '@codemirror/commands';
 import { foldAll, unfoldAll } from '@codemirror/language';
 import { openSearchPanel } from '@codemirror/search';
 import { EditorSelection } from '@codemirror/state';
@@ -70,6 +71,14 @@ export const editor = {
       block && from > line.from + (/^\s*/.exec(line.text)?.[0].length ?? 0) ? '\n' : '';
     snippet(prefix + toCodeMirrorSnippet(template))(view, { label: 'component' }, from, to);
     view.focus();
+  },
+
+  undo(): void {
+    if (this.view) undo(this.view);
+  },
+
+  redo(): void {
+    if (this.view) redo(this.view);
   },
 
   find(): void {

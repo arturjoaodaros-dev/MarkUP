@@ -1,6 +1,13 @@
 # Changelog
 
-## 0.1.0 — unreleased
+## MarkUP Desktop 0.2.0, VS Code extension 0.2.1
+
+- New logo: app, installer, file and site icons.
+- Desktop: a menu bar (File, Edit, View, Go, Help) with every command and its shortcut, sidebar tabs instead of the icon rail, a plain start page, and a gray and navy color scheme with the system UI font. Undo and redo in the Edit menu; Help links to the documentation.
+- Documentation site: sidebar navigation, a table of contents per page, search, MarkUP syntax highlighting, rendered results under examples, previous/next links, sitemap and 404 page. New pages for installation, quick start and the syntax (Markdown, directives, attributes, front matter and data).
+- Document theme: neutral colors without purple, smaller corner radii.
+
+## 0.1.0
 
 MarkUP was rebuilt from scratch.
 

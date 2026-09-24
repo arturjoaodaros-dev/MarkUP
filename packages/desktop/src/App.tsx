@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
-import { ActivityBar } from './components/ActivityBar.tsx';
 import { EditorArea } from './components/EditorArea.tsx';
+import { MenuBar } from './components/MenuBar.tsx';
 import { Palette } from './components/Palette.tsx';
 import { SettingsDialog } from './components/SettingsDialog.tsx';
 import { Sidebar } from './components/Sidebar.tsx';
@@ -115,8 +115,8 @@ function Shell() {
 
   return (
     <div className="app" style={{ ['--editor-font-size' as string]: `${settings.fontSize}px` }}>
+      <MenuBar />
       <div className="app-main">
-        <ActivityBar />
         {sidebar && workspace && <Sidebar view={sidebar} />}
         <EditorArea />
       </div>

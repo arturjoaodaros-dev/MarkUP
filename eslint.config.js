@@ -39,6 +39,10 @@ export default tseslint.config(
     languageOptions: { globals: { ...globals.browser } },
   },
   {
+    files: ['scripts/site/site.js'],
+    languageOptions: { sourceType: 'script', globals: { ...globals.browser } },
+  },
+  {
     files: ['packages/vscode/media/**/*.js'],
     languageOptions: { globals: { ...globals.browser, acquireVsCodeApi: 'readonly' } },
   },

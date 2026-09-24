@@ -4,7 +4,6 @@ import { useAppState, useWorkbench } from '../context.ts';
 import { editor } from '../editor/controller.ts';
 import { flatten, relative } from '../fs/types.ts';
 import { FileIcon, IconButton } from './Explorer.tsx';
-import { PanelHeader } from './Sidebar.tsx';
 
 const SEARCHABLE = /\.(markup|mkup|md|txt|json|css|html|ya?ml)$/i;
 const MAX_RESULTS = 2000;
@@ -106,7 +105,6 @@ export function SearchView() {
 
   return (
     <section className="panel" aria-label="Search">
-      <PanelHeader title="Search" />
       <div className="search-box">
         <input
           ref={input}

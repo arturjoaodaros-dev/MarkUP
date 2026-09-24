@@ -15,7 +15,8 @@ export function SettingsDialog() {
 function Dialog() {
   const { wb, commands } = useWorkbench();
   const settings = useAppState((s) => s.settings);
-  const [tab, setTab] = useState<Tab>('general');
+  const initial = useAppState((s) => s.settingsOpen);
+  const [tab, setTab] = useState<Tab>(initial === 'shortcuts' ? 'shortcuts' : 'general');
   const dialog = useRef<HTMLDivElement>(null);
   const close = () => wb.store.set({ settingsOpen: false });
   const set = <K extends keyof Settings>(key: K, value: Settings[K]) =>
@@ -159,14 +160,14 @@ function Dialog() {
             <table className="shortcuts">
               <tbody>
                 {commands
-                  .filter((c) => c.shortcuts?.length)
+                  .filter((c) => c.shortcuts?.length || c.hint)
                   .map((c) => (
                     <tr key={c.id}>
                       <td>
                         <span className="muted">{c.category}:</span> {c.title}
                       </td>
                       <td>
-                        {c.shortcuts!.map((s) => (
+                        {(c.shortcuts ?? [c.hint!]).map((s) => (
                           <kbd key={s}>{formatShortcut(s)}</kbd>
                         ))}
                       </td>

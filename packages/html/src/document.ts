@@ -58,8 +58,8 @@ export function renderDocument(document: Document, options: DocumentOptions = {}
 <title>${escapeHtml(title)}</title>
 ${meta.description ? `<meta name="description" content="${escapeHtml(meta.description)}">\n` : ''}<style>
 html { background: var(--mu-page, #ffffff); }
-@media (prefers-color-scheme: dark) { html:not([data-theme="light"]) { --mu-page: #16181d; } }
-html[data-theme="dark"] { --mu-page: #16181d; }
+@media (prefers-color-scheme: dark) { html:not([data-theme="light"]) { --mu-page: #1c1e21; } }
+html[data-theme="dark"] { --mu-page: #1c1e21; }
 html[data-theme="light"] { --mu-page: #ffffff; }
 body { margin: 0; }
 ${MARKUP_CSS}

@@ -32,7 +32,7 @@ The key words MUST, MUST NOT, SHOULD and MAY are used as in RFC 2119. Examples u
 MarkUP is a plain-text markup language. It keeps the Markdown syntax people already know — headings, emphasis, lists, links, code, tables — and adds **directives**: named components with a label, attributes and a body.
 
 ```markup
-:::card[Deploy]{icon=🚀}
+:::card[Deploy]{href="deploy.md"}
 Push to `main` and the site rebuilds.
 :::
 ```

@@ -1,12 +1,16 @@
 import { editor } from '../editor/controller.ts';
 import type { Workbench } from './workbench.ts';
 
+const DOCS_URL = 'https://markup.rweb.site/';
+
 export interface Command {
   id: string;
   title: string;
   category: 'File' | 'View' | 'Go' | 'Edit' | 'Preferences' | 'Help' | 'Workspace';
   /** `mod+shift+p` style; the first one is shown in menus. */
   shortcuts?: string[];
+  /** A shortcut handled elsewhere (e.g. by the editor), shown in menus but not bound globally. */
+  hint?: string;
   run: () => void | Promise<void>;
   /** Hidden from the palette when false. */
   available?: () => boolean;
@@ -53,6 +57,22 @@ export function createCommands(wb: Workbench): Command[] {
       category: 'Edit',
       shortcuts: ['mod+alt+i'],
       run: () => wb.openPalette('components'),
+      available: hasDoc,
+    },
+    {
+      id: 'edit.undo',
+      title: 'Undo',
+      category: 'Edit',
+      hint: 'mod+z',
+      run: () => editor.undo(),
+      available: hasDoc,
+    },
+    {
+      id: 'edit.redo',
+      title: 'Redo',
+      category: 'Edit',
+      hint: 'mod+shift+z',
+      run: () => editor.redo(),
       available: hasDoc,
     },
     {
@@ -265,7 +285,7 @@ export function createCommands(wb: Workbench): Command[] {
       title: 'Open Settings',
       category: 'Preferences',
       shortcuts: ['mod+,'],
-      run: () => wb.store.set({ settingsOpen: true }),
+      run: () => wb.store.set({ settingsOpen: 'settings' }),
     },
     {
       id: 'settings.theme',
@@ -294,6 +314,30 @@ export function createCommands(wb: Workbench): Command[] {
       title: 'Toggle Scroll Sync',
       category: 'Preferences',
       run: () => wb.updateSettings({ scrollSync: !wb.state.settings.scrollSync }),
+    },
+    {
+      id: 'help.shortcuts',
+      title: 'Keyboard Shortcuts',
+      category: 'Help',
+      run: () => wb.store.set({ settingsOpen: 'shortcuts' }),
+    },
+    {
+      id: 'help.docs',
+      title: 'Documentation',
+      category: 'Help',
+      run: () => wb.fs.openExternal(DOCS_URL),
+    },
+    {
+      id: 'help.syntax',
+      title: 'Syntax Reference',
+      category: 'Help',
+      run: () => wb.fs.openExternal(`${DOCS_URL}syntax/directives.html`),
+    },
+    {
+      id: 'help.issue',
+      title: 'Report an Issue',
+      category: 'Help',
+      run: () => wb.fs.openExternal('https://github.com/arturjoaodaros-dev/MarkUP/issues'),
     },
   ];
 }

@@ -1,60 +1,61 @@
 ---
 title: MarkUP showcase
-description: Every feature of MarkUP on one page.
+description: Every construct of MarkUP in one document.
 ---
 
 # MarkUP showcase
 
-MarkUP is **Markdown with components**. Everything you know from Markdown works —
-*emphasis*, `code`, [links](https://github.com), ~~strikethrough~~ and footnotes[^why] —
-and components add structure where plain Markdown runs out. :badge[v0.1]{variant=info}
+This document uses every construct of the language. Markdown works as usual —
+*emphasis*, **strong**, `code`, [links](https://github.com/arturjoaodaros-dev/MarkUP),
+~~strikethrough~~ and footnotes[^footnotes] — and directives add components.
 
 ::toc[On this page]{depth=3}
 
 ## Callouts
 
 :::note
-Callouts highlight information. There are five kinds: `note`, `tip`, `important`, `warning` and `caution`.
+Callouts mark information that stands apart from the text. There are five: `note`, `tip`,
+`important`, `warning` and `caution`.
 :::
 
-:::tip[Keyboard first]
-Press :kbd[Ctrl+Shift+P] in the desktop app to open the command palette.
+:::tip[Keyboard]
+Press :kbd[Ctrl+Shift+P] in MarkUP Desktop to open the command palette.
 :::
 
 :::warning{collapsible}
-This one is collapsible. The body stays hidden until the reader opens it.
+A collapsible callout. The body is hidden until the reader opens it.
 :::
 
 ## Layout
 
 ::::columns
 :::column
-:::card[Fast]{icon=⚡}
-Parses a megabyte of MarkUP in a fraction of a second.
+:::card[Parser]
+`@markup-lang/core` reads blocks, inlines, directives and data into a syntax tree with positions.
 :::
 :::
 :::column
-:::card[Safe]{icon=🛡️}
-No raw HTML, and unsafe URLs never reach the output.
+:::card[Renderers]
+`@markup-lang/html` and `@markup-lang/text` turn the tree into HTML or plain text.
 :::
 :::
 :::column
-:::card[Extensible]{icon=🧩}
-New components are plugins — the parser never changes.
+:::card[Editors]
+The language service gives VS Code and MarkUP Desktop the same completion and diagnostics.
 :::
 :::
 ::::
 
 ::::tabs
-:::tab[npm]
-```sh
-npm install --global @markup-lang/cli
-```
-:::
-:::tab[From source]
+:::tab[Build from source]
 ```sh
 git clone https://github.com/arturjoaodaros-dev/MarkUP
 cd MarkUP && npm install && npm run build
+```
+:::
+:::tab[Run the CLI]
+```sh
+node packages/cli/dist/markup.js build examples --out site
 ```
 :::
 ::::
@@ -63,62 +64,63 @@ cd MarkUP && npm install && npm run build
 
 :::chart
 type: bar
-title: Favourite languages
-unit: " pts"
+title: Built-in components by category
 data:
-  Python: 80
-  JavaScript: 60
-  Rust: 40
-  Go: 35
+  Callouts: 5
+  Layout: 5
+  Content: 3
+  Inline: 3
+  Data: 1
+  Navigation: 1
 :::
 
 :::chart{type=line}
-title: Monthly active documents
-labels: [Jan, Feb, Mar, Apr, May, Jun]
+title: Sample data — requests per hour
+labels: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00"]
 series:
-  - name: 2025
-    values: [120, 180, 170, 240, 260, 310]
-  - name: 2026
-    values: [200, 260, 330, 390, 470, 560]
+  - name: Monday
+    values: [120, 180, 170, 240, 260, 210]
+  - name: Tuesday
+    values: [100, 160, 210, 230, 250, 240]
 :::
 
 ::::columns{align=center}
 :::column
 :::chart{type=donut height=220}
-title: Build targets
+title: Diagnostic codes
 data:
-  Web: 45
-  Desktop: 30
-  CLI: 25
+  Syntax: 16
+  Data: 4
+  Validation: 17
+  Internal: 1
 :::
 :::
 :::column
-| Target  | Share | Status |
-|:--------|------:|:------:|
-| Web     |   45% | :badge[stable]{variant=success} |
-| Desktop |   30% | :badge[beta]{variant=warning} |
-| CLI     |   25% | :badge[stable]{variant=success} |
+| Range  | Codes | Kind |
+|:-------|------:|:-----|
+| MU1xxx |    16 | :badge[syntax]{variant=danger} |
+| MU15xx |     4 | :badge[data]{variant=warning} |
+| MU2xxx |    17 | :badge[validation]{variant=info} |
+| MU9xxx |     1 | :badge[internal] |
 
-::progress[Documentation]{value=72}
+::progress[Chapter 3 of 5]{value=3 max=5}
 :::
 ::::
 
 ## Text
 
-> MarkUP keeps Markdown readable as plain text.
-> Components read like what they are.
+> A block quote. It can contain any block, including components.
 
-1. Write in any editor.
+1. Write the document in any editor.
 2. Check it with `markup check`.
 3. Build it with `markup build`.
 
-- [x] Parser
-- [x] Renderers
-- [ ] World domination
+- [x] Windows installer
+- [ ] macOS and Linux packages
 
-:::details[What about raw HTML?]
-MarkUP deliberately has no raw HTML: `<div>` is shown as text. This keeps documents
-portable across renderers and makes previews safe. Use :abbr[CSS]{title="Cascading Style Sheets"} classes on components instead.
+:::details[Why is there no raw HTML?]
+`<div>` is shown as text. Documents stay independent of the output format, and previews
+are safe. Use components, and :abbr[CSS]{title="Cascading Style Sheets"} classes on them, instead.
 :::
 
 ```ts {title="render.ts"}
@@ -127,4 +129,4 @@ import { markupToHtml } from '@markup-lang/html';
 const { html, diagnostics } = markupToHtml('# Hello');
 ```
 
-[^why]: Footnotes are collected at the end of the document, with links back to each reference.
+[^footnotes]: Footnotes are collected at the end of the document, with links back to each reference.

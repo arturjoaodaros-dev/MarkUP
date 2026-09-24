@@ -1,9 +1,7 @@
-import { Box, Hash } from 'lucide-react';
 import { useMemo } from 'react';
 import { getSymbols, type DocumentSymbol } from '@markup-lang/language-service';
 import { useAppState, useWorkbench } from '../context.ts';
 import { editor } from '../editor/controller.ts';
-import { PanelHeader } from './Sidebar.tsx';
 
 export function OutlineView() {
   const { wb } = useWorkbench();
@@ -41,11 +39,7 @@ export function OutlineView() {
           style={{ paddingLeft: 10 + depth * 14 }}
           onClick={() => editor.select(symbol.selectionFrom)}
         >
-          {symbol.kind === 'component' ? (
-            <Box size={13} className="outline-icon is-component" />
-          ) : (
-            <Hash size={13} className="outline-icon" />
-          )}
+          {symbol.kind === 'component' && <span className="outline-marker">:::</span>}
           <span className="tree-label">{symbol.name}</span>
           {symbol.kind === 'heading' && <span className="outline-detail">{symbol.detail}</span>}
         </button>
@@ -55,7 +49,6 @@ export function OutlineView() {
 
   return (
     <section className="panel" aria-label="Outline">
-      <PanelHeader title="Outline" />
       <div className="outline">
         {!active && <p className="panel-empty">Open a document to see its outline.</p>}
         {active && symbols.length === 0 && (

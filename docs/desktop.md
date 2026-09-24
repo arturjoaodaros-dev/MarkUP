@@ -1,12 +1,12 @@
 # MarkUP Desktop
 
-A focused editor for MarkUP documents: a file explorer, tabs, an editor that understands the language, and a live preview — in a native window built with [Tauri](https://tauri.app) (Rust + the system WebView), with a React front end.
+An editor for MarkUP documents: a file tree, tabs, an editor with completion and diagnostics from the MarkUP language service, and a live preview. It is a [Tauri](https://tauri.app) application (Rust and the system WebView) with a React front end.
 
-## Run it
+Windows installers are listed in [Installation](installation.md#markup-desktop).
 
-**Installed**: Windows installers and a portable build are on the [download page](download.md).
+## Building from source
 
-**In a browser** (no native toolchain needed; files live in the browser's storage, with sample documents):
+**In a browser** (no native toolchain; files are kept in browser storage, with sample documents):
 
 ```sh
 npm install
@@ -24,9 +24,11 @@ If Rust cannot find the MSVC linker on Windows, run the commands from a *Develop
 
 The installer associates `.markup` and `.mkup` files with the app; opening one opens its folder with the file in a tab.
 
-## Tour
+## The window
 
-- **Explorer** — the folder's files. Right-click for *New File*, *New Folder*, *Rename* (`F2`), *Delete* (to the system trash), *Copy Path*. Files with errors or warnings are colored and counted.
+The menu bar (*File*, *Edit*, *View*, *Go*, *Help*) lists every command with its shortcut; `Alt` or `F10` moves the focus to it. The sidebar has four tabs — *Files*, *Search*, *Outline* and *Problems* — and `Ctrl+B` hides it. Editor and preview share the rest of the window; the status bar shows the folder, the file, problem counts, the cursor position and a word count.
+
+- **Files** — the folder's files. Right-click for *New File*, *New Folder*, *Rename* (`F2`), *Delete* (to the system trash), *Copy Path*. Files with errors or warnings are colored and counted.
 - **Tabs** — each keeps its own undo history and selection. Middle-click closes. A dot marks unsaved changes; you are always asked before unsaved work is discarded.
 - **Editor** — highlighting, errors, completion and hover all come from the MarkUP language service (the same one used by VS Code): type `:::` for components, `{` for attributes, `](#` for headings. `Ctrl+.` applies a quick fix, `F12` or `Ctrl+Click` goes to a definition.
 - **Preview** — renders as you type and scrolls with the editor. Double-click an element to jump to its source. Links to other documents open them in a tab.

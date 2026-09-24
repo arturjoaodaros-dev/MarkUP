@@ -33,7 +33,8 @@ export interface State {
   sidebarWidth: number;
   split: number;
   palette: { mode: PaletteMode; query: string } | null;
-  settingsOpen: boolean;
+  /** The settings dialog and the tab it shows, or false when closed. */
+  settingsOpen: false | 'settings' | 'shortcuts';
   settings: Settings;
   cursor: { line: number; column: number; selected: number };
   toasts: Toast[];

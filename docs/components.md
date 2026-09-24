@@ -109,11 +109,11 @@ A bordered surface that groups related content. Several cards in a row inside `c
 | Attribute | Type | Default | Description |
 |---|---|---|---|
 | `href` | string | — | Makes the title a link. |
-| `icon` | string | — | An emoji or short symbol shown before the title. |
+| `icon` | string | — | A short symbol shown before the title. |
 
 ```markup
-:::card[Fast]{icon=⚡}
-Parses a 1 MB document in milliseconds.
+:::card[Installation]{href=installation.md}
+MarkUP needs Node.js 22.12 or newer.
 :::
 ```
 
@@ -163,14 +163,14 @@ May only contain `tab`.
 
 ~~~~markup
 ::::tabs
-:::tab[npm]
+:::tab[Command]
 ```sh
-npm install @markup-lang/cli
+markup build docs --out site
 ```
 :::
-:::tab[pnpm]
-```sh
-pnpm add @markup-lang/cli
+:::tab[Configuration]
+```json
+{ "out": "site" }
 ```
 :::
 ::::
@@ -222,11 +222,13 @@ Self-contained content — usually an image, diagram or code — with an optiona
 |---|---|---|---|
 | `align` | "left" \| "center" \| "right" | `center` | Horizontal alignment. |
 
-```markup
-:::figure[The MarkUP pipeline]
-![Diagram](pipeline.svg)
-:::
+~~~~markup
+:::figure[Building a folder]
+```sh
+markup build docs --out site
 ```
+:::
+~~~~
 
 ### progress
 

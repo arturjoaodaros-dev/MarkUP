@@ -1,4 +1,3 @@
-import '@fontsource-variable/inter';
 import '@fontsource-variable/jetbrains-mono';
 import './styles/app.css';
 import './styles/editor.css';

@@ -1,11 +1,11 @@
-import { Code, Columns2, Download, Eye, X } from 'lucide-react';
+import { Code, Columns2, Eye, X } from 'lucide-react';
 import { useRef } from 'react';
 import { useAppState, useWorkbench } from '../context.ts';
 import { basename } from '../fs/types.ts';
 import { formatShortcut } from '../lib/keys.ts';
 import { isDirty, type ViewMode } from '../state/store.ts';
 import { EditorPane } from './EditorPane.tsx';
-import { FileIcon, IconButton } from './Explorer.tsx';
+import { FileIcon } from './Explorer.tsx';
 import { PreviewPane } from './PreviewPane.tsx';
 import { Splitter } from './Splitter.tsx';
 import { Welcome } from './Welcome.tsx';
@@ -59,12 +59,6 @@ export function EditorArea() {
               </button>
             ))}
           </div>
-          <IconButton
-            label={`Export to HTML (${formatShortcut('mod+shift+s')})`}
-            onClick={() => void wb.exportHtml()}
-          >
-            <Download size={15} />
-          </IconButton>
         </div>
       </div>
       <div ref={body} className={`editor-body is-${view}`}>
