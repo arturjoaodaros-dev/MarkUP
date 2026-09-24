@@ -14,7 +14,7 @@ packages/desktop/src-tauri/target/
 packages/desktop/src-tauri/gen/
 
 # Generated site
-site/
+/site/
 
 # Editor
 .vscode/*
