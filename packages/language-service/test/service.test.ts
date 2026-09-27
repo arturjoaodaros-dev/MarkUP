@@ -7,6 +7,7 @@ import {
   getCompletions,
   getDefinition,
   getDocumentLinks,
+  linkedDocument,
   getFoldingRanges,
   getHighlights,
   getHover,
@@ -256,6 +257,30 @@ describe('navigation and fixes', () => {
       ['https://example.com', 'https://example.com'],
       ['pic.png', 'pic.png'],
     ]);
+  });
+
+  it('lists links between documents, including component hrefs', () => {
+    const text =
+      'See [the guide](guide.markup#setup) and [api].\n\n[api]: ../ref/api.mkup\n\n' +
+      ':::card[Next]{href="next page.md"}\nBody\n:::\n';
+    const links = getDocumentLinks(service.analyze(text, 'doc-links'));
+    expect(links.map((l) => [l.target, text.slice(l.from, l.to)])).toEqual([
+      ['guide.markup#setup', 'guide.markup#setup'],
+      ['../ref/api.mkup', '../ref/api.mkup'],
+      ['next page.md', 'next page.md'],
+    ]);
+    expect(links.map((l) => linkedDocument(l.target))).toEqual([
+      'guide.markup',
+      '../ref/api.mkup',
+      'next page.md',
+    ]);
+  });
+
+  it('recognises links to MarkUP documents only', () => {
+    expect(linkedDocument('a%20b.MARKUP?x=1')).toBe('a b.MARKUP');
+    expect(linkedDocument('/docs/index.mkup')).toBe('/docs/index.mkup');
+    for (const other of ['https://x.org/a.markup', '//cdn/a.md', 'pic.png', 'guide', 'C:/a.md'])
+      expect(linkedDocument(other)).toBeNull();
   });
 
   it('turns diagnostic fixes into code actions', () => {

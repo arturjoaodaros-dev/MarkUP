@@ -31,11 +31,13 @@ The menu bar (*File*, *Edit*, *View*, *Go*, *Help*) lists every command with its
 - **Files** — the folder's files. Right-click for *New File*, *New Folder*, *Rename* (`F2`), *Delete* (to the system trash), *Copy Path*. Files with errors or warnings are colored and counted.
 - **Tabs** — each keeps its own undo history and selection. Middle-click closes. A dot marks unsaved changes; you are always asked before unsaved work is discarded.
 - **Editor** — highlighting, errors, completion and hover all come from the MarkUP language service (the same one used by VS Code): type `:::` for components, `{` for attributes, `](#` for headings. `Ctrl+.` applies a quick fix, `F12` or `Ctrl+Click` goes to a definition.
+- **Formatting bar** — above the editor: bold (`**text**`), italic, underline (`:u[text]`), strikethrough, bulleted list, checkbox (`- [ ] task`), link, pie chart and *Insert component*. Each button writes real MarkUP and toggles: applied to formatted text it removes the format. With a selection it formats each selected line, leaving list, quote and heading markers alone; with only a cursor it formats the word under it, or inserts a selected placeholder. The same actions are in the command palette (*Toggle Bold*, *Toggle Checkbox*, *Insert Pie Chart*…).
 - **Preview** — renders as you type and scrolls with the editor. Double-click an element to jump to its source. Links to other documents open them in a tab.
 - **Layouts** — editor only, split, preview only (`Ctrl+Alt+1/2/3`, or cycle with `Ctrl+\`). Drag the divider to resize.
 - **Search** (`Ctrl+Shift+F`) across the folder with case, whole-word and regular-expression options.
 - **Outline** — headings and components of the current file, following the cursor.
 - **Problems** (`Ctrl+Shift+M`) — every error and warning in the folder.
+- **Document graph** (`Ctrl+Shift+G`, or the graph button in *Files*) — every MarkUP file as a dot, every link between two files (`[text](guide.markup)`, reference links, `href` of components such as `card`) as a line. Links to files that do not exist are drawn as dashed dots. Scroll to zoom, drag the background to pan, drag a document to place it (it stays there; right-click releases it), click a document to open it. The graph follows edits, new and deleted files as they happen; `Esc` goes back to the editor.
 - **Command palette** (`Ctrl+Shift+P`) and **quick open** (`Ctrl+P`). In quick open, `>` switches to commands, `@` to headings, `:` to a line number.
 - **Export to HTML** (`Ctrl+Shift+S`) — a standalone page with the theme.
 - **Settings** (`Ctrl+,`) — theme (dark, light, system), preview theme, font size, tab size, word wrap, line numbers, scroll sync, auto save. The shortcut list is in the same dialog.
@@ -60,6 +62,7 @@ Files changed outside the app are reloaded automatically when they have no unsav
 | Next / previous tab | `Ctrl+Tab` / `Ctrl+Shift+Tab` |
 | Toggle sidebar | `Ctrl+B` |
 | Explorer / outline / problems | `Ctrl+Shift+E` / `Ctrl+Shift+U` / `Ctrl+Shift+M` |
+| Document graph | `Ctrl+Shift+G` |
 | Editor / split / preview | `Ctrl+Alt+1` / `2` / `3`, cycle `Ctrl+\` |
 | Font size | `Ctrl+=` / `Ctrl+-` / `Ctrl+0` |
 | Settings | `Ctrl+,` |
@@ -73,11 +76,14 @@ On macOS use `⌘` instead of `Ctrl`.
 src/
   fs/          WorkspaceFs: Tauri implementation and an in-memory one for the browser
   state/       store (useSyncExternalStore), workbench actions, commands, settings
-  editor/      CodeMirror integration with the language service
+  editor/      CodeMirror integration with the language service, formatting commands
+  graph/       document graph model and force layout
   components/  React UI
 src-tauri/     Rust: workspace-scoped file commands, watcher, trash, dialogs
 ```
 
 The Rust side is deliberately small: it only reads and writes files **inside the opened folder** (paths are canonicalised and checked), writes atomically, deletes to the trash, watches for changes and exports HTML through a save dialog. All language work happens in the front end with the shared packages.
+
+The content security policy keeps `'unsafe-inline'` for styles and sets `dangerousDisableAssetCspModification: ["style-src"]`. Without it, Tauri adds a nonce to `style-src`, which makes the webview ignore `'unsafe-inline'` and block the stylesheet CodeMirror injects at run time — the editor then loses its layout and the text no longer lines up with the line numbers. Scripts keep Tauri's nonces and hashes.
 
 See [ADR 0004](adr/0004-desktop-stack.md) for why Tauri, React and CodeMirror.

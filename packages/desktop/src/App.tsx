@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { EditorArea } from './components/EditorArea.tsx';
+import { GraphView } from './components/GraphView.tsx';
 import { MenuBar } from './components/MenuBar.tsx';
 import { Palette } from './components/Palette.tsx';
 import { SettingsDialog } from './components/SettingsDialog.tsx';
@@ -88,6 +89,7 @@ function Shell() {
   const sidebar = useAppState((s) => s.sidebar);
   const workspace = useAppState((s) => s.workspace);
   const active = useAppState((s) => s.active);
+  const graph = useAppState((s) => s.graph && s.workspace !== null);
   const dirty = useAppState((s) => (s.active ? isDirty(s.docs[s.active]) : false));
 
   useEffect(() => {
@@ -118,7 +120,9 @@ function Shell() {
       <MenuBar />
       <div className="app-main">
         {sidebar && workspace && <Sidebar view={sidebar} />}
-        <EditorArea />
+        {/* The editor stays mounted under the graph, keeping undo history and folds. */}
+        <EditorArea hidden={graph} />
+        {graph && <GraphView />}
       </div>
       <StatusBar />
       <Palette />

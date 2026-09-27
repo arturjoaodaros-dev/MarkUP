@@ -45,6 +45,7 @@ import {
   type HtmlOptions,
 } from '@markup-lang/html';
 import { getHighlights, LanguageService } from '@markup-lang/language-service';
+import { ogImage, png as iconPng } from '../icon.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '../..');
@@ -302,12 +303,15 @@ function layout(
   r: Rendered,
   rel: (target: string) => string,
   neighbours: { prev: NavPage | null; next: NavPage | null; source: string | null },
+  noindex = false,
 ): string {
   const isHome = r.page === 'index.html';
   const title = isHome ? 'MarkUP — Markdown with directives' : `${r.title} — MarkUP`;
   const description =
     r.description ?? 'Documentation of MarkUP, a Markdown-compatible markup language.';
   const url = BASE + (isHome ? '' : r.page);
+  const shareTitle = escapeHtml(isHome ? 'MarkUP' : r.title);
+  const shareDescription = escapeHtml(description);
   const toc = r.toc.length
     ? `<aside class="toc" aria-labelledby="toc-title"><p id="toc-title" class="toc-title">On this page</p><ul>${r.toc
         .map(
@@ -328,15 +332,22 @@ function layout(
 <title>${escapeHtml(title)}</title>
 <meta name="description" content="${escapeHtml(description)}">
 <link rel="canonical" href="${url}">
-<meta property="og:type" content="website">
+${noindex ? '<meta name="robots" content="noindex">\n' : ''}<meta property="og:type" content="website">
 <meta property="og:site_name" content="MarkUP">
-<meta property="og:title" content="${escapeHtml(isHome ? 'MarkUP' : r.title)}">
-<meta property="og:description" content="${escapeHtml(description)}">
+<meta property="og:title" content="${shareTitle}">
+<meta property="og:description" content="${shareDescription}">
 <meta property="og:url" content="${url}">
+<meta property="og:image" content="${BASE}og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${shareTitle}">
+<meta name="twitter:description" content="${shareDescription}">
+<meta name="twitter:image" content="${BASE}og.png">
 <meta name="theme-color" content="#1c2f4a">
 <link rel="icon" href="${rel('icon.svg')}" type="image/svg+xml">
+<link rel="apple-touch-icon" href="${rel('apple-touch-icon.png')}">
 <link rel="stylesheet" href="${rel('assets/site.css')}">
 <script src="${rel('assets/site.js')}" defer></script>
+<script data-goatcounter="https://markup.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body data-root="${rel('')}">
 <a class="skip-link" href="#content">Skip to content</a>
@@ -429,6 +440,7 @@ export function build(out: string, requireDownloads = false): number {
     },
     (t) => `/${t}`,
     { prev: null, next: null, source: null },
+    true,
   );
   writeFileSync(join(out, '404.html'), notFound);
 
@@ -440,6 +452,37 @@ export function build(out: string, requireDownloads = false): number {
   writeFileSync(join(out, 'assets/site.js'), readFileSync(join(here, 'site.js'), 'utf8'));
   writeFileSync(join(out, 'assets/search.json'), JSON.stringify(index));
   writeFileSync(join(out, 'icon.svg'), readFileSync(join(root, 'packages/desktop/public/icon.svg')));
+  writeFileSync(join(out, 'apple-touch-icon.png'), iconPng(180));
+  writeFileSync(join(out, 'og.png'), ogImage());
+  writeFileSync(
+    join(out, 'llms.txt'),
+    `# MarkUP
+
+> MarkUP is a Markdown-compatible markup language that adds directives — named components with a label, attributes and a body — so documents can contain callouts, tabs, charts and other structure without raw HTML. Parsing never fails: every input produces a complete syntax tree, with problems reported as diagnostics.
+
+This repository contains the parser, the HTML and text renderers, a command-line tool, a VS Code extension and a desktop editor.
+
+## Docs
+
+- [Documentation home](${BASE}): overview and syntax
+- [Quick start](${BASE}quick-start.html): install and render your first document
+- [Installation](${BASE}installation.html): CLI, VS Code extension and desktop app
+- [Syntax reference](${BASE}spec.html): the language specification
+- [Components](${BASE}components.html): built-in directives (callouts, tabs, charts, and more)
+- [CLI](${BASE}cli.html), [VS Code extension](${BASE}vscode.html), [Desktop app](${BASE}desktop.html)
+- [Extending MarkUP](${BASE}extending.html): writing plugins and custom components
+- [Architecture](${BASE}architecture.html) and [development guide](${BASE}development.html)
+
+## Source
+
+- [GitHub repository](${REPO})
+- License: MIT
+
+## Notes for AI agents
+
+MarkUP is not Markdown-it, MDX, or a Markdown superset with raw HTML — raw HTML is treated as plain text by design. Directives use one syntax in three forms: \`:::name[label]{attributes}\` … \`:::\` (container), \`::name[label]{attributes}\` (leaf, own line), \`:name[label]{attributes}\` (inline). Otherwise, valid Markdown (CommonMark, GitHub tables, task lists, footnotes) is unchanged.
+`,
+  );
   writeFileSync(
     join(out, 'sitemap.xml'),
     `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${PAGES.map((p) => {

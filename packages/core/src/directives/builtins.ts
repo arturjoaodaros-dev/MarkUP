@@ -272,6 +272,11 @@ const chart = defineDirective({
       source:
         ':::chart{type=line unit=k}\nlabels: [Q1, Q2, Q3, Q4]\nseries:\n  - name: 2025\n    values: [12, 18, 15, 24]\n  - name: 2026\n    values: [16, 22, 27, 31]\n:::',
     },
+    {
+      title: 'Pie chart',
+      source:
+        ':::chart{type=pie}\ntitle: Time spent\ndata:\n  Writing: 50\n  Review: 30\n  Meetings: 20\n:::',
+    },
   ],
   snippet:
     ':::chart\ntype: ${1|bar,line,area,pie,donut|}\ndata:\n  ${2:A}: ${3:10}\n  ${4:B}: ${5:20}\n:::',
@@ -469,6 +474,17 @@ const abbr = defineDirective({
   snippet: ':abbr[${1:ABBR}]{title="${2:Expansion}"}',
 });
 
+const u = defineDirective({
+  name: 'u',
+  forms: ['inline'],
+  category: 'inline',
+  description:
+    'Underlined text. Markdown has no underline syntax, so it is a component. The label can contain other formatting, e.g. `:u[**bold**]`.',
+  label: { use: 'required', description: 'The text to underline.' },
+  examples: [{ source: 'Sign the form :u[before] Friday.' }],
+  snippet: ':u[${1:text}]',
+});
+
 export const BUILTIN_DIRECTIVES: readonly DirectiveSpec[] = [
   ...CALLOUT_TYPES.map(callout),
   card,
@@ -484,6 +500,7 @@ export const BUILTIN_DIRECTIVES: readonly DirectiveSpec[] = [
   badge,
   kbd,
   abbr,
+  u,
 ];
 
 export const builtinRegistry = new DirectiveRegistry(BUILTIN_DIRECTIVES);

@@ -44,6 +44,10 @@ export interface State {
   problems: Record<string, { errors: number; warnings: number }>;
   searchQuery: string;
   recent: string[];
+  /** The document graph is shown instead of the editor. */
+  graph: boolean;
+  /** Resolved link targets of every MarkUP file, kept up to date while the graph is shown. */
+  links: Record<string, string[]>;
 }
 
 type Listener = () => void;
@@ -94,6 +98,8 @@ export function initialState(
     problems: {},
     searchQuery: '',
     recent: [],
+    graph: false,
+    links: {},
     ...persisted,
   };
 }

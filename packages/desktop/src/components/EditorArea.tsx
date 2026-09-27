@@ -5,6 +5,7 @@ import { basename } from '../fs/types.ts';
 import { formatShortcut } from '../lib/keys.ts';
 import { isDirty, type ViewMode } from '../state/store.ts';
 import { EditorPane } from './EditorPane.tsx';
+import { FormatBar } from './FormatBar.tsx';
 import { FileIcon } from './Explorer.tsx';
 import { PreviewPane } from './PreviewPane.tsx';
 import { Splitter } from './Splitter.tsx';
@@ -16,7 +17,7 @@ const VIEWS: { mode: ViewMode; label: string; icon: typeof Code; shortcut: strin
   { mode: 'preview', label: 'Preview only', icon: Eye, shortcut: 'mod+alt+3' },
 ];
 
-export function EditorArea() {
+export function EditorArea({ hidden = false }: { hidden?: boolean }) {
   const { wb } = useWorkbench();
   const tabs = useAppState((s) => s.tabs);
   const active = useAppState((s) => s.active);
@@ -26,14 +27,14 @@ export function EditorArea() {
 
   if (!active) {
     return (
-      <main className="editor-area">
+      <main className="editor-area" hidden={hidden}>
         <Welcome />
       </main>
     );
   }
 
   return (
-    <main className="editor-area">
+    <main className="editor-area" hidden={hidden}>
       <div className="editor-toolbar">
         <div
           className="tabs"
@@ -67,6 +68,7 @@ export function EditorArea() {
           style={view === 'split' ? { flexBasis: `${split * 100}%` } : undefined}
           hidden={view === 'preview'}
         >
+          <FormatBar />
           <EditorPane />
         </div>
         {view === 'split' && (

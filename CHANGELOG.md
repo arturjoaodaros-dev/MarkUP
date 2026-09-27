@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Language: `:u[text]` underlines text (Markdown has no underline syntax). Document links now include the `href` of components such as `card`, and the language service exposes `linkedDocument` to recognise links to other MarkUP files.
+- Desktop: fixed the editor text being drawn away from its line in the installed app. Tauri's CSP nonce disabled `'unsafe-inline'` for styles and blocked CodeMirror's stylesheet.
+- Desktop: a formatting bar (bold, italic, underline, strikethrough, list, checkbox, link, pie chart, components) whose buttons toggle real MarkUP syntax, also available as commands.
+- Desktop: a document graph (`Ctrl+Shift+G`) showing files and the links between them, with zoom, panning, draggable documents and click to open.
+
 ## MarkUP Desktop 0.2.0, VS Code extension 0.2.1
 
 - New logo: app, installer, file and site icons.

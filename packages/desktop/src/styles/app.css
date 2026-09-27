@@ -811,10 +811,58 @@ kbd {
   inset: 0 -1px;
 }
 
+.pane-editor {
+  flex-direction: column;
+}
 .editor-host {
   flex: 1;
   min-width: 0;
+  min-height: 0;
   display: flex;
+}
+
+/* Formatting toolbar: one quiet row of icon buttons, grouped by kind. */
+.format-bar {
+  flex: none;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+.format-group {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+.format-group + .format-group {
+  padding-left: 5px;
+  border-left: 1px solid var(--border);
+}
+.format-button {
+  width: 26px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.format-button:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.format-button:active {
+  background: var(--active);
+}
+.format-button:focus-visible {
+  outline: 1px solid var(--focus);
+  outline-offset: -1px;
 }
 .preview-host {
   flex: 1;
@@ -822,6 +870,102 @@ kbd {
   height: 100%;
   overflow: auto;
   user-select: text;
+}
+
+.editor-area[hidden] {
+  display: none;
+}
+
+/* ----------------------------------------------------------------- graph */
+
+.graph-view {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+.graph-toolbar {
+  height: var(--toolbar-height);
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 8px 0 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+.graph-toolbar h2 {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+.graph-stats,
+.graph-hint {
+  color: var(--text-faint);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+.graph-hint {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-muted);
+}
+.graph-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 2px;
+}
+.graph-actions button {
+  width: 26px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.graph-actions button:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.graph-canvas {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.graph-canvas canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+}
+.graph-canvas canvas:active {
+  cursor: grabbing;
+}
+.graph-canvas canvas.is-pointing {
+  cursor: pointer;
+}
+.graph-empty {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  margin: 0;
+  color: var(--text-faint);
+  font-size: var(--text-sm);
+  pointer-events: none;
+}
+.graph-empty code {
+  font-family: var(--font-mono);
+  font-size: 0.95em;
+  color: var(--text-muted);
 }
 
 /* --------------------------------------------------------------- welcome */

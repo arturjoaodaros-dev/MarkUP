@@ -4,6 +4,15 @@
   "description": "The markup command: render, build, check and preview MarkUP documents.",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arturjoaodaros-dev/MarkUP.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://markup.rweb.site/",
+  "bugs": {
+    "url": "https://github.com/arturjoaodaros-dev/MarkUP/issues"
+  },
   "bin": {
     "markup": "dist/markup.js"
   },

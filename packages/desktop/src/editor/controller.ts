@@ -1,9 +1,10 @@
 import { redo, undo } from '@codemirror/commands';
 import { foldAll, unfoldAll } from '@codemirror/language';
 import { openSearchPanel } from '@codemirror/search';
-import { EditorSelection } from '@codemirror/state';
+import { EditorSelection, type EditorState, type TransactionSpec } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { snippet } from '@codemirror/autocomplete';
+import { blockInsertion } from './format.ts';
 import { toCodeMirrorSnippet } from './snippets.ts';
 
 /** The (fractional, 1-based) source line at the top of the editor viewport. */
@@ -70,6 +71,25 @@ export const editor = {
     const prefix =
       block && from > line.from + (/^\s*/.exec(line.text)?.[0].length ?? 0) ? '\n' : '';
     snippet(prefix + toCodeMirrorSnippet(template))(view, { label: 'component' }, from, to);
+    view.focus();
+  },
+
+  /** Applies a formatting command (see format.ts) to the current selection. */
+  apply(command: (state: EditorState) => TransactionSpec): void {
+    const view = this.view;
+    if (!view) return;
+    view.dispatch(
+      view.state.update(command(view.state), { scrollIntoView: true, userEvent: 'input' }),
+    );
+    view.focus();
+  },
+
+  /** Inserts a block component snippet on lines of its own, after the selection. */
+  insertBlock(template: string): void {
+    const view = this.view;
+    if (!view) return;
+    const { at, before, after } = blockInsertion(view.state);
+    snippet(before + toCodeMirrorSnippet(template) + after)(view, { label: 'component' }, at, at);
     view.focus();
   },
 

@@ -5,6 +5,7 @@ import {
   FileText,
   FolderPlus,
   RefreshCw,
+  Waypoints,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useAppState, useWorkbench } from '../context.ts';
@@ -65,6 +66,9 @@ export function Explorer() {
         </IconButton>
         <IconButton label="Collapse All" onClick={() => wb.collapseAll()}>
           <ChevronsDownUp size={15} />
+        </IconButton>
+        <IconButton label="Document Graph" onClick={() => wb.toggleGraph()}>
+          <Waypoints size={15} />
         </IconButton>
       </PanelHeader>
       <div className="tree" role="tree" onContextMenu={(e) => openMenu(e, null)}>

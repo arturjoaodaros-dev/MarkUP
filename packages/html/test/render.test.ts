@@ -247,6 +247,20 @@ describe('components', () => {
     );
   });
 
+  it('renders underlined text with inline formatting inside', () => {
+    expect(html('Sign :u[before] Friday.')).toBe('<p>Sign <u>before</u> Friday.</p>\n');
+    expect(html(':u[**both**] and **:u[nested]**')).toBe(
+      '<p><u><strong>both</strong></u> and <strong><u>nested</u></strong></p>\n',
+    );
+  });
+
+  it('renders task lists with disabled checkboxes', () => {
+    expect(html('- [ ] open\n- [x] done\n- plain')).toBe(
+      '<ul class="mu-tasks">\n<li class="mu-task"><input type="checkbox" disabled> open</li>\n' +
+        '<li class="mu-task"><input type="checkbox" disabled checked> done</li>\n<li>plain</li>\n</ul>\n',
+    );
+  });
+
   it('renders keyboard shortcuts key by key', () => {
     expect(html(':kbd[Ctrl + Shift+P] :kbd[Ctrl++]')).toBe(
       '<p><kbd class="mu-kbd"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd></kbd> <kbd class="mu-kbd"><kbd>Ctrl</kbd>+<kbd>+</kbd></kbd></p>\n',

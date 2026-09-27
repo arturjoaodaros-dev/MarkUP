@@ -107,6 +107,29 @@ function colorAt(x, y) {
   return rgb(color);
 }
 
+/** Wraps raw RGBA scanlines (one filter byte + width*4 bytes per row) into a PNG file. */
+function encodePng(width, height, raw) {
+  const chunk = (type, data) => {
+    const length = Buffer.alloc(4);
+    length.writeUInt32BE(data.length);
+    const body = Buffer.concat([Buffer.from(type, 'ascii'), data]);
+    const crc = Buffer.alloc(4);
+    crc.writeUInt32BE(crc32(body));
+    return Buffer.concat([length, body, crc]);
+  };
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(width, 0);
+  header.writeUInt32BE(height, 4);
+  header[8] = 8; // bit depth
+  header[9] = 6; // RGBA
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk('IHDR', header),
+    chunk('IDAT', deflateSync(raw, { level: 9 })),
+    chunk('IEND', Buffer.alloc(0)),
+  ]);
+}
+
 export function png(size) {
   const samples = 4;
   const raw = Buffer.alloc((size * 4 + 1) * size);
@@ -128,25 +151,40 @@ export function png(size) {
       raw[o + 3] = Math.round((hits / (samples * samples)) * 255);
     }
   }
-  const chunk = (type, data) => {
-    const length = Buffer.alloc(4);
-    length.writeUInt32BE(data.length);
-    const body = Buffer.concat([Buffer.from(type, 'ascii'), data]);
-    const crc = Buffer.alloc(4);
-    crc.writeUInt32BE(crc32(body));
-    return Buffer.concat([length, body, crc]);
-  };
-  const header = Buffer.alloc(13);
-  header.writeUInt32BE(size, 0);
-  header.writeUInt32BE(size, 4);
-  header[8] = 8; // bit depth
-  header[9] = 6; // RGBA
-  return Buffer.concat([
-    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-    chunk('IHDR', header),
-    chunk('IDAT', deflateSync(raw, { level: 9 })),
-    chunk('IEND', Buffer.alloc(0)),
-  ]);
+  return encodePng(size, size, raw);
+}
+
+/**
+ * A social-share card: the mark on a solid background, no rounded corners (it fills
+ * the whole card, unlike the app icon) and no text. Used as og:image / twitter:image.
+ */
+export function ogImage(width = 1200, height = 630) {
+  const samples = 4;
+  const mark = height * 0.55;
+  const ox = (width - mark) / 2;
+  const oy = (height - mark) / 2;
+  const bg = rgb(COLORS.background);
+  const raw = Buffer.alloc((width * 4 + 1) * height);
+  for (let py = 0; py < height; py++) {
+    raw[py * (width * 4 + 1)] = 0; // filter: none
+    for (let px = 0; px < width; px++) {
+      const sum = [0, 0, 0];
+      for (let sy = 0; sy < samples; sy++) {
+        for (let sx = 0; sx < samples; sx++) {
+          const x = (px + (sx + 0.5) / samples - ox) / mark;
+          const y = (py + (sy + 0.5) / samples - oy) / mark;
+          let color = bg;
+          if (x >= 0 && x <= 1 && y >= 0 && y <= 1)
+            for (const [key, points] of SHAPES) if (inPolygon(x, y, points)) color = rgb(COLORS[key]);
+          for (let k = 0; k < 3; k++) sum[k] += color[k];
+        }
+      }
+      const o = py * (width * 4 + 1) + 1 + px * 4;
+      for (let k = 0; k < 3; k++) raw[o + k] = Math.round(sum[k] / (samples * samples));
+      raw[o + 3] = 255;
+    }
+  }
+  return encodePng(width, height, raw);
 }
 
 const CRC_TABLE = Array.from({ length: 256 }, (_, n) => {
