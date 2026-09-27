@@ -72,7 +72,7 @@ describe('documentation website', () => {
       expect(html, page).toContain('<link rel="canonical" href="https://markup.rweb.site/');
       expect(html.match(/<h1[ >]/g)?.length ?? 0, page).toBeGreaterThanOrEqual(1);
       for (const [, url] of html.matchAll(/(?:href|src)="([^"]*)"/g)) {
-        if (/^[a-z][a-z0-9+.-]*:|^#/i.test(url!)) continue;
+        if (/^[a-z][a-z0-9+.-]*:|^\/\/|^#/i.test(url!)) continue;
         const target = posix.normalize(
           posix.join(posix.dirname(page), url!.replace(/[?#].*$/s, '')),
         );
