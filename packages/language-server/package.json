@@ -4,6 +4,15 @@
   "description": "Language Server Protocol implementation for MarkUP (VS Code, Neovim, Helix, Zed…).",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arturjoaodaros-dev/MarkUP.git",
+    "directory": "packages/language-server"
+  },
+  "homepage": "https://markup.rweb.site/",
+  "bugs": {
+    "url": "https://github.com/arturjoaodaros-dev/MarkUP/issues"
+  },
   "bin": {
     "markup-language-server": "dist/server.cjs"
   },

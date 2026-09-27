@@ -5,6 +5,14 @@
   "description": "MarkUP — a Markdown-compatible markup language with components, plus its parser, renderers, CLI, VS Code extension and desktop editor.",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arturjoaodaros-dev/MarkUP.git"
+  },
+  "homepage": "https://markup.rweb.site/",
+  "bugs": {
+    "url": "https://github.com/arturjoaodaros-dev/MarkUP/issues"
+  },
   "workspaces": [
     "packages/core",
     "packages/html",

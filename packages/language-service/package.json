@@ -4,6 +4,15 @@
   "description": "Editor-agnostic MarkUP language features: completion, hover, outline, folding, highlighting, navigation and quick fixes.",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arturjoaodaros-dev/MarkUP.git",
+    "directory": "packages/language-service"
+  },
+  "homepage": "https://markup.rweb.site/",
+  "bugs": {
+    "url": "https://github.com/arturjoaodaros-dev/MarkUP/issues"
+  },
   "sideEffects": false,
   "exports": {
     ".": {

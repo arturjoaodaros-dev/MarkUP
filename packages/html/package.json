@@ -4,6 +4,15 @@
   "description": "HTML renderer for MarkUP: components, SVG charts and a shared theme.",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arturjoaodaros-dev/MarkUP.git",
+    "directory": "packages/html"
+  },
+  "homepage": "https://markup.rweb.site/",
+  "bugs": {
+    "url": "https://github.com/arturjoaodaros-dev/MarkUP/issues"
+  },
   "sideEffects": false,
   "exports": {
     ".": {

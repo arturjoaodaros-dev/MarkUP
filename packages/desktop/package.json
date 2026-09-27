@@ -5,6 +5,15 @@
   "description": "MarkUP Desktop — a focused editor for MarkUP documents with live preview.",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arturjoaodaros-dev/MarkUP.git",
+    "directory": "packages/desktop"
+  },
+  "homepage": "https://markup.rweb.site/",
+  "bugs": {
+    "url": "https://github.com/arturjoaodaros-dev/MarkUP/issues"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
