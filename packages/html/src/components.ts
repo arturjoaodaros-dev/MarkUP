@@ -155,6 +155,8 @@ const abbr: HtmlComponent = (node, ctx) => {
   return `<abbr${ctx.rootAttributes(node, [], { title: typeof title === 'string' ? title : null })}>${ctx.label(node)}</abbr>`;
 };
 
+const u: HtmlComponent = (node, ctx) => `<u${ctx.rootAttributes(node, [])}>${ctx.label(node)}</u>`;
+
 const chart: HtmlComponent = (node, ctx: HtmlContext) => renderChart(node, ctx);
 
 export const BUILTIN_COMPONENTS: Record<string, HtmlComponent> = {
@@ -172,4 +174,5 @@ export const BUILTIN_COMPONENTS: Record<string, HtmlComponent> = {
   badge,
   kbd,
   abbr,
+  u,
 };

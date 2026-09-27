@@ -221,3 +221,42 @@ describe('helpers', () => {
     expect(loadSettings(s)).toEqual(DEFAULT_SETTINGS);
   });
 });
+
+describe('document graph', () => {
+  const root = SAMPLE_ROOT;
+
+  it('indexes links between .markup and .mkup documents', async () => {
+    await fs.createFile(`${root}/notes.mkup`, '# Notes\n\nBack to [welcome](welcome.markup).\n');
+    await fs.createFile(
+      `${root}/guides/chart.mkup`,
+      ':::chart{type=pie}\ndata:\n  a: 1\n:::\n\n:::card[Notes]{href=../notes.mkup}\nSee the notes.\n:::\n',
+    );
+    await wb.refreshTree();
+    await wb.indexLinks();
+    expect(wb.state.links[`${root}/notes.mkup`]).toEqual([`${root}/welcome.markup`]);
+    expect(wb.state.links[`${root}/guides/chart.mkup`]).toEqual([`${root}/notes.mkup`]);
+    // The samples already link to each other.
+    expect(wb.state.links[`${root}/welcome.markup`]?.length).toBeGreaterThan(0);
+  });
+
+  it('follows unsaved edits and removed files', async () => {
+    const path = `${root}/showcase.markup`;
+    await wb.openFile(path);
+    wb.setContent(path, 'Now links to [a new page](drafts/new.markup).');
+    await wb.indexLinks();
+    expect(wb.state.links[path]).toEqual([`${root}/drafts/new.markup`]);
+
+    await fs.remove(`${root}/drafts/broken.markup`);
+    await wb.refreshTree();
+    await wb.indexLinks();
+    expect(Object.keys(wb.state.links)).not.toContain(`${root}/drafts/broken.markup`);
+  });
+
+  it('opens a document from the graph and closes it', async () => {
+    wb.toggleGraph(true);
+    expect(wb.state.graph).toBe(true);
+    await wb.openFromGraph(`${root}/showcase.markup`);
+    expect(wb.state.active).toBe(`${root}/showcase.markup`);
+    expect(wb.state.graph).toBe(false);
+  });
+});

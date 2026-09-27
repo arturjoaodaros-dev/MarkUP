@@ -1,4 +1,11 @@
 import { editor } from '../editor/controller.ts';
+import {
+  insertLink,
+  PIE_CHART_SNIPPET,
+  toggleInline,
+  toggleLines,
+  type InlineFormat,
+} from '../editor/format.ts';
 import type { Workbench } from './workbench.ts';
 
 const DOCS_URL = 'https://markup.rweb.site/';
@@ -19,6 +26,13 @@ export interface Command {
 export function createCommands(wb: Workbench): Command[] {
   const hasDoc = () => wb.state.active !== null;
   const hasWorkspace = () => wb.state.workspace !== null;
+  const format = (id: InlineFormat, title: string): Command => ({
+    id: `format.${id}`,
+    title,
+    category: 'Edit',
+    run: () => editor.apply((s) => toggleInline(s, id)),
+    available: hasDoc,
+  });
   return [
     {
       id: 'palette.commands',
@@ -95,6 +109,38 @@ export function createCommands(wb: Workbench): Command[] {
       title: 'Unfold All',
       category: 'Edit',
       run: () => editor.unfoldAll(),
+      available: hasDoc,
+    },
+    format('bold', 'Toggle Bold'),
+    format('italic', 'Toggle Italic'),
+    format('underline', 'Toggle Underline'),
+    format('strikethrough', 'Toggle Strikethrough'),
+    {
+      id: 'format.task',
+      title: 'Toggle Checkbox',
+      category: 'Edit',
+      run: () => editor.apply((s) => toggleLines(s, 'task')),
+      available: hasDoc,
+    },
+    {
+      id: 'format.bullet',
+      title: 'Toggle Bulleted List',
+      category: 'Edit',
+      run: () => editor.apply((s) => toggleLines(s, 'bullet')),
+      available: hasDoc,
+    },
+    {
+      id: 'format.link',
+      title: 'Insert Link',
+      category: 'Edit',
+      run: () => editor.apply(insertLink),
+      available: hasDoc,
+    },
+    {
+      id: 'format.pieChart',
+      title: 'Insert Pie Chart',
+      category: 'Edit',
+      run: () => editor.insertBlock(PIE_CHART_SNIPPET),
       available: hasDoc,
     },
 
@@ -215,6 +261,14 @@ export function createCommands(wb: Workbench): Command[] {
       category: 'View',
       shortcuts: ['mod+shift+m'],
       run: () => wb.showSidebar('problems'),
+    },
+    {
+      id: 'view.graph',
+      title: 'Toggle Document Graph',
+      category: 'View',
+      shortcuts: ['mod+shift+g'],
+      run: () => wb.toggleGraph(),
+      available: hasWorkspace,
     },
     {
       id: 'view.cycle',

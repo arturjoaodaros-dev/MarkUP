@@ -293,6 +293,18 @@ series:
 :::
 ```
 
+**Pie chart**
+
+```markup
+:::chart{type=pie}
+title: Time spent
+data:
+  Writing: 50
+  Review: 30
+  Meetings: 20
+:::
+```
+
 ## Navigation
 
 ### toc
@@ -356,5 +368,17 @@ An abbreviation with its expansion shown on hover.
 
 ```markup
 :abbr[AST]{title="Abstract syntax tree"}
+```
+
+### u
+
+Underlined text. Markdown has no underline syntax, so it is a component. The label can contain other formatting, e.g. `:u[**bold**]`.
+
+**Syntax:** `:u`
+
+**Label** (required): The text to underline.
+
+```markup
+Sign the form :u[before] Friday.
 ```
 

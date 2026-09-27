@@ -68,6 +68,24 @@ export interface DocumentLink {
 export function getDocumentLinks(analysis: Analysis): DocumentLink[] {
   const links: DocumentLink[] = [];
   for (const { node } of analysis.nodes()) {
+    // Components that link somewhere, e.g. `:::card{href=guide.markup}`.
+    if (
+      (node.type === 'containerDirective' ||
+        node.type === 'leafDirective' ||
+        node.type === 'inlineDirective') &&
+      node.attributes
+    ) {
+      for (const item of node.attributes.items) {
+        if (item.kind !== 'pair' || item.name !== 'href' || !item.valueRange) continue;
+        if (typeof item.value !== 'string' || !item.value || item.value.startsWith('#')) continue;
+        const quoted = /^["']/.test(analysis.text[item.valueRange.start.offset] ?? '') ? 1 : 0;
+        links.push({
+          from: item.valueRange.start.offset + quoted,
+          to: item.valueRange.end.offset - quoted,
+          target: item.value,
+        });
+      }
+    }
     // Reference links are covered by their definition.
     if (node.type === 'link' && node.kind === 'reference') continue;
     if (
@@ -86,6 +104,22 @@ export function getDocumentLinks(analysis: Analysis): DocumentLink[] {
     }
   }
   return links;
+}
+
+/**
+ * The MarkUP document a link target points at, as a path relative to the
+ * linking document (or to the workspace root when it starts with `/`), with
+ * the query and fragment removed. Null for URLs and for other kinds of files.
+ */
+export function linkedDocument(target: string): string | null {
+  if (/^[a-z][a-z0-9+.-]*:/i.test(target) || target.startsWith('//')) return null;
+  const path = target.replace(/[?#].*$/s, '');
+  if (!/.(?:markup|mkup|md)$/i.test(path)) return null;
+  try {
+    return decodeURIComponent(path);
+  } catch {
+    return path;
+  }
 }
 
 export interface CodeAction {

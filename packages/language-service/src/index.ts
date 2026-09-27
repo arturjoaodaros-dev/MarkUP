@@ -28,6 +28,7 @@ export {
   getDefinition,
   getDocumentLinks,
   getReferences,
+  linkedDocument,
   type CodeAction,
   type DocumentLink,
   type Location,

@@ -4,7 +4,7 @@
  * UI components only read state and call these methods.
  */
 import { renderDocument } from '@markup-lang/html';
-import { LanguageService } from '@markup-lang/language-service';
+import { getDocumentLinks, LanguageService } from '@markup-lang/language-service';
 import {
   basename,
   dirname,
@@ -15,6 +15,7 @@ import {
   type WorkspaceFs,
 } from '../fs/types.ts';
 import { resetMemoryFs, SAMPLE_ROOT } from '../fs/memory.ts';
+import { resolveLink } from '../graph/model.ts';
 import { saveSettings, type Settings } from './settings.ts';
 import {
   isDirty,
@@ -27,6 +28,8 @@ import {
 } from './store.ts';
 
 const SESSION_KEY = 'markup.desktop.session.v1';
+/** Files beyond this many are left out of the problem scan and the graph. */
+const SCAN_LIMIT = 2000;
 
 interface Session {
   recent: string[];
@@ -50,6 +53,13 @@ export class Workbench {
   private toastId = 0;
   /** Paths we just wrote, so our own saves are not reported as external changes. */
   private readonly ownWrites = new Map<string, number>();
+  /** Link targets per file, with the text they were computed from. */
+  private readonly linkCache = new Map<
+    string,
+    { content: string; fromBuffer: boolean; targets: string[] }
+  >();
+  private indexing: Promise<void> | null = null;
+  private indexAgain = false;
 
   constructor(store: Store, fs: WorkspaceFs, storage: Storage | null) {
     this.store = store;
@@ -89,8 +99,10 @@ export class Workbench {
     try {
       const root = await this.fs.open(path);
       this.unwatch?.();
+      this.linkCache.clear();
       const saved = this.session().byRoot[root];
       this.store.set({
+        links: {},
         workspace: { root, name: basename(root) || root },
         tabs: [],
         active: null,
@@ -139,7 +151,7 @@ export class Workbench {
       (e) => e.kind === 'file' && MARKUP_FILE.test(e.path),
     );
     const problems: State['problems'] = {};
-    for (const file of files.slice(0, 2000)) {
+    for (const file of files.slice(0, SCAN_LIMIT)) {
       try {
         const content = this.state.docs[file.path]?.content ?? (await this.fs.readText(file.path));
         problems[file.path] = count(this.service.analyze(content, `scan:${file.path}`).diagnostics);
@@ -149,6 +161,85 @@ export class Workbench {
       }
     }
     this.store.set({ problems });
+  }
+
+  // -------------------------------------------------------------------------
+  // Document graph
+
+  toggleGraph(open = !this.state.graph): void {
+    this.store.set({ graph: open && this.state.workspace !== null });
+  }
+
+  async openFromGraph(path: string): Promise<void> {
+    await this.openFile(path);
+    if (this.state.active === path) this.store.set({ graph: false });
+  }
+
+  /**
+   * Updates `state.links` for every MarkUP file in the workspace. Only files
+   * whose text changed are parsed again; calls made while indexing coalesce.
+   */
+  indexLinks(): Promise<void> {
+    if (this.indexing) {
+      this.indexAgain = true;
+      return this.indexing;
+    }
+    this.indexing = (async () => {
+      do {
+        this.indexAgain = false;
+        await this.buildLinkIndex();
+      } while (this.indexAgain);
+    })().finally(() => {
+      this.indexing = null;
+    });
+    return this.indexing;
+  }
+
+  private async buildLinkIndex(): Promise<void> {
+    const root = this.state.workspace?.root;
+    if (!root) return;
+    const files = flatten(this.state.tree)
+      .filter((e) => e.kind === 'file' && MARKUP_FILE.test(e.path))
+      .slice(0, SCAN_LIMIT)
+      .map((e) => e.path);
+    const links: Record<string, string[]> = {};
+    const queue = [...files];
+    // A few reads at a time: fast on large folders without flooding the backend.
+    const worker = async () => {
+      for (let path = queue.shift(); path !== undefined; path = queue.shift())
+        links[path] = await this.linksOf(path, root);
+    };
+    await Promise.all(Array.from({ length: 8 }, worker));
+    const present = new Set(files);
+    for (const path of this.linkCache.keys()) if (!present.has(path)) this.linkCache.delete(path);
+    if (root === this.state.workspace?.root && !sameLinks(links, this.state.links))
+      this.store.set({ links });
+  }
+
+  private async linksOf(path: string, root: string): Promise<string[]> {
+    const buffer = this.state.docs[path]?.content;
+    const cached = this.linkCache.get(path);
+    let content = buffer;
+    if (content === undefined) {
+      if (cached && !cached.fromBuffer) return cached.targets;
+      try {
+        content = await this.fs.readText(path);
+      } catch {
+        return [];
+      }
+    }
+    if (cached?.content === content) return cached.targets;
+    // Open documents share the editor's analysis; others are parsed once and forgotten.
+    const key = buffer === undefined ? `links:${path}` : path;
+    const targets = new Set<string>();
+    for (const link of getDocumentLinks(this.service.analyze(content, key))) {
+      const target = resolveLink(path, link.target, root);
+      if (target) targets.add(target);
+    }
+    if (buffer === undefined) this.service.forget(key);
+    const result = [...targets];
+    this.linkCache.set(path, { content, fromBuffer: buffer !== undefined, targets: result });
+    return result;
   }
 
   private updateProblems(path: string): void {
@@ -273,6 +364,7 @@ export class Workbench {
 
   private async onExternalChange(paths: string[]): Promise<void> {
     const now = Date.now();
+    for (const path of paths) this.linkCache.delete(path);
     const relevant = paths.filter((p) => now - (this.ownWrites.get(p) ?? 0) > 1500);
     if (relevant.length === 0) return;
     await this.refreshTree();
@@ -539,6 +631,16 @@ function count(diagnostics: readonly { severity: string }[]): { errors: number; 
     else if (d.severity === 'warning') warnings++;
   }
   return { errors, warnings };
+}
+
+function sameLinks(a: Record<string, string[]>, b: Record<string, string[]>): boolean {
+  const keys = Object.keys(a);
+  if (keys.length !== Object.keys(b).length) return false;
+  return keys.every((k) => {
+    const x = a[k]!;
+    const y = b[k];
+    return y !== undefined && x.length === y.length && x.every((v, i) => v === y[i]);
+  });
 }
 
 function message(error: unknown): string {
